@@ -8,7 +8,7 @@
 
 ## 2. 问题域
 - 论断：问题域是建筑设计中的相似建筑情境及对应的解决方案。
-- 引文："These reference drawings are used to guide solutions for similar architectural situations." (Ahmed et al., 2013, p.1)
+- 引文："During design process, architects use existing and already designed buildings as reference. These reference drawings are used to guide solutions for similar architectural situations." (Ahmed et al., 2013, p.1)
 
 ## 3. 案例或数据的表示形式
 - 论断：平面图被抽取出的语义以带顶点与边的图 G 表示。

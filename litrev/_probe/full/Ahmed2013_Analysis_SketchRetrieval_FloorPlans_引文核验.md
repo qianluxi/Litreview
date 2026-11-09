@@ -5,7 +5,7 @@
 | # | 行 | 判定 | 标注 | 实际 | 引文 | 说明 |
 |---|---|---|---|---|---|---|
 | 1 | 7 | PASS | Ahmed et al. p.1 | Ahmed2013_Analysis_SketchRetrieval_FloorPlans.pdf p.1 | The contribution of this article is twofold. First, we propose a sketch-based sy |  |
-| 2 | 11 | PASS | Ahmed et al. p.1 | Ahmed2013_Analysis_SketchRetrieval_FloorPlans.pdf p.1 | These reference drawings are used to guide solutions for similar architectural s |  |
+| 2 | 11 | PASS | Ahmed et al. p.1 | Ahmed2013_Analysis_SketchRetrieval_FloorPlans.pdf p.1 | During design process, architects use existing and already designed buildings as |  |
 | 3 | 15 | PASS | Ahmed et al. p.6 | Ahmed2013_Analysis_SketchRetrieval_FloorPlans.pdf p.6 | The extracted semantics are represented as a graph G ¼ ðV; EÞ. |  |
 | 4 | 19 | PASS | Ahmed et al. p.3 | Ahmed2013_Analysis_SketchRetrieval_FloorPlans.pdf p.3 | As for the retrieval algorithm, subgraph matching approaches |  |
 | 5 | 23 | PASS | Ahmed et al. p.8 | Ahmed2013_Analysis_SketchRetrieval_FloorPlans.pdf p.8 | the prototype is implemented for the Touch & Write |  |

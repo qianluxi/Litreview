@@ -238,3 +238,10 @@
 | B3-02 | Ahmed2013_Analysis_SketchRetrieval_FloorPlans | 明确写出的局限 | p.9 | 31 | “it is only able to ﬁnd the physical existent rooms.” |
 | B3-03 | Borner1993_StructuralSimilarity_CBR | 案例或数据的表示形式 | p.5 | 15 | “represen ted b y its spatial dimensions and nine further attributes” |
 | B3-16 | vanEngelenburg2023_SSIG_FloorPlan | 案例或数据的表示形式 | p.2 | 15 | “geometries that explicitly model the shapes, proportions and locations of the shapes of the subdivisions [13], and graphs that model the relations between the subdivisions” |
+
+## 七、核验后修订（2026-11-09）
+
+- 7 条 S+D 的返工结果见 `C4_EXPAND_RESULT.md` §六：B2-01、B2-05 已 `SUPPORTED / SELF`；B2-08 为 `PARTIAL / SELF`；B3-03 因 Borner 文字层问题阻塞。
+- 48 条里 14 条来自 Borner1993（7）与 Zhang2006（7）的文字层碎片，扩句无效；见 `CORPUS_TEXT_HEALTH.md`。在重新抽取前，这 14 条只记为“已知有问题”。
+- `SUPPORTED` 只是分诊，不是合格证；第三方抽检 6 条中 B3-10、B3-11、B3-13 偏宽。用 1 个 auditor 闭卷复核这 3 条：B3-10 → `PARTIAL / DEPENDENT`，B3-11 → `PARTIAL / DEPENDENT`，B3-13 → `UNSUPPORTED / SELF`。
+- 并入返工与抽检后，48 条片段由 S28 / P19 / U1、SELF35 / D13 变为 **S24 / P22 / U2、SELF39 / D9**；131 条全量由 S88 / P42 / U1、SELF114 / D17 变为 **S84 / P45 / U2、SELF118 / D13**（非 SUPPORTED 47/131 = 35.9%）。

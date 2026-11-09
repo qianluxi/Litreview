@@ -189,8 +189,8 @@
 
 - 支撑轴：131 条中 `SUPPORTED` 88、`PARTIAL` 42、`UNSUPPORTED` 1；非 SUPPORTED 共 43 条 = 32.8%。
 - 自足轴：131 条中 `DEPENDENT` 17 条 = 13.0%（T3 扩句前的状态）。
-- **T3 影响**：48 条片段里有 7 条 `SUPPORTED+DEPENDENT` 已扩句并通过 `verify`；支撑轴判定不变（未改论断），自足轴应在扩句后重判。若 7 条全部转 `SELF`，则 DEPENDENT 从 17 降到 10；本报告未对扩句后的 7 条重跑 auditor，故不把 10 写死。
-- 注意：48 条片段是按形式判据挑出的风险子集，不是随机样本；但它与 83 条非片段恰好互补，所以 131 条的合计数是全量口径，不是抽样外推。
+- **T3 影响**：48 条片段里有 7 条 `SUPPORTED+DEPENDENT` 已扩句并通过 `verify`；支撑轴判定不变（未改论断），自足轴应在扩句后重判。若 7 条全部转 `SELF`，则 DEPENDENT 从 17 降到 10；本报告未对扩句后的 7 条重跑 auditor，故不把 10 写死。**实际返工 + 抽检复核后的最终状态见 §七。**
+- 注意：48 条片段是按形式判据挑出的风险子集，不是随机样本；但它与 83 条非片段恰好互补，所以 131 条的合计数是全量口径，不是抽样外推。**返工与抽检后的最终状态见 §七。**
 
 ## 五、机械复核记录
 
@@ -206,3 +206,18 @@
 REST_B1.md / REST_B2.md / REST_B3.md / REST_B4.md / REST_B5.md   批次输入
 out_R1.md  / out_R2.md  / out_R3.md  / out_R4.md  / out_R5.md   原始判定表
 ```
+
+## 七、返工后状态（2026-11-09 核验后）
+
+第三方核验报告指出 7 条扩句只有 3 条真正达标；据此返工了 B2-01、B2-05、B2-08，B3-03 因 Borner 文字层问题标记阻塞（详见 `C4_EXPAND_RESULT.md` §六、`CORPUS_TEXT_HEALTH.md`）。第三方还点名 B3-10、B3-11、B3-13 三条 SUPPORTED 偏宽；用一个 auditor 闭卷复核后，三条分别改为 PARTIAL、PARTIAL、UNSUPPORTED。把这两组修订并入后，当前状态如下：
+
+| 集合 | 条数 | SUPPORTED | PARTIAL | UNSUPPORTED | SELF | DEPENDENT |
+|---|---:|---:|---:|---:|---:|---:|
+| 48 条片段（返工 + 抽检后） | 48 | 24 | 22 | 2 | 39 | 9 |
+| 83 条非片段（T4） | 83 | 60 | 23 | 0 | 79 | 4 |
+| **合计（返工 + 抽检后）** | **131** | **84** | **45** | **2** | **118** | **13** |
+
+- 支撑轴变化：B2-08 由 SUPPORTED 降为 PARTIAL；抽检的 B3-10、B3-11 由 SUPPORTED 降为 PARTIAL，B3-13 由 SUPPORTED 降为 UNSUPPORTED。131 条由 S88/P42/U1 变为 **S84/P45/U2**；非 SUPPORTED 47/131 = 35.9%。
+- 自足轴变化：B2-01、B2-05、B2-08 返工后转为 SELF；B2-09、B3-02、B3-16 按第三方核验报告判 SELF；B3-10、B3-11 复核后转为 DEPENDENT；B3-03 仍标 DEPENDENT 且阻塞。DEPENDENT 由 17 变为 13。
+- 口径：本表是「第三方核验 + 3 条返工复核 + 3 条 SUPPORTED 抽检复核」的合并状态，不是对 131 条全部重跑 auditor 的结果；B3-03 的 `DEPENDENT` 是「不可用」的占位，不是可修的自足问题。抽检为单 auditor 闭卷，样本 n=3，不能据此给出总体比例。抽检原始表：`out_SAMPLE3.md`；返工复核原始表：`out_REWORK3.md`。
+- 结论：**131 条判定表仍是分诊单，不是合格证**；45 条 PARTIAL + 2 条 UNSUPPORTED 需人看，84 条 SUPPORTED 仍需 10%–15% 抽检。

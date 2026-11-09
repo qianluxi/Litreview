@@ -8,6 +8,8 @@
 
 ## 一、扩句前后对照
 
+> 本节是**第一轮扩句**的结果；B2-01、B2-05、B2-08 的核验后返工见 §六，§六覆盖本节对应行。
+
 | id | 文献 | 字段 | 页 | 旧引文 | 新引文 | 扩展词数 | 修改后行 |
 |---|---|---|---|---|---:|---:|---:|
 | B2-01 | Ahmed2013 | 问题域 | p.1 | "to guide solutions for similar architectural situations." | "These reference drawings are used to guide solutions for similar architectural situations." | +5 | L11 |
@@ -43,14 +45,14 @@ python litrev.py verify _probe/full/vanEngelenburg2023_SSIG_FloorPlan.md
 ## 三、机械检查
 
 - 5 个文件仍各 31 行，7 个字段、7 条引文；行数未变。
-- 7/7 条新引文都包含旧引文（`old in new` 为 True），说明是扩边界而不是换句。
+- 第一轮扩句 7/7 条新引文都包含旧引文（`old in new` 为 True）；但返工后 B2-08 改为另一条完整句，不再包含旧引文，见 §六。
 - 7/7 条页码标注未变：p.1 / p.6 / p.6 / p.2 / p.9 / p.5 / p.2。
 - 7/7 条论断文本未变（与 `C4_FRAG_RESULT.md` §3.2 的「现文论断」逐字一致）。
 - 全文英文双引号对数仍为 7，无多余引号。
 
 ## 四、例外与说明
 
-1. **MaherGomez1996 p.6（B2-08）没有从句子最开头起引**：原句跨 p.5–p.6，p.6 页首是 `and`；extractor 取了 p.6 段内含主语 `the primary object-based representation` 的最长连续片段，因此新引文以 `and` 开头。没有跨页拼接，也没有按「拆成两条」处理。`verify` PASS，自足轴的主语已进入引号；但严格按「完整句起点」口径，这条仍是例外，建议人工复核是否接受 `and` 起首，或改成 p.5+p.6 两条。
+1. **MaherGomez1996 p.6（B2-08）第一轮没有从句子最开头起引**：原句跨 p.5–p.6，p.6 页首是 `and`；extractor 取了 p.6 段内含主语 `the primary object-based representation` 的最长连续片段，因此新引文以 `and` 开头。没有跨页拼接，也没有按「拆成两条」处理。`verify` PASS，自足轴的主语已进入引号；但严格按「完整句起点」口径，这条仍是例外。**核验后已返工为另一条 p.6 完整句，判定 `PARTIAL / SELF`，见 §六。**
 2. **Borner1993 p.5（B3-03）**：该 txt 有严重 OCR 断词（`eac h`、`ob ject`、`represen ted b y`、`whic h` 等），按 HANDOFF-02 §五.1 原样保留，未顺手改正字；新引文 266 字符，`verify` PASS。
 3. **扩句后仍有 6 条片段未处理**：`C4_FRAG_RESULT.md` §3.2 的 7 条已处理，但 §3.1 的 20 条非 SUPPORTED 中仍有 `SUPPORTED` 以外的条目；它们不在 T3 自动处理范围，按纪律只列不改。
 
@@ -63,3 +65,19 @@ python litrev.py verify _probe/full/vanEngelenburg2023_SSIG_FloorPlan.md
 | MaherGomez1996 | `ses_e410531c7ffe6VEKiZk1oCslu3` |
 | Borner1993 | `ses_e41053101fferRDRMMSpgQZ05i` |
 | vanEngelenburg2023 | `ses_e41053030ffeYEHneOEuD11SCn` |
+
+## 六、核验后返工（v1.1，2026-11-09）
+
+第三方核验报告指出：7 条扩句里只有 3 条真正达标（B2-09、B3-02、B3-16）；B2-01、B2-05 的指示代词仍依赖前文，B2-08 以 `and` 起首，B3-03 是 Borner 文字层碎片导致的不可用长串。据此做了 3 条返工、1 条标记阻塞。
+
+| id | 返工后引文 | 返工后判定 | 说明 |
+|---|---|---|---|
+| B2-01 | "During design process, architects use existing and already designed buildings as reference. These reference drawings are used to guide solutions for similar architectural situations." | **SUPPORTED / SELF** | 把 `These` 的指代对象（前一句的 existing/already designed buildings）包进引文。 |
+| B2-05 | "4 | THE CONSTRUCTION, TRAINING, AND INFERENCE OF NEURAL NETWORK MODELS To focus on the diffusion process features of the shear wall portion, this section introduces the construction, training, and inference methods for an image-prompt diffusion model with a mask tensor." | **SUPPORTED / SELF** | 把第 4 节标题包进引文，`this section` 有明确指代。 |
+| B2-08 | "The differences between CaseCAD’s and CADsyn’s case representations lie in the attribute-value pairs and the decomposition into subcases." | **PARTIAL / SELF** | 自足已修（完整句、无 `and` 起首），但支撑变弱：只说明两系统表征差异在于属性-值对，未直接断言“案例以属性-值对描述”。需人工决定改论断还是换引文。 |
+| B3-03 | 未再改（保留 266 字符串） | **阻塞：文字层问题** | Borner1993 文字层 1.03 词/行、短行 99.6%，扩句只会把碎串变长；按 `CORPUS_TEXT_HEALTH.md` 处理，不能算“已解决”。 |
+
+返工后复核：
+- 3 个文件各 `7/7 PASS`，退出码全 0；全量 19 篇 `131/131 PASS`，退出码全 0。
+- 返工后 7 条的状态：B2-01 SELF、B2-05 SELF、B2-08 SELF（但 PARTIAL）、B2-09 SELF、B3-02 SELF、B3-16 SELF、B3-03 阻塞。即 **5/7 真正自足，1/7 自足但支撑偏弱，1/7 因语料层不可用**。
+- 返工子会话：`ses_e40daaec3fferirF1LMqa2ifTn`（Ahmed）、`ses_e40daadefffemACx1YrvEKk0uw`（Gu）、`ses_e40daad29ffeF4z7p0Dj0va7L7`（Maher）；复核 `ses_e40d7e8d6ffeXhLGi2Qo33eM55`。复核原始表：`out_REWORK3.md`。

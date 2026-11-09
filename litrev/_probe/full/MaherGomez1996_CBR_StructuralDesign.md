@@ -12,7 +12,7 @@
 
 ## 3. 案例或数据的表示形式
 - 论断：案例以属性-值对（attribute-value pair）来描述。
-- 引文："and the primary object-based representation uses attribute-value pairs to describe a case." (Maher and Gomez, 1996, p.6)
+- 引文："The differences between CaseCAD’s and CADsyn’s case representations lie in the attribute-value pairs and the decomposition into subcases." (Maher and Gomez, 1996, p.6)
 
 ## 4. 相似性或检索机制
 - 论断：系统通过查找问题描述与记忆项中属性及取值的匹配来度量相关性。
