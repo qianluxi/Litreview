@@ -1,0 +1,106 @@
+# C4 审计批次 B3（16 条，闭卷）
+
+> 判定标准：`litrev/_probe/AUDIT_CONTRACT.md`（含第五节口径修订）。
+> 全部条目已通过 `verify`：逐字存在、页码为 PDF 物理页。**不要判真伪与页码**，只判论断层。
+> 不要读任何 PDF 或 `full/*.md`。只依据下面给出的论断与引文判定。
+
+输出：只输出表格 + 一行合计，行序与本文件条目顺序一致。
+
+| id | 支撑 | 自足 | 引文里的依据（≤15字，引文原词） | 缺什么/需补的一句 |
+|----|------|------|--------------------------------|--------------------|
+
+### B3-01 ・ Ahmed2013_Analysis_SketchRetrieval_FloorPlans ・ 相似性或检索机制 ・ p.3
+
+- 论断：检索算法采用子图匹配这一技术路线。
+- 引文："As for the retrieval algorithm, subgraph matching approaches" (Ahmed et al., 2013, p.3)
+- 形式特征：未以句末标点结尾（源文件第 19 行）
+
+### B3-02 ・ Ahmed2013_Analysis_SketchRetrieval_FloorPlans ・ 明确写出的局限 ・ p.9
+
+- 论断：作者明确指出方法的弱点是只能找到实际存在的物理房间。
+- 引文："it is only able to ﬁnd the physical existent rooms." (Ahmed et al., 2013, p.9)
+- 形式特征：首字母小写（源文件第 31 行）
+
+### B3-03 ・ Borner1993_StructuralSimilarity_CBR ・ 案例或数据的表示形式 ・ p.5
+
+- 论断：案例中的对象由空间尺寸和另外九个属性表示。
+- 引文："represen ted b y its spatial dimensions and nine further attributes" (Borner, 1993, p.5)
+- 形式特征：首字母小写+未以句末标点结尾（源文件第 15 行）
+
+### B3-04 ・ Borner1993_StructuralSimilarity_CBR ・ 评价方式 ・ p.10
+
+- 论断：评价方式是报告初期实验结果对上述主张的支持，未给出数据集规模或指标数值。
+- 引文："The initial exp erimen tal results supp ort the claims" (Borner, 1993, p.10)
+- 形式特征：未以句末标点结尾（源文件第 27 行）
+
+### B3-05 ・ Liao1998_SimilarityMeasures_CBR ・ 一句话主张 ・ p.2
+
+- 论断：该文在第二部分提出一种混合相似度度量，用于案例之间的比较。
+- 引文："applications. In the second part, a hybrid similarity measure is proposed for comparing" (Liao et al., 1998, p.2)
+- 形式特征：首字母小写+未以句末标点结尾（源文件第 7 行）
+
+### B3-06 ・ Liao1998_SimilarityMeasures_CBR ・ 相似性或检索机制 ・ p.17
+
+- 论断：对模糊值采用「面积比方法」（area ratio method）计算两个模糊值之间的相似度。
+- 引文："The area ratio method calculates the similarity between two fuzzy" (Liao et al., 1998, p.17)
+- 形式特征：未以句末标点结尾（源文件第 19 行）
+
+### B3-07 ・ MaherGomez1996_CBR_StructuralDesign ・ 一句话主张 ・ p.1
+
+- 论断：本文以四个案例的形式介绍作者在悉尼大学开发的基于案例设计系统。
+- 引文："Toward that end, this article presents four" (Maher and Gomez, 1996, p.1)
+- 形式特征：未以句末标点结尾（源文件第 7 行）
+
+### B3-08 ・ MaherGomez1996_CBR_StructuralDesign ・ 相似性或检索机制 ・ p.4
+
+- 论断：系统通过查找问题描述与记忆项中属性及取值的匹配来度量相关性。
+- 引文："a given problem by finding matches between" (Maher and Gomez, 1996, p.4)
+- 形式特征：首字母小写+未以句末标点结尾（源文件第 19 行）
+
+### B3-09 ・ MaherGomez1996_CBR_StructuralDesign ・ 明确写出的局限 ・ p.10
+
+- 论断：作者指出这种检索方式只在案例记忆中的案例数量有限时适用。
+- 引文："when case memory contains a limited" (Maher and Gomez, 1996, p.10)
+- 形式特征：首字母小写+未以句末标点结尾（源文件第 31 行）
+
+### B3-10 ・ SriramMaherFenves1985_KBES_StructuralDesign ・ 问题域 ・ p.4
+
+- 论断：问题域是结构设计，尤其是其中不适合纯算法求解、常呈病构性的设计问题。
+- 引文："structural design are not amenable to purely algorithmic solutions. These problems are often ill-" (Sriram et al., 1985, p.4)
+- 形式特征：首字母小写+未以句末标点结尾（源文件第 11 行）
+
+### B3-11 ・ Survey2025_FloorPlanRetrieval_MDPI ・ 系统形态 ・ p.23
+
+- 论断：该文是综述，考察这些特征检索方法并提出面向未来研究的融合技术。
+- 引文："This paper thoroughly examines these feature retrieval methods and introduces advanced fusion techniques to support future research" (Ling et al., 2025, p.23)
+- 形式特征：未以句末标点结尾（源文件第 23 行）
+
+### B3-12 ・ Zhang2006_BP_CaseRetrieval_HighriseStructureForm ・ 案例或数据的表示形式 ・ p.2
+
+- 论断：案例以向量形式送入网络的输入层。
+- 引文："the input layer is inputting vectors {xik4m and {Yk}m (k" (Zhang, 2006, p.2)
+- 形式特征：首字母小写+未以句末标点结尾（源文件第 15 行）
+
+### B3-13 ・ Zhang2006_BP_CaseRetrieval_HighriseStructureForm ・ 评价方式 ・ p.5
+
+- 论断：以工程实例的检索结果与工程实际选型相同作为验证依据。
+- 引文："selection is the same with the practice engineering." (Zhang, 2006, p.5)
+- 形式特征：首字母小写（源文件第 27 行）
+
+### B3-14 ・ Zhao2023_ShearWall_GNN ・ 案例或数据的表示形式 ・ p.2
+
+- 论断：剪力墙结构以图数据表示，图由节点和边组成，结合节点位置特征后图是自然的向量化形式。
+- 引文："data consist of graph nodes and edges. Combined with the location features of nodes, a graph is a natural vectorized form." (Zhao et al., 2023, p.2)
+- 形式特征：首字母小写（源文件第 15 行）
+
+### B3-15 ・ Zhao2023_ShearWall_GNN ・ 评价方式 ・ p.10
+
+- 论断：每个模型在训练时执行十折交叉验证，并以验证集结果的平均值与标准差作为评价指标。
+- 引文："Ten-fold cross-validation is performed for each model during training. Subsequently, the validation-set average and standard" (Zhao et al., 2023, p.10)
+- 形式特征：未以句末标点结尾（源文件第 27 行）
+
+### B3-16 ・ vanEngelenburg2023_SSIG_FloorPlan ・ 案例或数据的表示形式 ・ p.2
+
+- 论断：文献把平面图表示为显式建模形状、比例与位置的几何体，以及建模细分区域之间关系的图。
+- 引文："geometries that explicitly model the shapes, proportions and locations of the shapes of the subdivisions [13], and graphs that model the relations between the subdivisions" (van Engelenburg et al., 2023, p.2)
+- 形式特征：首字母小写+未以句末标点结尾（源文件第 15 行）
