@@ -1355,7 +1355,10 @@ def cmd_batch(args):
         print(f"\n合计待刷新 {total_changed}/{total_items} 条（--check 不写盘）")
         return 0
     if not total_changed:
-        print(f"\n✓ {total_items} 条与卡片一致，无需刷新。")
+        if touched:
+            print(f"\n条目内容未变，{len(touched)} 个文件只补/更新了快照戳：{', '.join(touched)}")
+        else:
+            print(f"\n✓ {total_items} 条与卡片一致，戳也齐全，无需刷新。")
         return 0
     print(f"\n刷新 {total_changed}/{total_items} 条，涉及：{', '.join(touched)}")
     print("**这些批次必须整批重审**：输入变了而 out_*.md 没变，判定仍是旧的（audit-stale 会报）。")
