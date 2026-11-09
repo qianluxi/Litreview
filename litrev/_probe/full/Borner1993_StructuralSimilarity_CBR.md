@@ -7,8 +7,8 @@
 - 引文："Structural similarity is assessed if and only if there is knowledge available to adapt old solutions correctly to the current problem of interest" (Borner, 1993, p.10)
 
 ## 2. 问题域
-- 论断：系统面向工业建筑设计领域。
-- 引文："Both are integrated in a knowledge based system which operates in the domain of industrial building design Whereas the overall system provides user interfaces and a broader range of functionality SynTerm and SynGraph supply the system with solutions for special design problems" (Borner, 1993, p.9)
+- 论断：方法本身不限于特定领域；示例取自工业建筑设计领域。
+- 引文："Although our approach is more theoretical in nature and not restricted to a speci c domain we will give an example taken from the domain of industrial building design" (Borner, 1993, p.1)
 
 ## 3. 案例或数据的表示形式
 - 论断：案例中的对象由空间尺寸和另外九个属性表示。
@@ -19,7 +19,7 @@
 - 引文："The rst initial analysis of the new problem can be done by an inexpensive surface similarity assessment based on the attribute based descriptions" (Borner, 1993, p.6)
 
 ## 5. 系统形态
-- 论断：该方法以原型形式实现于 SynTerm。
+- 论断：系统由 SynTerm 与 SynGraph 两个子系统构成，二者为同一系统提供专项设计问题的解法。
 - 引文："SynTerm and SynGraph supply the system with solutions for special design problems" (Borner, 1993, p.9)
 
 ## 6. 评价方式

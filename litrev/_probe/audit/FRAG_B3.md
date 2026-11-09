@@ -3,6 +3,7 @@
 > 判定标准：`litrev/_probe/AUDIT_CONTRACT.md`（含第五节口径修订）。
 > 全部条目已通过 `verify`：逐字存在、页码为 PDF 物理页。**不要判真伪与页码**，只判论断层。
 > 不要读任何 PDF 或 `full/*.md`。只依据下面给出的论断与引文判定。
+> 快照 sha1: a52c3ea485
 
 输出：只输出表格 + 一行合计，行序与本文件条目顺序一致。
 
@@ -18,19 +19,19 @@
 ### B3-02 ・ Ahmed2013_Analysis_SketchRetrieval_FloorPlans ・ 明确写出的局限 ・ p.9
 
 - 论断：作者明确指出方法的弱点是只能找到实际存在的物理房间。
-- 引文："it is only able to ﬁnd the physical existent rooms." (Ahmed et al., 2013, p.9)
-- 形式特征：首字母小写（源文件第 31 行）
+- 引文："Furthermore, a weak point of our approach is that it is only able to ﬁnd the physical existent rooms." (Ahmed et al., 2013, p.9)
+- 形式特征：完整句（源文件第 31 行）
 
 ### B3-03 ・ Borner1993_StructuralSimilarity_CBR ・ 案例或数据的表示形式 ・ p.5
 
 - 论断：案例中的对象由空间尺寸和另外九个属性表示。
-- 引文："represen ted b y its spatial dimensions and nine further attributes" (Borner, 1993, p.5)
-- 形式特征：首字母小写+未以句末标点结尾（源文件第 15 行）
+- 引文："Following the work of Ludger Hovestadt Hov each object circle or ellipse will be represented by its spatial dimensions and nine further attributes like time at which this object was created aspect which assumes one of return air fresh air etc and morphology which refers to access connection etc" (Borner, 1993, p.5)
+- 形式特征：未以句末标点结尾（源文件第 15 行）
 
 ### B3-04 ・ Borner1993_StructuralSimilarity_CBR ・ 评价方式 ・ p.10
 
 - 论断：评价方式是报告初期实验结果对上述主张的支持，未给出数据集规模或指标数值。
-- 引文："The initial exp erimen tal results supp ort the claims" (Borner, 1993, p.10)
+- 引文："The initial experimental results support the claims that the proposed ap proach o ers improved adaptation facilities in synthesis tasks together with a greater overall explanation performance" (Borner, 1993, p.10)
 - 形式特征：未以句末标点结尾（源文件第 27 行）
 
 ### B3-05 ・ Liao1998_SimilarityMeasures_CBR ・ 一句话主张 ・ p.2
@@ -75,17 +76,17 @@
 - 引文："This paper thoroughly examines these feature retrieval methods and introduces advanced fusion techniques to support future research" (Ling et al., 2025, p.23)
 - 形式特征：未以句末标点结尾（源文件第 23 行）
 
-### B3-12 ・ Zhang2006_BP_CaseRetrieval_HighriseStructureForm ・ 案例或数据的表示形式 ・ p.2
+### B3-12 ・ Zhang2006_BP_CaseRetrieval_HighriseStructureForm ・ 案例或数据的表示形式 ・ p.1
 
-- 论断：案例以向量形式送入网络的输入层。
-- 引文："the input layer is inputting vectors {xik4m and {Yk}m (k" (Zhang, 2006, p.2)
-- 形式特征：首字母小写+未以句末标点结尾（源文件第 15 行）
+- 论断：案例先按特征属性刻画、再转成目标案例。
+- 引文："First, CBR needs to distinguish the characteristic attributes of the significant cases to form selection and then transforms them into target cases." (Zhang, 2006, p.1)
+- 形式特征：完整句（源文件第 15 行）
 
 ### B3-13 ・ Zhang2006_BP_CaseRetrieval_HighriseStructureForm ・ 评价方式 ・ p.5
 
 - 论断：以工程实例的检索结果与工程实际选型相同作为验证依据。
-- 引文："selection is the same with the practice engineering." (Zhang, 2006, p.5)
-- 形式特征：首字母小写（源文件第 27 行）
+- 引文："This selection is the same with the practice engineering." (Zhang, 2006, p.5)
+- 形式特征：完整句（源文件第 27 行）
 
 ### B3-14 ・ Zhao2023_ShearWall_GNN ・ 案例或数据的表示形式 ・ p.2
 
@@ -102,5 +103,5 @@
 ### B3-16 ・ vanEngelenburg2023_SSIG_FloorPlan ・ 案例或数据的表示形式 ・ p.2
 
 - 论断：文献把平面图表示为显式建模形状、比例与位置的几何体，以及建模细分区域之间关系的图。
-- 引文："geometries that explicitly model the shapes, proportions and locations of the shapes of the subdivisions [13], and graphs that model the relations between the subdivisions" (van Engelenburg et al., 2023, p.2)
-- 形式特征：首字母小写+未以句末标点结尾（源文件第 15 行）
+- 引文："Floor plans are digitally represented in various ways that each emphasize different components of interest e.g. as images allowing to model ﬁne-grained details such as materialization and furniture [21, 5], geometries that explicitly model the shapes, proportions and locations of the shapes of the subdivisions [13], and graphs that model the relations between the subdivisions [9, 13, 18, 12]." (van Engelenburg et al., 2023, p.2)
+- 形式特征：完整句（源文件第 15 行）

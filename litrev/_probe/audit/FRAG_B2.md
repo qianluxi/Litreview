@@ -3,6 +3,7 @@
 > 判定标准：`litrev/_probe/AUDIT_CONTRACT.md`（含第五节口径修订）。
 > 全部条目已通过 `verify`：逐字存在、页码为 PDF 物理页。**不要判真伪与页码**，只判论断层。
 > 不要读任何 PDF 或 `full/*.md`。只依据下面给出的论断与引文判定。
+> 快照 sha1: 902e819463
 
 输出：只输出表格 + 一行合计，行序与本文件条目顺序一致。
 
@@ -12,8 +13,8 @@
 ### B2-01 ・ Ahmed2013_Analysis_SketchRetrieval_FloorPlans ・ 问题域 ・ p.1
 
 - 论断：问题域是建筑设计中的相似建筑情境及对应的解决方案。
-- 引文："to guide solutions for similar architectural situations." (Ahmed et al., 2013, p.1)
-- 形式特征：首字母小写（源文件第 11 行）
+- 引文："During design process, architects use existing and already designed buildings as reference. These reference drawings are used to guide solutions for similar architectural situations." (Ahmed et al., 2013, p.1)
+- 形式特征：完整句（源文件第 11 行）
 
 ### B2-02 ・ Ahmed2013_Analysis_SketchRetrieval_FloorPlans ・ 评价方式 ・ p.9
 
@@ -21,23 +22,23 @@
 - 引文："images dataset. The overall detection rate is 94.88%" (Ahmed et al., 2013, p.9)
 - 形式特征：首字母小写+未以句末标点结尾（源文件第 27 行）
 
-### B2-03 ・ Borner1993_StructuralSimilarity_CBR ・ 问题域 ・ p.9
+### B2-03 ・ Borner1993_StructuralSimilarity_CBR ・ 问题域 ・ p.1
 
-- 论断：系统面向工业建筑设计领域。
-- 引文："Both are in tegrated in a kno wledge based system whic h op erates in the domain of industrial building" (Borner, 1993, p.9)
+- 论断：方法本身不限于特定领域；示例取自工业建筑设计领域。
+- 引文："Although our approach is more theoretical in nature and not restricted to a speci c domain we will give an example taken from the domain of industrial building design" (Borner, 1993, p.1)
 - 形式特征：未以句末标点结尾（源文件第 11 行）
 
-### B2-04 ・ Borner1993_StructuralSimilarity_CBR ・ 系统形态 ・ p.8
+### B2-04 ・ Borner1993_StructuralSimilarity_CBR ・ 系统形态 ・ p.9
 
-- 论断：该方法以原型形式实现于 SynTerm。
-- 引文："Our approac h is protot ypically implemen ted in SynT erm" (Borner, 1993, p.8)
+- 论断：系统由 SynTerm 与 SynGraph 两个子系统构成，二者为同一系统提供专项设计问题的解法。
+- 引文："SynTerm and SynGraph supply the system with solutions for special design problems" (Borner, 1993, p.9)
 - 形式特征：未以句末标点结尾（源文件第 23 行）
 
 ### B2-05 ・ Gu2024_ShearWall_Diffusion ・ 相似性或检索机制 ・ p.6
 
 - 论断：该文采用的生成机制是带掩码张量的图像提示扩散模型。
-- 引文："methods for an image-prompt diffusion model with a mask tensor." (Gu et al., 2024, p.6)
-- 形式特征：首字母小写（源文件第 19 行）
+- 引文："4 | THE CONSTRUCTION, TRAINING, AND INFERENCE OF NEURAL NETWORK MODELS To focus on the diffusion process features of the shear wall portion, this section introduces the construction, training, and inference methods for an image-prompt diffusion model with a mask tensor." (Gu et al., 2024, p.6)
+- 形式特征：完整句（源文件第 19 行）
 
 ### B2-06 ・ Liao1998_SimilarityMeasures_CBR ・ 案例或数据的表示形式 ・ p.14
 
@@ -54,14 +55,14 @@
 ### B2-08 ・ MaherGomez1996_CBR_StructuralDesign ・ 案例或数据的表示形式 ・ p.6
 
 - 论断：案例以属性-值对（attribute-value pair）来描述。
-- 引文："uses attribute-value pairs to describe a case." (Maher and Gomez, 1996, p.6)
-- 形式特征：首字母小写（源文件第 15 行）
+- 引文："The differences between CaseCAD’s and CADsyn’s case representations lie in the attribute-value pairs and the decomposition into subcases." (Maher and Gomez, 1996, p.6)
+- 形式特征：完整句（源文件第 15 行）
 
 ### B2-09 ・ MaherGomez1996_CBR_StructuralDesign ・ 评价方式 ・ p.2
 
 - 论断：评价所依据的案例数据规模为 14 个设计项目。
-- 引文："data from 14 design projects" (Maher and Gomez, 1996, p.2)
-- 形式特征：首字母小写+未以句末标点结尾（源文件第 27 行）
+- 引文："Finally, we reviewed and collected data from 14 design projects." (Maher and Gomez, 1996, p.2)
+- 形式特征：完整句（源文件第 27 行）
 
 ### B2-10 ・ SriramMaherFenves1985_KBES_StructuralDesign ・ 一句话主张 ・ p.3
 
@@ -78,14 +79,14 @@
 ### B2-12 ・ Zhang2006_BP_CaseRetrieval_HighriseStructureForm ・ 问题域 ・ p.1
 
 - 论断：研究问题为高层建筑结构形式选型优化。
-- 引文："High-rise structural form selection optimization is" (Zhang, 2006, p.1)
-- 形式特征：未以句末标点结尾（源文件第 11 行）
+- 引文："High-rise structural form selection optimization is an important strategic problem concerning synthetic performance of building structure." (Zhang, 2006, p.1)
+- 形式特征：完整句（源文件第 11 行）
 
 ### B2-13 ・ Zhang2006_BP_CaseRetrieval_HighriseStructureForm ・ 系统形态 ・ p.3
 
 - 论断：系统的核心是单输出的三层 BP 神经网络。
-- 引文："single-output, three-layer BP network." (Zhang, 2006, p.3)
-- 形式特征：首字母小写（源文件第 23 行）
+- 引文："Thereupon we have built the multi-input-and- single-output, three-layer BP network." (Zhang, 2006, p.3)
+- 形式特征：完整句（源文件第 23 行）
 
 ### B2-14 ・ Zhao2023_ShearWall_GNN ・ 问题域 ・ p.1
 

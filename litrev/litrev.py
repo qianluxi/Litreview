@@ -16,6 +16,9 @@ litrev — 文献综述流水线的可机械验证层
   matrix   校验证据矩阵 xlsx：行数、篇目对应、重复、缺失
   sample   按固定比例与种子抽条目，生成可复现的闭卷审计批次
   audit-count  汇总 out_*.md 判定表（唯一允许的汇总口径）并校验各文件合计行
+  audit-stale  校验判定所依据的引文/论断是否仍是卡片当前内容
+  batch        从卡片刷新审计批次输入（保留 id/文献/节），并写入快照 sha1
+  stamp-out    按 git 历史给已有判定输出补写快照戳（输入改过的不补）
 
 用法示例：
   python litrev.py index
@@ -31,6 +34,7 @@ import argparse
 import csv
 import difflib
 import gzip
+import hashlib
 import json
 import re
 import sys
@@ -1041,7 +1045,17 @@ def cmd_audit_count(args):
 
 
 BATCH_IN_RE = re.compile(r"^###\s+(\S+)\s*・\s*(\S+)\s*・\s*(\S+)")
+STAMP_RE = re.compile(r"^> 快照 sha1: ([0-9a-f]{6,40})", re.M)
 CARD_DIR = BASE / "_probe" / "full"
+
+
+def batch_stamp(path):
+    """取批次输入/判定输出头部记录的「快照 sha1」；没有则返回 None。"""
+    try:
+        m = STAMP_RE.search(Path(path).read_text(encoding="utf-8"))
+    except OSError:
+        return None
+    return m.group(1) if m else None
 
 
 def parse_batch_inputs(dirpath):
@@ -1066,18 +1080,25 @@ def parse_batch_inputs(dirpath):
 
 
 def parse_cards(dirpath):
-    """读 full/*.md 卡片 -> {doc: {节名: (论断, [引文...])}}。"""
+    """读 full/*.md 卡片 -> {doc: {节名: {"claim": 论断, "quotes": [(引文, 出处, 行号)]}}}。"""
     cards = {}
     for p in sorted(Path(dirpath).glob("*.md")):
         if "引文核验" in p.name:
             continue
         text = p.read_text(encoding="utf-8")
         secs = {}
-        for blk in re.split(r"^## \d+\.\s*", text, flags=re.M)[1:]:
-            title = blk.splitlines()[0].strip()
+        for m in re.finditer(r"^## \d+\.\s*(.+)$", text, flags=re.M):
+            start = m.end()
+            nxt = re.search(r"^## \d+\.\s*", text[start:], flags=re.M)
+            blk = text[start:start + nxt.start()] if nxt else text[start:]
+            title = m.group(1).strip()
+            base_line = text.count("\n", 0, start) + 1
             c = re.search(r"^- 论断：(.+)$", blk, re.M)
-            secs[title] = (c.group(1).strip() if c else "",
-                           re.findall(r'^- 引文："(.+?)"\s*\(', blk, re.M))
+            quotes = []
+            for qm in re.finditer(r'^- 引文："(.+?)"\s*(\(.+?\))?\s*$', blk, re.M):
+                ln = base_line + blk.count("\n", 0, qm.start())
+                quotes.append((qm.group(1), (qm.group(2) or "").strip(), ln))
+            secs[title] = {"claim": (c.group(1).strip() if c else ""), "quotes": quotes}
         cards[p.stem] = secs
     return cards
 
@@ -1104,7 +1125,7 @@ def cmd_audit_stale(args):
         if got is None:
             missing.append((i, it["doc"], f"卡片无「{it['sec']}」节"))
             continue
-        claim, quotes = got
+        claim, quotes = got["claim"], [q for q, _, _ in got["quotes"]]
         q_ok = it["quote"] in quotes
         c_ok = claim == it["claim"]
         if not (q_ok and c_ok):
@@ -1113,7 +1134,27 @@ def cmd_audit_stale(args):
                 why = (why + " 论断已改").strip()
             drift.append((i, it["doc"], it["sec"], why))
 
-    n_quote = sum(len(q) for s in cards.values() for _, q in s.values())
+    # 批次输入与它的判定输出必须带同一个「快照 sha1」——只比时间戳会被 git checkout 骗
+    stale_batches = []
+    for p in sorted(Path(args.audit_dir).glob("*.md")):
+        m = re.match(r"^(FRAG|REST)_B(\d+)\.md$", p.name)
+        if not m:
+            continue
+        tag = ("B" if m.group(1) == "FRAG" else "R") + m.group(2)
+        out = Path(args.audit_dir) / f"out_{tag}.md"
+        n = sum(1 for it in items.values() if it["src"] == p.name)
+        want = batch_stamp(p)
+        got = batch_stamp(out) if out.exists() else None
+        if not out.exists():
+            stale_batches.append((tag, n, "没有判定输出"))
+        elif want is None:
+            stale_batches.append((tag, n, "输入无戳（老批次，先跑 batch 刷新）"))
+        elif got is None:
+            stale_batches.append((tag, n, "输出没回写戳（未按规程）"))
+        elif want != got:
+            stale_batches.append((tag, n, f"口径已变 {got}→{want}（未重审）"))
+
+    n_quote = sum(len(s["quotes"]) for c in cards.values() for s in c.values())
     n_sec = sum(len(s) for s in cards.values())
     print(f"批次输入 {len(items)} 条 · 卡片 {len(cards)} 篇 / {n_sec} 节 / {n_quote} 条引文")
     print(f"判定依据与卡片一致：{len(items) - len(drift) - len(missing)}/{len(items)}")
@@ -1130,13 +1171,195 @@ def cmd_audit_stale(args):
         print("[!] 批次条目找不到对应的卡片位置：")
         for i, doc, why in missing:
             print(f"  - {i}  {doc}  {why}")
+    if stale_batches:
+        print()
+        print("[!] 下列批次的判定不能用于结论（输入与判定输出的快照戳不一致）：")
+        for name, n, why in stale_batches:
+            print(f"  - {name}：{n} 条待重审 · {why}")
 
-    if not drift and not missing:
+    if not drift and not missing and not stale_batches:
         print("\n✓ 全部判定的依据与卡片当前内容一致。")
         return 0
-    print(f"\n[!] {len(drift)} 条判定的依据已过期，{len(missing)} 条对不上卡片。")
-    print("    重审请另建批次（不要在旧 out_*.md 上就地改判）。")
+    print(f"\n[!] {len(drift)} 条判定的依据已过期，{len(missing)} 条对不上卡片，"
+          f"{len(stale_batches)} 个批次待重审。")
+    print("    重审请按批次整体重跑（不要在旧 out_*.md 上就地改判）。")
     return 1 if args.check else 0
+
+
+def _strip_stamp(s):
+    """去掉戳行本身（保留它后面那一个空行，否则与历史版本比对会错位）。"""
+    return re.sub(r"^> 快照 sha1: .*\n", "", s, flags=re.M).rstrip() + "\n"
+
+
+def cmd_stamp_out(args):
+    """给已有的判定输出补写「它当时所依据的输入快照戳」——只在能证明输入没变过时才写。
+
+    证明方式：找到最后一次改动 `out_<tag>.md` 的提交，取该提交里的批次输入，与当前输入
+    （去掉戳行）逐字比较。相同 → 判定确实建立在这份文字上，补戳；不同 → 判据已换，需重审。
+    """
+    import subprocess
+    root = BASE.parent
+
+    def git(*a):
+        return subprocess.run(["git", "-C", str(root)] + list(a),
+                              capture_output=True, text=True, encoding="utf-8")
+
+    if git("rev-parse", "--is-inside-work-tree").returncode != 0:
+        print("[!] 不在 git 仓库里，无法反查历史；请人工确认后再写戳")
+        return 2
+
+    ok, need = [], []
+    for p in sorted(Path(args.audit_dir).glob("*.md")):
+        m = re.match(r"^(FRAG|REST)_B(\d+)\.md$", p.name)
+        if not m:
+            continue
+        tag = ("B" if m.group(1) == "FRAG" else "R") + m.group(2)
+        out = Path(args.audit_dir) / f"out_{tag}.md"
+        if not out.exists():
+            need.append((tag, 0, "没有判定输出"))
+            continue
+        rel_out = out.relative_to(root).as_posix()
+        rel_in = p.relative_to(root).as_posix()
+        commit = git("log", "-1", "--format=%H", "--", rel_out).stdout.strip()
+        if not commit:
+            need.append((tag, 0, "输出未入库，无从反查"))
+            continue
+        shown = git("show", f"{commit}:{rel_in}")
+        if shown.returncode != 0:
+            need.append((tag, 0, f"该提交里没有 {p.name}"))
+            continue
+        cur_text = p.read_text(encoding="utf-8")
+        if _strip_stamp(shown.stdout) != _strip_stamp(cur_text):
+            n = sum(1 for l in _strip_stamp(cur_text).splitlines() if l.startswith("### "))
+            need.append((tag, n, f"输入在 {commit[:7]} 之后被改过"))
+            continue
+        want = batch_stamp(p)
+        out_text = out.read_text(encoding="utf-8")
+        if batch_stamp(out) == want:
+            ok.append((tag, "已有戳"))
+            continue
+        note = "> 快照 sha1: " + want + "（由 litrev.py stamp-out 依 git 历史补写：判定产出后输入未变）\n\n"
+        out.write_text(note + _strip_stamp(out_text), encoding="utf-8")
+        ok.append((tag, "补戳 " + want))
+
+    for tag, why in ok:
+        print(f"{tag:<4} ✓ {why}")
+    if need:
+        print()
+        print("[!] 下列批次不能补戳，必须整批重审：")
+        for tag, n, why in need:
+            print(f"  {tag:<4}{n:>3} 条  {why}")
+    print()
+    print(f"已确认 {len(ok)} 个批次，待重审 {len(need)} 个批次。")
+    return 0 if not need else (1 if args.check else 0)
+
+
+def cmd_batch(args):
+    """从卡片重建审计批次输入：保留 id / 文献 / 节，只把论断与引文刷成卡片当前内容。
+
+    存在的理由：批次输入是手写的一次性快照，卡片一返工它就过期（audit-stale 会报）。
+    刷新后必须整批重审——输入变了而 out_*.md 没变，判定就还是旧的。
+    """
+    cards = parse_cards(args.card_dir)
+    files = sorted(p for p in Path(args.audit_dir).glob("*.md")
+                   if re.match(r"^(FRAG|REST)_B\d+\.md$", p.name))
+    if args.only:
+        keep = {s.strip().upper() for s in args.only.split(",") if s.strip()}
+        files = [p for p in files if re.match(r"^(FRAG|REST)_(B\d+)\.md$", p.name)
+                 and re.match(r"^(FRAG|REST)_(B\d+)\.md$", p.name).group(2) in keep]
+    if not files:
+        print("[!] 没有匹配的批次输入文件")
+        return 2
+
+    total_changed = total_items = 0
+    problems, touched = [], []
+    for p in files:
+        text = p.read_text(encoding="utf-8")
+        marks = [m.start() for m in re.finditer(r"^### ", text, flags=re.M)]
+        if not marks:
+            problems.append((p.name, "文件里没有条目"))
+            continue
+        head, parts = text[:marks[0]], []
+        n = changed = 0
+        for j, st in enumerate(marks):
+            en = marks[j + 1] if j + 1 < len(marks) else len(text)
+            blk = text[st:en]
+            m = BATCH_IN_RE.match(blk.splitlines()[0])
+            if not m:
+                parts.append(blk)
+                continue
+            i, doc, sec = m.groups()
+            s = (cards.get(doc) or {}).get(sec)
+            if not s or not s["quotes"]:
+                problems.append((p.name, f"{i} 找不到 {doc} 的「{sec}」节，或该节没有引文"))
+                parts.append(blk)
+                continue
+            q, cite, ln = s["quotes"][0]
+            pm = re.search(r",\s*p{1,2}\.\s*([0-9ivx]+)", cite)
+            page = f"p.{pm.group(1)}" if pm else ""
+            flags = []
+            if q[:1].islower():
+                flags.append("首字母小写")
+            if not q.rstrip().endswith((".", "!", "?", "。", "！", "？")):
+                flags.append("未以句末标点结尾")
+
+            out = []
+            for t in blk.splitlines(True):
+                bare = t.rstrip("\n")
+                nl = t[len(bare):]
+                if bare.startswith("- 论断："):
+                    out.append(f"- 论断：{s['claim']}{nl}")
+                elif bare.startswith("- 引文："):
+                    out.append(f'- 引文："{q}" {cite}{nl}')
+                elif bare.startswith("- 形式特征："):
+                    old = bare[len("- 形式特征："):]
+                    sep = "、" if "、" in old else ("+" if "+" in old else "、")
+                    out.append(f"- 形式特征：{sep.join(flags) or '完整句'}（源文件第 {ln} 行）{nl}")
+                elif bare.startswith("- 源文件："):
+                    out.append(f"- 源文件：第 {ln} 行{nl}")
+                elif bare.startswith("### ") and page:
+                    out.append(re.sub(r"・\s*p{1,2}\.\s*\S+\s*$", f"・ {page}", bare) + nl)
+                else:
+                    out.append(t)
+            newblk = "".join(out)
+            n += 1
+            if newblk != blk:
+                changed += 1
+            parts.append(newblk)
+
+        result = re.sub(r"（\d+ 条，闭卷）", f"（{n} 条，闭卷）", head) + "".join(parts)
+        payload = "".join(re.findall(r"^- (?:论断|引文)：.+$", result, re.M))
+        stamp = hashlib.sha1(payload.encode("utf-8")).hexdigest()[:10]
+        result = re.sub(r"^> 快照 sha1: .*\n", "", result, flags=re.M)
+        if "\n\n输出：" in result:
+            result = result.replace("\n\n输出：", f"\n> 快照 sha1: {stamp}\n\n输出：", 1)
+        else:
+            result = re.sub(r"^(# .*\n)", r"\1\n> 快照 sha1: " + stamp + "\n", result, count=1, flags=re.M)
+        total_items += n
+        file_changed = result != text
+        if file_changed:
+            total_changed += changed
+            touched.append(p.name)
+            if not args.check:
+                p.write_text(result, encoding="utf-8")
+        mark = f"变动 {changed} 条" if changed else ("仅更新戳" if file_changed else "无变化")
+        print(f"{p.name:<16}{n:>4} 条  {mark}")
+
+    if problems:
+        print()
+        print("[!] 下列条目没有刷成，需人工处理（原样保留）：")
+        for name, why in problems:
+            print(f"  - {name}  {why}")
+        return 1
+    if args.check:
+        print(f"\n合计待刷新 {total_changed}/{total_items} 条（--check 不写盘）")
+        return 0
+    if not total_changed:
+        print(f"\n✓ {total_items} 条与卡片一致，无需刷新。")
+        return 0
+    print(f"\n刷新 {total_changed}/{total_items} 条，涉及：{', '.join(touched)}")
+    print("**这些批次必须整批重审**：输入变了而 out_*.md 没变，判定仍是旧的（audit-stale 会报）。")
+    return 0
 
 
 def cmd_locate(args):
@@ -1337,6 +1560,18 @@ def main():
     p.add_argument("--card-dir", default=str(CARD_DIR), help="卡片目录（默认 _probe/full）")
     p.add_argument("--check", action="store_true", help="存在过期判定时以退出码 1 结束")
     p.set_defaults(func=cmd_audit_stale)
+
+    p = sub.add_parser("batch", help="从卡片刷新审计批次输入（保留 id/文献/节，只换论断与引文）")
+    p.add_argument("--audit-dir", default=str(AUDIT_DIR), help="批次输入目录（默认 _probe/audit）")
+    p.add_argument("--card-dir", default=str(CARD_DIR), help="卡片目录（默认 _probe/full）")
+    p.add_argument("--only", help="只刷新指定批次号，逗号分隔（如 B1,B2）")
+    p.add_argument("--check", action="store_true", help="只报告会变动多少条，不写盘")
+    p.set_defaults(func=cmd_batch)
+
+    p = sub.add_parser("stamp-out", help="按 git 历史给已有判定输出补写输入快照戳（改过的不补）")
+    p.add_argument("--audit-dir", default=str(AUDIT_DIR), help="审计目录（默认 _probe/audit）")
+    p.add_argument("--check", action="store_true", help="存在必须重审的批次时以退出码 1 结束")
+    p.set_defaults(func=cmd_stamp_out)
 
     p = sub.add_parser("locate", help="回查一段文字的确切出处")
     p.add_argument("text")

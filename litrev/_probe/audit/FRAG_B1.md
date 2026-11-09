@@ -3,6 +3,7 @@
 > 判定标准：`litrev/_probe/AUDIT_CONTRACT.md`（含第五节口径修订）。
 > 全部条目已通过 `verify`：逐字存在、页码为 PDF 物理页。**不要判真伪与页码**，只判论断层。
 > 不要读任何 PDF 或 `full/*.md`。只依据下面给出的论断与引文判定。
+> 快照 sha1: 9ff1753875
 
 输出：只输出表格 + 一行合计，行序与本文件条目顺序一致。
 
@@ -24,20 +25,20 @@
 ### B1-03 ・ Borner1993_StructuralSimilarity_CBR ・ 一句话主张 ・ p.10
 
 - 论断：作者的核心主张是，只有在存在可据以把旧解正确改编到当前问题的知识时，才进行结构相似性评估。
-- 引文："Structural similarit y is assessed if and only if there is kno wledge a v ailable to adapt old solutions correctly" (Borner, 1993, p.10)
+- 引文："Structural similarity is assessed if and only if there is knowledge available to adapt old solutions correctly to the current problem of interest" (Borner, 1993, p.10)
 - 形式特征：未以句末标点结尾（源文件第 7 行）
 
 ### B1-04 ・ Borner1993_StructuralSimilarity_CBR ・ 相似性或检索机制 ・ p.6
 
 - 论断：检索流程先对新问题做低成本的表面相似性初始分析。
-- 引文："initial analysis of the new problem can b e done b y an inexp ensiv e surfac e similarity" (Borner, 1993, p.6)
-- 形式特征：首字母小写+未以句末标点结尾（源文件第 19 行）
+- 引文："The rst initial analysis of the new problem can be done by an inexpensive surface similarity assessment based on the attribute based descriptions" (Borner, 1993, p.6)
+- 形式特征：未以句末标点结尾（源文件第 19 行）
 
 ### B1-05 ・ Borner1993_StructuralSimilarity_CBR ・ 明确写出的局限 ・ p.10
 
 - 论断：作者明确写出，修改规则条件或权重的学习未被处理。
-- 引文："rule conditions or w eigh ts are not addressed" (Borner, 1993, p.10)
-- 形式特征：首字母小写+未以句末标点结尾（源文件第 31 行）
+- 引文："Learning e g the storage of new cases new rules and the application of techniques like Knuth Bendix completion to guarantee completeness of struc tural knowledge or learning of modi cation rule conditions or weights are not addressed in this implementation" (Borner, 1993, p.10)
+- 形式特征：未以句末标点结尾（源文件第 31 行）
 
 ### B1-06 ・ Liao1998_SimilarityMeasures_CBR ・ 问题域 ・ p.13
 
@@ -78,20 +79,20 @@
 ### B1-12 ・ Zhang2006_BP_CaseRetrieval_HighriseStructureForm ・ 一句话主张 ・ p.1
 
 - 论断：作者主张所提出的智能案例检索方法能够克服现有案例检索方法的若干不足。
-- 引文："this intelligent CRM can overcome such shortcomings" (Zhang, 2006, p.1)
-- 形式特征：首字母小写+未以句末标点结尾（源文件第 7 行）
+- 引文："this intelligent CRM can overcome such shortcomings as poor learning ability, low searching efficiency and intelligent level, etc., providing comparatively more scientific method for the CRM of high-rise structure IFO." (Zhang, 2006, p.1)
+- 形式特征：首字母小写（源文件第 7 行）
 
 ### B1-13 ・ Zhang2006_BP_CaseRetrieval_HighriseStructureForm ・ 相似性或检索机制 ・ p.2
 
 - 论断：相似度度量采用以属性相对欧氏加权距离为基础的方法。
-- 引文："the relative Euclidean weight distance of attributes (see" (Zhang, 2006, p.2)
-- 形式特征：首字母小写+未以句末标点结尾（源文件第 19 行）
+- 引文："To solve this problem and to be able to take into consideration everything important and necessary such as concurrence of quality, quantitative and fuzzy attributes and difference in dimension, this paper established a new similarity measure method based on the relative Euclidean weight distance of attributes (see expression (5))." (Zhang, 2006, p.2)
+- 形式特征：完整句（源文件第 19 行）
 
 ### B1-14 ・ Zhang2006_BP_CaseRetrieval_HighriseStructureForm ・ 明确写出的局限 ・ p.2
 
 - 论断：作者明确指出网络拓扑结构的确定缺乏成熟、系统的理论。
-- 引文："topological structure of networks instead of mature and" (Zhang, 2006, p.2)
-- 形式特征：首字母小写+未以句末标点结尾（源文件第 31 行）
+- 引文："There are only some experimental conclusions concerning ascertainment of topological structure of networks instead of mature and systematic theory." (Zhang, 2006, p.2)
+- 形式特征：完整句（源文件第 31 行）
 
 ### B1-15 ・ Zhao2023_ShearWall_GNN ・ 相似性或检索机制 ・ p.9
 

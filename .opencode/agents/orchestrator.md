@@ -49,6 +49,15 @@ mode: primary
 
 阶段顺序固定：`ex-` 抽取 → `checker` 引文核验 → `auditor-` 论断审计 → `qx-` 返工 → 重跑核验与审计。**跳过核验直接审计，审计结果作废**（审计默认输入已通过 verify）。
 
+**返工之后必做两件事，顺序不能颠倒**：
+
+```bash
+python litrev/litrev.py audit-stale   # 看哪些判定所依据的文字已经被改掉
+python litrev/litrev.py batch         # 把批次输入刷成卡片当前内容（会写新的快照 sha1）
+```
+
+`batch` 报「变动 N 条」的批次，必须**整批**重派 `auditor-<批次>` 重审，`N=0` 的不动。重审时派发提示词要写明「第一行原样抄输入里的 `> 快照 sha1: ...`」——没抄就等于来源不明，整批重做。**不许**在主控侧就地改 `out_*.md` 的判定（历史判定会无法复现）。
+
 ## 审计纪律
 
 - **闭卷**：一个批次一个 `auditor-<批次>`，只给它本批文件。批次划分见 `litrev/_probe/audit/BATCHES.json`。

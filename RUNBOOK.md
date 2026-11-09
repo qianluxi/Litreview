@@ -5,13 +5,15 @@
 >
 > 适用版本：OpenCode 1.18.25（桌面客户端，无 CLI）。
 
-## 一、开工自检（四条命令，缺一条都别派活）
+## 一、开工自检（六条命令，缺一条都别派活）
 
 ```bash
 python tools/gen_subagents.py --check          # 子代理定义与角色模板是否同步
 python litrev/litrev.py text --dry-run         # 语料文字层健康度（词/行 < 3 的文献不能派抽取工）
 python litrev/litrev.py index                  # 重建索引（改过 PDF 或 vocab 时）
 python litrev/litrev.py verify litrev/_probe/full/<文献>.md   # 引文层基线
+python litrev/litrev.py audit-count --check    # 判定表自洽（汇总只能照抄它）
+python litrev/litrev.py audit-stale --check    # 判定依据是否还成立（不为 0 就别说"已审 N 条"）
 ```
 
 判定：
@@ -54,6 +56,29 @@ python litrev/litrev.py verify litrev/_probe/full/<文献>.md   # 引文层基�
 
 > 为什么以文件为准：空 `<task_result>` 是 OpenCode 侧的已知现象（8 次派发 3 次）。把交付物做成文件之后，
 > 空结果只是"没写回话"，不丢工作；而 `task_result` 里的文字本身从来不是证据。
+
+### 三附：判定有效性（快照戳）
+
+`audit-count` 只保证"判定表自己自洽"，**不保证"判定判的是卡片现在的文字"**。卡片一返工，旧判定就悄悄失效，
+而汇总数字照样漂亮。所以三件事必须按顺序做：
+
+```bash
+python litrev/litrev.py audit-stale              # 1. 看哪些判定的依据已变（应为 0）
+python litrev/litrev.py batch --check            # 2. 看批次输入落后卡片多少条（--check 不写盘）
+python litrev/litrev.py batch                    # 3. 刷新批次输入，并写入「快照 sha1」戳
+python litrev/litrev.py stamp-out                # 4. 已有输出：能按 git 历史证明"产出后输入未变"的，补戳；证不了的列为待重审
+```
+
+判定：
+
+| 现象 | 含义 | 动作 |
+|---|---|---|
+| `audit-stale` 报"依据已过期" | 卡片改过，批次输入没跟上 | 先 `batch` 刷新，再**整批**重审，不要就地改 `out_*.md` |
+| `audit-stale` 报"输出没回写戳" | 判定产出后输入被改过，或没人抄戳 | 该批判定不能进结论，整批重审 |
+| `batch` 报"变动 N 条" | 这 N 条的判据已换 | N>0 的批次一律重审 |
+| 三个命令全绿（stale 0 过期、batch 0 变动、戳齐全） | 判定与卡片文字对得上 | 才可以把汇总写进报告 |
+
+审计员（`auditor-*`）的输出**第一行必须原样抄输入的 `> 快照 sha1: ...`**。抄错或漏抄 = 来源不明 = 整批重做。
 
 ## 四、空结果恢复规程（逐步照做）
 
