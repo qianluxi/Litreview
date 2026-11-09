@@ -1,0 +1,59 @@
+{
+  "_comment": "审计批次注册表。tools/gen_subagents.py 按此生成 auditor-<id>.md，每个批次只能读自己的输入、只能写自己的输出。新增批次：加一条，再跑生成器。",
+  "batches": [
+    {
+      "id": "frag_b1",
+      "input": "litrev/_probe/audit/FRAG_B1.md",
+      "output": "litrev/_probe/audit/out_B1.md",
+      "note": "C4 句中片段 B1（16 条）"
+    },
+    {
+      "id": "frag_b2",
+      "input": "litrev/_probe/audit/FRAG_B2.md",
+      "output": "litrev/_probe/audit/out_B2.md",
+      "note": "C4 句中片段 B2（16 条）"
+    },
+    {
+      "id": "frag_b3",
+      "input": "litrev/_probe/audit/FRAG_B3.md",
+      "output": "litrev/_probe/audit/out_B3.md",
+      "note": "C4 句中片段 B3（16 条）"
+    },
+    {
+      "id": "rest_b1",
+      "input": "litrev/_probe/audit/REST_B1.md",
+      "output": "litrev/_probe/audit/out_R1.md",
+      "note": "剩余 83 条复核 B1"
+    },
+    {
+      "id": "rest_b2",
+      "input": "litrev/_probe/audit/REST_B2.md",
+      "output": "litrev/_probe/audit/out_R2.md",
+      "note": "剩余 83 条复核 B2"
+    },
+    {
+      "id": "rest_b3",
+      "input": "litrev/_probe/audit/REST_B3.md",
+      "output": "litrev/_probe/audit/out_R3.md",
+      "note": "剩余 83 条复核 B3"
+    },
+    {
+      "id": "rest_b4",
+      "input": "litrev/_probe/audit/REST_B4.md",
+      "output": "litrev/_probe/audit/out_R4.md",
+      "note": "剩余 83 条复核 B4"
+    },
+    {
+      "id": "rest_b5",
+      "input": "litrev/_probe/audit/REST_B5.md",
+      "output": "litrev/_probe/audit/out_R5.md",
+      "note": "剩余 83 条复核 B5"
+    },
+    {
+      "id": "sample_s1",
+      "input": "litrev/_probe/audit/SAMPLE_S1.md",
+      "output": "litrev/_probe/audit/out_S1.md",
+      "note": "SUPPORTED 抽检 S1（seed=42, 12.2%）"
+    }
+  ]
+}

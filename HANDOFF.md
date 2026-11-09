@@ -2,7 +2,7 @@
 
 > **状态：已完成（2026-11-09）。T0–T5 全部执行完毕，不要重跑。**
 > 结果见 `reports/native-run-01.md`，第三方核验见 `reports/native-run-01-verification.md`。
-> **当前有效的任务清单是 `HANDOFF-02.md`（第二轮：C4 补齐）。**
+> **当前有效的任务清单是 `HANDOFF-03.md`（第三轮：权限/角色/验收收口）。`HANDOFF-02.md` 已完成，仅作存档。**
 
 > 面向对象：在 `F:\project\PyProject\Litreview` 打开的 OpenCode，默认 agent = `orchestrator`。
 > 生成时间：2026-11-09。上游状态见 `litrev/_probe/RESULT.md`（技术层 9/9 + 4/4 PASS）与 `litrev/_probe/AUDIT_RESULT.md`（论断层审计 5/5 检出）。

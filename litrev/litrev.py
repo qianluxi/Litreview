@@ -9,16 +9,20 @@ litrev — 文献综述流水线的可机械验证层
   3) 失败可见：每条给出「标注 vs 实际」，便于回灌给生成方
 
 子命令：
-  index    为 PDF 目录建索引（页级文本 + 印张页码偏移 + 重复/扫描件识别）
+  index    为 PDF 目录建索引（页级文本 + 印张页码偏移 + 重复/扫描件识别 + 文字层健康度）
+  text     把 PDF 逐页导出为带页标记的 txt（词级坐标版面重建，修逐词断行）
   locate   给一段（可能是转述的）文字，找回它在原文中的确切句子与页码
   verify   扫描 Markdown 稿，核对每条引文与每条引用标注
   matrix   校验证据矩阵 xlsx：行数、篇目对应、重复、缺失
+  sample   按固定比例与种子抽条目，生成可复现的闭卷审计批次
 
 用法示例：
   python litrev.py index
+  python litrev.py text --only Borner1993_StructuralSimilarity_CBR
   python litrev.py locate "knowledge available to adapt old solutions"
   python litrev.py verify ../notes/文献综述_初稿_v1.md
   python litrev.py matrix ../notes/证据矩阵_v2_定稿.xlsx
+  python litrev.py sample ../_probe/full --rate 0.12 --seed 42 --out ../_probe/audit/SUPPORTED_S1.md
 """
 
 import argparse
@@ -89,6 +93,95 @@ def fuzzy(a: str, b: str) -> float:
     return difflib.SequenceMatcher(None, a, b).ratio()
 
 
+# ---------------------------------------------------------------- 版面重建
+# 有些 PDF 的文字层把每个词、甚至半个词登记成独立「行」（Borner1993 实测 1.03 词/行），
+# page.get_text() 于是逐词换行，按行取句只能拿到碎片。这里改用词级坐标重建阅读顺序：
+#   1) 以 block 为原子单位，保留段落边界，避免两栏互相穿插
+#   2) block 内按 y 聚成视觉行，行内按 x 排序；间距小于阈值不插空格（修 'Similarit' + 'y'）
+#   3) block 之间用 XY-cut：先找栏缝竖切，再按 y 间距横切
+
+
+def _gutter_cut(items, axis, min_gutter):
+    """沿 axis（0=x, 1=y）找一条不被任何 item 跨越的缝，切成两侧。"""
+    lo, hi = axis, axis + 2
+    spans = sorted((i[lo], i[hi]) for i in items)
+    merged = []
+    for a, b in spans:
+        if merged and a <= merged[-1][1] + 1e-6:
+            merged[-1][1] = max(merged[-1][1], b)
+        else:
+            merged.append([a, b])
+    for k in range(len(merged) - 1):
+        if merged[k + 1][0] - merged[k][1] >= min_gutter:
+            cut = (merged[k][1] + merged[k + 1][0]) / 2
+            near = [i for i in items if i[hi] <= cut]
+            far = [i for i in items if i[lo] >= cut]
+            if near and far and len(near) + len(far) == len(items):
+                return near, far
+    return None
+
+
+def _xy_cut(items, min_gutter=8.0, depth=0):
+    """items: [(x0, y0, x1, y1, payload)] -> 按阅读顺序重排。"""
+    if len(items) <= 1 or depth > 6:
+        return sorted(items, key=lambda i: (round(i[1]), i[0]))
+    for axis in (0, 1):                      # 先竖切（栏），再横切（段）
+        parts = _gutter_cut(items, axis, min_gutter)
+        if parts:
+            left, right = parts
+            return (_xy_cut(left, min_gutter, depth + 1)
+                    + _xy_cut(right, min_gutter, depth + 1))
+    return sorted(items, key=lambda i: (round(i[1]), i[0]))
+
+
+def _block_lines(words, ytol=2.5, space_gap=1.0):
+    """把一个 block 内的词重建为若干视觉行。"""
+    rows = {}
+    for w in words:
+        rows.setdefault(round(((w[1] + w[3]) / 2) / ytol), []).append(w)
+    out = []
+    for key in sorted(rows):
+        buf, prev_x1 = "", None
+        for w in sorted(rows[key], key=lambda x: x[0]):
+            if prev_x1 is not None and w[0] - prev_x1 > space_gap:
+                buf += " "
+            buf += w[4]
+            prev_x1 = w[2]
+        line = buf.strip()
+        if line:
+            out.append(line)
+    return out
+
+
+def page_layout_text(page):
+    """按版面重建单页正文（词级坐标）。无词时退回 get_text()。"""
+    words = page.get_text("words")
+    if not words:
+        return page.get_text()
+    by_block = {}
+    for w in words:
+        by_block.setdefault(w[5], []).append(w)
+    items = [(b[0], b[1], b[2], b[3], by_block[b[5]])
+             for b in page.get_text("blocks") if b[5] in by_block]
+    if not items:
+        return page.get_text()
+    lines = []
+    for item in _xy_cut(items):
+        lines.extend(_block_lines(item[4]))
+    return "\n".join(lines)
+
+
+def text_health(text):
+    """文字层健康度：词/行 与 短行占比。词/行 < 3 基本可判定逐词断行。"""
+    lines = [l for l in text.splitlines() if l.strip()]
+    if not lines:
+        return {"lines": 0, "words": 0, "wpl": 0.0, "short": 1.0}
+    words = sum(len(l.split()) for l in lines)
+    short = sum(1 for l in lines if len(l.split()) <= 3) / len(lines)
+    return {"lines": len(lines), "words": words,
+            "wpl": round(words / len(lines), 2), "short": round(short, 3)}
+
+
 # ---------------------------------------------------------------- 文件名与作者
 
 YEAR_RE = re.compile(r"(19|20)\d{2}")
@@ -125,6 +218,73 @@ def surnames_for(fname: str, aliases: dict):
 def surname_tokens(alias_str: str):
     toks = re.split(r"[^a-z]+", alias_str.lower())
     return [t for t in toks if len(t) >= 4]
+
+
+# ---------------------------------------------------------------- 导出正文
+
+
+def cmd_text(args):
+    """把 PDF 逐页导出为带 <<<PAGE n>>> 标记的 txt，供 extractor 读。
+
+    默认用版面重建（词级坐标）而不是 page.get_text()：后者在逐词断行的 PDF 上
+    会把一句话拆成几十行，抽取方按行取句只能得到碎片。
+    """
+    import pymupdf
+
+    pdf_dir = Path(args.dir).resolve()
+    out_dir = Path(args.out).resolve() if args.out else (BASE / "_probe" / "texts")
+    only = {s.strip() for s in args.only.split(",")} if args.only else None
+    files = sorted(pdf_dir.glob("*.pdf"))
+    if only:
+        files = [f for f in files if f.stem in only]
+    if not files:
+        print(f"[!] {pdf_dir} 下没有匹配的 PDF")
+        return 1
+
+    rows = []
+    if not args.dry_run:
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+    for f in files:
+        doc = pymupdf.open(f)
+        pages, raw_all = [], []
+        for i, pg in enumerate(doc):
+            raw = pg.get_text()
+            lay = page_layout_text(pg) if args.layout else raw
+            raw_all.append(raw)
+            pages.append(f"<<<PAGE {i + 1}>>>\n{lay.strip()}\n")
+        n = len(pages)
+        doc.close()
+
+        body = "\n".join(pages)
+        before = text_health("\n".join(raw_all))
+        after = text_health(body)
+        rows.append((f.stem, n, before, after))
+
+        if not args.dry_run:
+            header = (f"# SOURCE: {f.name}\n"
+                      f"# PDF 物理页数: {n}\n\n")
+            (out_dir / (f.stem + ".txt")).write_text(header + body, encoding="utf-8")
+
+    print(f"{'文献':52s} {'页':>3s}  词/行 (raw→layout)   短行占比")
+    print("-" * 96)
+    bad = []
+    for stem, n, b, a in rows:
+        mark = "  ← 仍碎片" if a["wpl"] < 3 else ""
+        print(f"{stem[:52]:52s} {n:3d}   {b['wpl']:5.2f} → {a['wpl']:5.2f}"
+              f"        {b['short']*100:5.1f}% → {a['short']*100:5.1f}%{mark}")
+        if a["wpl"] < 3:
+            bad.append(stem)
+
+    if args.dry_run:
+        print("\n(dry-run：未写入文件)")
+    else:
+        print(f"\n已写入 {out_dir}")
+    if bad:
+        print("\n[!] 版面重建后仍低于 3 词/行，这批文字层坏到无法按行取句，必须 OCR 或视觉抄录：")
+        for s in bad:
+            print(f"  - {s}")
+    return 0
 
 
 # ---------------------------------------------------------------- 建索引
@@ -167,15 +327,24 @@ def cmd_index(args):
             print(f"[!] 无法打开 {f.name}: {e}")
             continue
 
-        pages, keys = [], []
+        pages, keys, lay_texts = [], [], []
         for i, pg in enumerate(doc):
             k = key_of(pg.get_text())
+            lay = page_layout_text(pg)
+            kb = key_of(lay)
             keys.append(k)
-            pages.append({"p": i + 1, "k": k})
+            lay_texts.append(lay)
+            rec = {"p": i + 1, "k": k}
+            # 版面重建后的键只在它比 raw 键更「完整」时另存一份：
+            # 两栏乱序、逐词断行都会让两者不同；正常页两键一致，不占空间
+            if kb and kb != k:
+                rec["kb"] = kb
+            pages.append(rec)
 
         total_chars = sum(len(k) for k in keys)
         empty = sum(1 for k in keys if len(k) < 50)
         offset = detect_printed_offset(doc)
+        health = text_health("\n".join(lay_texts))
 
         sig = key_of("".join(keys[:2]))[:5000]
         corpus[f.name] = {"pages": pages, "offset": offset, "n": len(pages)}
@@ -185,8 +354,11 @@ def cmd_index(args):
             "pages": len(pages),
             "chars": total_chars,
             "empty_pages": empty,
+            "words_per_line": health["wpl"],
+            "short_line_ratio": health["short"],
             "printed_offset": "" if offset is None else offset,
             "scanned": "是" if total_chars < len(pages) * 120 else "",
+            "fragmented": "是" if health["wpl"] < 3 else "",
             "duplicate_of": "",
         })
         doc.close()
@@ -227,12 +399,17 @@ def cmd_index(args):
 
     uniq = [m for m in manifest if not m["duplicate_of"]]
     scanned = [m for m in manifest if m["scanned"]]
+    frag = [m for m in manifest if m["fragmented"]]
     print(f"索引完成：{len(manifest)} 个 PDF，去重后 {len(uniq)} 篇，共 {sum(m['pages'] for m in manifest)} 页")
     print(f"索引文件：{IDX_FILE}  ({IDX_FILE.stat().st_size/1e6:.1f} MB)")
     if scanned:
         print("\n无文字层 / 抽取几乎为空（必须 OCR 或人工核对，不可交给自动校验）：")
         for m in scanned:
             print(f"  - {m['file']}  ({m['pages']} 页，仅 {m['chars']} 字符)")
+    if frag:
+        print("\n文字层逐词断行（版面重建后仍 < 3 词/行，按行取句必得碎片，先跑 text 子命令核对）：")
+        for m in frag:
+            print(f"  - {m['file']}  ({m['words_per_line']} 词/行，短行 {m['short_line_ratio']*100:.0f}%)")
     if len(manifest) != len(uniq):
         print("\n内容重复（保留一份即可，矩阵里会出现重复行）：")
         for m in manifest:
@@ -261,7 +438,7 @@ def search_exact(corpus, qkey, only=None):
         if only and fname not in only:
             continue
         for pg in rec["pages"]:
-            if qkey in pg["k"]:
+            if qkey in pg["k"] or qkey in pg.get("kb", ""):
                 hits.append((fname, pg["p"]))
     return hits
 
@@ -616,6 +793,109 @@ def write_xlsx(rows, path):
     wb.save(path)
 
 
+# ---------------------------------------------------------------- 抽检
+
+
+ENTRY_DEF = re.compile(r"^\s*[-*]\s*论断[:：]\s*(.+?)\s*$")
+ENTRY_QUOTE = re.compile(r"^\s*[-*]\s*引文[:：]\s*(.+?)\s*$")
+HEADING = re.compile(r"^(#{1,6})\s*(.+?)\s*$")
+
+
+def parse_note_entries(md):
+    """从笔记里抽出 (命题类别, 论断, 引文行)。抽检只认这种成对结构。"""
+    entries, section, pending = [], "", None
+    for raw in md.splitlines():
+        m = HEADING.match(raw)
+        if m:
+            section = m.group(2)
+            pending = None
+            continue
+        m = ENTRY_DEF.match(raw)
+        if m:
+            pending = m.group(1)
+            continue
+        m = ENTRY_QUOTE.match(raw)
+        if m and pending:
+            entries.append({"section": section, "claim": pending, "quote": m.group(1)})
+            pending = None
+    return entries
+
+
+def quote_fields(line):
+    """'<引文> (Author, 2023, p.7)' -> (引文, 出处, 页)"""
+    q, tail = line, ""
+    m = re.match(r'^["\u201c](.+?)["\u201d]\s*(.*)$', line)
+    if m:
+        q, tail = m.group(1), m.group(2)
+    pm = PAGE_RE.search(tail)
+    page = int(pm.group(1)) if pm else None
+    src = re.sub(r"[（()）]", "", tail)
+    src = re.sub(r",?\s*p{1,2}\.\s*\d{1,4}.*$", "", src).strip(" ,，")
+    return q, src, page
+
+
+def cmd_sample(args):
+    """从笔记里按固定比例、固定种子抽条目，生成可复现的闭卷审计批次。"""
+    import random
+
+    paths = []
+    for p in args.path:
+        p = Path(p)
+        if not p.exists():
+            print(f"[!] 路径不存在：{p}")
+            return 2
+        if p.is_dir():
+            paths.extend(sorted(x for x in p.glob("*.md") if "引文核验" not in x.name))
+        else:
+            paths.append(p)
+    if not paths:
+        print("[!] 没有可抽检的笔记")
+        return 1
+
+    pool = []
+    for p in paths:
+        for e in parse_note_entries(p.read_text(encoding="utf-8")):
+            q, src, page = quote_fields(e["quote"])
+            if len(re.findall(r"[A-Za-z]", q)) < 20:      # 与 verify 同门槛，太短的它也不判
+                continue
+            pool.append({"doc": p.stem, "section": e["section"], "claim": e["claim"],
+                         "quote": q, "src": src, "page": page})
+    if not pool:
+        print("[!] 未解析到「论断 + 引文」成对条目，检查笔记格式")
+        return 1
+
+    k = max(args.min, round(len(pool) * args.rate))
+    k = min(k, len(pool))
+    picked = sorted(random.Random(args.seed).sample(range(len(pool)), k))
+
+    lines = [f"# 抽检批次：{args.name}", "",
+             f"> 由 `python litrev.py sample` 生成，seed={args.seed}、rate={args.rate:.0%}，可复现。",
+             f"> 来源 {len(paths)} 份笔记、共 {len(pool)} 条可抽条目，抽 {k} 条。",
+             "> **闭卷**：只给下列五元组，不要回读原文或其它批次。", "",
+             "## 合计", "",
+             "| 项 | 数 |", "|---|---|", f"| 候选条目 | {len(pool)} |",
+             f"| 抽检条目 | {k} |", f"| 抽检比例 | {k/len(pool):.1%} |", "",
+             "## 待判条目", ""]
+    for i, idx in enumerate(picked, 1):
+        e = pool[idx]
+        lines.append(f"### {args.prefix}{i:02d} ・ {e['doc']} ・ {e['section'] or '-'} ・ p.{e['page']}")
+        lines.append("")
+        lines.append(f"- 论断：{e['claim']}")
+        tail = e["src"] or "?"
+        lines.append(f"- 引文：\"{e['quote']}\" ({tail}, p.{e['page']})")
+        lines.append("")
+
+    text = "\n".join(lines)
+    if args.out:
+        out = Path(args.out)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(text, encoding="utf-8")
+        print(f"抽检 {k}/{len(pool)} 条（{k/len(pool):.1%}，seed={args.seed}）→ {out}")
+    else:
+        print(text)
+    return 0
+
+
 def cmd_locate(args):
     corpus = load_corpus()
     found = find_quote(corpus, args.text)
@@ -781,6 +1061,27 @@ def main():
     p = sub.add_parser("index", help="为 PDF 目录建索引")
     p.add_argument("--dir", default=str(PDF_DIR))
     p.set_defaults(func=cmd_index)
+
+    p = sub.add_parser("text", help="把 PDF 逐页导出为带页标记的 txt（版面重建）")
+    p.add_argument("--dir", default=str(PDF_DIR))
+    p.add_argument("--out", default=None, help="输出目录（默认 litrev/_probe/texts）")
+    p.add_argument("--only", default=None, help="仅处理这些文件名主干，逗号分隔")
+    p.add_argument("--layout", action="store_true", default=True,
+                   help="按词级坐标重建阅读顺序（默认开）")
+    p.add_argument("--raw", dest="layout", action="store_false",
+                   help="退回 page.get_text() 逐页直出")
+    p.add_argument("--dry-run", action="store_true", help="只报健康度，不写文件")
+    p.set_defaults(func=cmd_text)
+
+    p = sub.add_parser("sample", help="按固定比例与种子抽检，生成闭卷审计批次")
+    p.add_argument("path", nargs="+", help="笔记文件或目录")
+    p.add_argument("--rate", type=float, default=0.12, help="抽检比例（默认 0.12）")
+    p.add_argument("--min", type=int, default=1, help="至少抽几条")
+    p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--name", default="SUPPORTED 抽检", help="批次名")
+    p.add_argument("--prefix", default="S", help="条目编号前缀")
+    p.add_argument("--out", default=None, help="写入文件；不给则打印")
+    p.set_defaults(func=cmd_sample)
 
     p = sub.add_parser("locate", help="回查一段文字的确切出处")
     p.add_argument("text")

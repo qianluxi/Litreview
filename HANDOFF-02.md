@@ -1,5 +1,7 @@
 # 交接给 OpenCode：第二轮（C4 补齐）
 
+> **状态：已执行完毕，仅作存档，不要重跑。当前有效的任务清单是 `HANDOFF-03.md`。**
+
 > 面向：在 `F:\project\PyProject\Litreview` 打开的 OpenCode，默认 agent = `orchestrator`。
 > 生成时间：2026-11-09。上游：`reports/native-run-01-verification.md`（第三方核验，非本轮执行者所写）。
 

@@ -8,7 +8,7 @@
 参考文献原文/*.pdf
 
 # 由 PDF 逐页抽出的整篇正文（页间带 <<<PAGE n>>> 标记）
-# 重建：PyMuPDF 逐页 page.get_text()，页前插入 `<<<PAGE n>>>`，写入 litrev/_probe/texts/
+# 重建：python litrev/litrev.py text（词级坐标版面重建；--raw 退回逐页 get_text()）
 litrev/_probe/texts/
 
 # 归一化全文索引（去空白后的正文，供 verify 做子串匹配）

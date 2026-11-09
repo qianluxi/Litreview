@@ -59,8 +59,21 @@ cd papers/litrev
 python litrev.py index
 ```
 
-产出 `_index/corpus.json.gz`（页级检索键）与 `_index/manifest.csv`（页数、印张偏移、扫描件、重复件）。
-索引会自己识别三类麻烦：**无文字层**（必须 OCR）、**内容重复**（网页版/期刊版）、**印张页码偏移**。
+产出 `_index/corpus.json.gz`（页级检索键）与 `_index/manifest.csv`（页数、印张偏移、扫描件、重复件、文字层词/行）。
+索引会自己识别四类麻烦：**无文字层**（必须 OCR）、**内容重复**（网页版/期刊版）、**印张页码偏移**、
+**逐词断行**（词/行 < 3，按行取句必得碎片）。
+
+### 0.5 导出正文（交抽取工之前）
+
+```bash
+python litrev.py text                 # 全部 PDF → _probe/texts/<文献>.txt（带 <<<PAGE n>>>）
+python litrev.py text --dry-run       # 只报健康度：raw → layout 的词/行变化
+python litrev.py text --only <文件名主干> --raw   # 退回 page.get_text()，仅在对照时用
+```
+
+为什么不是直接 `page.get_text()`：有些 PDF 把每个词、甚至半个词登记成独立「行」（`Borner1993` 实测 1.03 词/行），
+逐页直出后按行取句只能得到碎片。`text` 用词级坐标重建阅读顺序（block 内按 y 聚行、block 间 XY-cut 分栏），
+同一篇能回到 7.60 词/行。索引里同时保留 raw 键与版面键，换语料不会推翻已有判定。
 
 ### 1 生成
 
@@ -167,3 +180,17 @@ python litrev.py matrix 表.xlsx --sheet 证据矩阵_v2 --col 2
 3. **它仍看不见断章取义**：闭卷审计只判断言与引文的关系，原文下一句就反驳的情况抓不到。这条只能靠开卷复核或人读。
 
 标定数据：支撑轴与人工基准 11/13（两次独立派发之间 13/13 一致），变异检出 5/5，详见 `_probe/AUDIT_RESULT.md`。
+
+### 抽检（2026-11-09 加入，机械可复现）
+
+`SUPPORTED` 是分诊结果，不是合格证。每轮审计后用固定种子抽 10–15%：
+
+```bash
+python litrev.py sample ../_probe/full --rate 0.12 --seed 42 \
+  --name "SUPPORTED 抽检 S1" --out ../_probe/audit/SAMPLE_S1.md
+```
+
+- 种子与比例都写进批次文件头，**同一批数据重跑必须抽出同一组条目**；
+- 抽检出现"该判 PARTIAL 却给 SUPPORTED"→ 整批重审，不逐条修补（逐条修会把系统性偏松掩盖成偶发）；
+- 新批次要在 `_probe/audit/BATCHES.json` 登记并跑 `tools/gen_subagents.py`，才会有对应的 `auditor-<批次>`（它只能读这一批、只能写这一批的输出）。
+
