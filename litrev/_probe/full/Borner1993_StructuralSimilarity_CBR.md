@@ -20,8 +20,7 @@
 
 ## 5. 系统形态
 - 论断：该方法以原型形式实现于 SynTerm。
-- 引文："Our approach is prototypically implemented in SynTerm for Synthesis by using Term based knowledge representations and SynGraph for Synthesis by using" (Borner, 1993, p.8)
-- 引文："Graph based representations" (Borner, 1993, p.9)
+- 引文："SynTerm and SynGraph supply the system with solutions for special design problems" (Borner, 1993, p.9)
 
 ## 6. 评价方式
 - 论断：评价方式是报告初期实验结果对上述主张的支持，未给出数据集规模或指标数值。

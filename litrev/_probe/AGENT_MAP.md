@@ -48,4 +48,4 @@
 | Agent | 职责 |
 |---|---|
 | `orchestrator` | 主控（primary，手写，不生成） |
-| `checker` | 核验（bash 白名单只放行 verify/matrix/locate） |
+| `checker` | 核验（bash 白名单只放行 verify/matrix/locate/audit-count） |

@@ -192,14 +192,16 @@ def build(roles):
 
     if "checker" in roles:
         files[".opencode/agents/checker.md"] = agent_md(
-            "核验员。独立运行 litrev.py verify/matrix/locate，把判定码翻译成可执行的待改清单。只读只跑，不改任何稿件。",
+            "核验员。独立运行 litrev.py verify/matrix/locate/audit-count/audit-stale，把判定码翻译成可执行的待改清单。只读只跑，不改任何稿件。",
             roles["checker"],
             [("read", [("*", "allow")]),
              ("edit", [("*", "deny")]),
              ("bash", [("*", "deny"),
                        ("python litrev/litrev.py verify*", "allow"),
                        ("python litrev/litrev.py matrix*", "allow"),
-                       ("python litrev/litrev.py locate*", "allow")]),
+                       ("python litrev/litrev.py locate*", "allow"),
+                       ("python litrev/litrev.py audit-count*", "allow"),
+                       ("python litrev/litrev.py audit-stale*", "allow")]),
              ("grep", [("*", "allow")]),
              ("glob", [("*", "allow")]),
              ("webfetch", "deny"),
@@ -226,7 +228,7 @@ def map_markdown(rows, batch_rows):
     lines += ["", "## 固定角色", "",
               "| Agent | 职责 |", "|---|---|",
               "| `orchestrator` | 主控（primary，手写，不生成） |",
-              "| `checker` | 核验（bash 白名单只放行 verify/matrix/locate） |", ""]
+              "| `checker` | 核验（bash 白名单只放行 verify/matrix/locate/audit-count） |", ""]
     return "\n".join(lines)
 
 

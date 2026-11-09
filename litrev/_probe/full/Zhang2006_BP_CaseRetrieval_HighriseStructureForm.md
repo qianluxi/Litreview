@@ -11,8 +11,8 @@
 - 引文："High-rise structural form selection optimization is an important strategic problem concerning synthetic performance of building structure." (Zhang, 2006, p.1)
 
 ## 3. 案例或数据的表示形式
-- 论断：案例以向量形式送入网络的输入层。
-- 引文："the function of the input layer is inputting vectors {xik4m and {Yk}m (k [l,m] m c is the upper limit of m. ) of the m, m, two case samples Xi and Y." (Zhang, 2006, p.2)
+- 论断：案例先按特征属性刻画、再转成目标案例。
+- 引文："First, CBR needs to distinguish the characteristic attributes of the significant cases to form selection and then transforms them into target cases." (Zhang, 2006, p.1)
 
 ## 4. 相似性或检索机制
 - 论断：相似度度量采用以属性相对欧氏加权距离为基础的方法。
@@ -28,4 +28,4 @@
 
 ## 7. 明确写出的局限
 - 论断：作者明确指出网络拓扑结构的确定缺乏成熟、系统的理论。
-- 引文："experimental conclusions concerning ascertainment of topological structure of networks instead of mature and systematic theory." (Zhang, 2006, p.2)
+- 引文："There are only some experimental conclusions concerning ascertainment of topological structure of networks instead of mature and systematic theory." (Zhang, 2006, p.2)

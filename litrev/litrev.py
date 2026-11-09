@@ -1040,6 +1040,105 @@ def cmd_audit_count(args):
     return 0
 
 
+BATCH_IN_RE = re.compile(r"^###\s+(\S+)\s*・\s*(\S+)\s*・\s*(\S+)")
+CARD_DIR = BASE / "_probe" / "full"
+
+
+def parse_batch_inputs(dirpath):
+    """读 FRAG_B*/REST_B* 批次输入 -> {id: {doc, sec, claim, quote, src}}。"""
+    items = {}
+    for p in sorted(Path(dirpath).glob("*.md")):
+        if not re.match(r"^(FRAG|REST)_B\d+\.md$", p.name):
+            continue
+        text = p.read_text(encoding="utf-8")
+        for blk in re.split(r"^### ", text, flags=re.M)[1:]:
+            m = BATCH_IN_RE.match("### " + blk.splitlines()[0])
+            if not m:
+                continue
+            q = re.search(r'^- 引文："(.+?)"\s*\(', blk, re.M)
+            c = re.search(r"^- 论断：(.+)$", blk, re.M)
+            items[m.group(1)] = {
+                "doc": m.group(2), "sec": m.group(3),
+                "claim": (c.group(1).strip() if c else ""),
+                "quote": (q.group(1) if q else ""), "src": p.name,
+            }
+    return items
+
+
+def parse_cards(dirpath):
+    """读 full/*.md 卡片 -> {doc: {节名: (论断, [引文...])}}。"""
+    cards = {}
+    for p in sorted(Path(dirpath).glob("*.md")):
+        if "引文核验" in p.name:
+            continue
+        text = p.read_text(encoding="utf-8")
+        secs = {}
+        for blk in re.split(r"^## \d+\.\s*", text, flags=re.M)[1:]:
+            title = blk.splitlines()[0].strip()
+            c = re.search(r"^- 论断：(.+)$", blk, re.M)
+            secs[title] = (c.group(1).strip() if c else "",
+                           re.findall(r'^- 引文："(.+?)"\s*\(', blk, re.M))
+        cards[p.stem] = secs
+    return cards
+
+
+def cmd_audit_stale(args):
+    """校验「判定所依据的引文/论断」是否仍是卡片当前的内容。
+
+    存在的理由：批次输入是快照，卡片会被返工改写。快照不改，判定就悄悄变成
+    「对一个已经不存在的引文做的判断」，而 audit-count 照样给出漂亮的数字。
+    """
+    items = parse_batch_inputs(args.audit_dir)
+    cards = parse_cards(args.card_dir)
+    if not items:
+        print(f"[!] 没读到批次输入（{args.audit_dir}）")
+        return 2
+
+    drift, missing = [], []
+    for i, it in items.items():
+        secs = cards.get(it["doc"])
+        if secs is None:
+            missing.append((i, it["doc"], "卡片不存在"))
+            continue
+        got = secs.get(it["sec"])
+        if got is None:
+            missing.append((i, it["doc"], f"卡片无「{it['sec']}」节"))
+            continue
+        claim, quotes = got
+        q_ok = it["quote"] in quotes
+        c_ok = claim == it["claim"]
+        if not (q_ok and c_ok):
+            why = "引文已改" if not q_ok else ""
+            if not c_ok:
+                why = (why + " 论断已改").strip()
+            drift.append((i, it["doc"], it["sec"], why))
+
+    n_quote = sum(len(q) for s in cards.values() for _, q in s.values())
+    n_sec = sum(len(s) for s in cards.values())
+    print(f"批次输入 {len(items)} 条 · 卡片 {len(cards)} 篇 / {n_sec} 节 / {n_quote} 条引文")
+    print(f"判定依据与卡片一致：{len(items) - len(drift) - len(missing)}/{len(items)}")
+
+    if drift:
+        print()
+        print("表：引文或论断在判定之后被改过（这些判定作废，须重审）")
+        print(f"{'id':<8}{'文献':<44}{'节':<14}变动")
+        print("-" * 82)
+        for i, doc, sec, why in drift:
+            print(f"{i:<8}{doc[:42]:<44}{sec:<14}{why}")
+    if missing:
+        print()
+        print("[!] 批次条目找不到对应的卡片位置：")
+        for i, doc, why in missing:
+            print(f"  - {i}  {doc}  {why}")
+
+    if not drift and not missing:
+        print("\n✓ 全部判定的依据与卡片当前内容一致。")
+        return 0
+    print(f"\n[!] {len(drift)} 条判定的依据已过期，{len(missing)} 条对不上卡片。")
+    print("    重审请另建批次（不要在旧 out_*.md 上就地改判）。")
+    return 1 if args.check else 0
+
+
 def cmd_locate(args):
     corpus = load_corpus()
     found = find_quote(corpus, args.text)
@@ -1232,6 +1331,12 @@ def main():
     p.add_argument("--prefixes", default="B,R", help="纳入的批次前缀，逗号分隔（默认 B,R）")
     p.add_argument("--check", action="store_true", help="合计行与明细不一致时以退出码 1 结束")
     p.set_defaults(func=cmd_audit_count)
+
+    p = sub.add_parser("audit-stale", help="校验判定所依据的引文/论断是否仍是卡片当前内容")
+    p.add_argument("--audit-dir", default=str(AUDIT_DIR), help="批次输入目录（默认 _probe/audit）")
+    p.add_argument("--card-dir", default=str(CARD_DIR), help="卡片目录（默认 _probe/full）")
+    p.add_argument("--check", action="store_true", help="存在过期判定时以退出码 1 结束")
+    p.set_defaults(func=cmd_audit_stale)
 
     p = sub.add_parser("locate", help="回查一段文字的确切出处")
     p.add_argument("text")
