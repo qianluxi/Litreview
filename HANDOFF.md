@@ -32,7 +32,7 @@
 
 ### T0 能力探测 + 单篇冒烟（1 个 agent）
 
-- 派 1 个 `extractor`，目标 `litrev/参考文献原文/Zhang2006_BP_CaseRetrieval_HighriseStructureForm.pdf`（5 页，最短）。
+- 派 1 个 `extractor`，目标 `参考文献原文/Zhang2006_BP_CaseRetrieval_HighriseStructureForm.pdf`（5 页，最短；注意 PDF 在项目根，不在 `litrev/` 下，与 `litrev.py` 的 `PDF_DIR = BASE.parent / "参考文献原文"` 一致）。
 - 只要 3 条引文，输出到 `litrev/_probe/run1/Zhang2006_BP_CaseRetrieval_HighriseStructureForm.md`。
 - 目的有两个：验证 `task` 派发链路通；验证 extractor 有没有办法读出 PDF 文本。
 - **验收**：① 文件生成且只生成这一个；② 3 条引文带 PDF 物理页；③ 主控运行 `python litrev.py verify _probe/run1/Zhang2006_....md` 退出码 0。
@@ -89,7 +89,7 @@
 
 ```
 task(extractor):
-  读：litrev/参考文献原文/<文献>.pdf（只读这一篇）
+  读：参考文献原文/<文献>.pdf（只读这一篇；PDF 在项目根，不在 litrev/ 下）
   写：litrev/_probe/full/<文献>.md（只写这一个文件）
   契约：litrev/_probe/CONTRACT_P1.md
   字段：7 个字段，每字段一条逐字引文 + PDF 物理页

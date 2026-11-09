@@ -374,3 +374,7 @@ cur = con.cursor()
 ## 10. 一句话交接
 
 **技术层：T0 的 PDF 直读不可用，已按 HANDOFF 切到主控预导出 txt；T0–T5 全通，引文层 143/143 PASS，四个印张偏移陷阱全部报对物理页。质量层：run1 12 条 C4 审计 7 SUPPORTED / 5 PARTIAL / 0 UNSUPPORTED，全量 131 条还没审；下一轮最该做的不是再抽一批，而是给 19 篇全量卡片补 C4 审计，并把 MaherGomez1996 之类短片段引文扩到自足。**
+
+---
+
+**核验**：本报告已由第三方复核，见 `reports/native-run-01-verification.md`（2026-11-09）。两处需并读：§1.2 的 PDF 报错**归因不准确**——`read` 实为 `status=completed` 且 `metadata.loaded=[]`（工具自称成功、实际 0 页加载），报错只出现在模型侧附件，而非工具返回；§5.3 的 B3 起跑差实测为 0.840s（原文写 ≤0.82s）。其余数字均经双路径复现。
