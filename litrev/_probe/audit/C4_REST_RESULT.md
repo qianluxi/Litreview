@@ -221,3 +221,9 @@ out_R1.md  / out_R2.md  / out_R3.md  / out_R4.md  / out_R5.md   原始判定表
 - 自足轴变化：B2-01、B2-05、B2-08 返工后转为 SELF；B2-09、B3-02、B3-16 按第三方核验报告判 SELF；B3-10、B3-11 复核后转为 DEPENDENT；B3-03 仍标 DEPENDENT 且阻塞。DEPENDENT 由 17 变为 13。
 - 口径：本表是「第三方核验 + 3 条返工复核 + 3 条 SUPPORTED 抽检复核」的合并状态，不是对 131 条全部重跑 auditor 的结果；B3-03 的 `DEPENDENT` 是「不可用」的占位，不是可修的自足问题。抽检为单 auditor 闭卷，样本 n=3，不能据此给出总体比例。抽检原始表：`out_SAMPLE3.md`；返工复核原始表：`out_REWORK3.md`。
 - 结论：**131 条判定表仍是分诊单，不是合格证**；45 条 PARTIAL + 2 条 UNSUPPORTED 需人看，84 条 SUPPORTED 仍需 10%–15% 抽检。
+
+## 八、T2 抽检后（round-03）
+
+- 2026-11-09 T2 S1 抽检触发 `frag_b3` 整批重审（`out_B3.md` 已覆盖）；本文件 §七 为 T2 前状态。
+- 最新 131 条口径：S84 / P46 / U1；SELF112 / D19（非 SUPPORTED 47/131 = 35.9%）。
+- **数字来源**：`python litrev/litrev.py audit-count`（唯一口径）。本节初版写的 83/47/1、115/16 是手算错误，已按命令输出更正；§七 的「S88/P42/U1 变为 S84/P45/U2」同样是手算产物，实际 `out_*.md` 在 T2 前是 S88/P42/U1、SELF114/D17。

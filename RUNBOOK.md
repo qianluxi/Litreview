@@ -26,7 +26,7 @@ python litrev/litrev.py verify litrev/_probe/full/<文献>.md   # 引文层基�
 ## 二、派发协议
 
 1. **先查表**：`litrev/_probe/AGENT_MAP.md`。agent 名由文件名派生，不是你想写什么就有什么。
-2. **一篇文献一个 agent、一个文件**：`ex-<slug>` 只创建 `notes/<文献>.md`，`qx-<slug>` 只改这一个文件。权限是按路径写死的，越界会在调用时被拒——**被拒不是 bug，是隔离生效**。
+2. **一篇文献一个 agent、一个文件**：`qx-<slug>` 只改自己那一张卡片（`_probe/full/<文献>.md`，没有则 `_probe/notes/<文献>.md`）。`ex-<slug>` 只在**卡片还不存在**时才生成——它只有创建权限，给已有卡片派它等于让它撞墙。权限是按路径写死的，越界会在调用时被拒——**被拒不是 bug，是隔离生效**。
 3. **并行**：同一条消息里并列多个 `task` 调用。同一条消息里也不要给同一个 agent 派两个文件（它只认得自己那一个）。
 4. **批次审计**：`auditor-<批次>` 的输入、输出在 `litrev/_probe/audit/BATCHES.json` 里登记。新增批次：改 JSON → 跑生成器 → 才会出现对应 agent。重跑一个已有批次会**覆盖**它的 `out_<批次>.md`——历史判定靠 git，不靠另存副本。
 5. **核验归 checker**：只有 `checker` 的 bash 白名单放行 `python litrev/litrev.py verify|matrix|locate`。主控不要代跑（代跑会把"生成方"和"裁判"合并成一个人）。
@@ -84,12 +84,14 @@ python tools/gen_subagents.py          # 新增批次 → 生成 auditor-sample-
 
 改完 `.opencode/agents/` 里的 permission，逐条实测下列用例，**记录返回原文**（拒绝时错误信息里带完整 ruleset，这是证据）：
 
+> 用例 1–4 需要存在 `ex-` 实例。生成器现在只为「还没有卡片」的文献建 `ex-`，当前 22 篇都有卡片，所以 1–4 暂时没有对象；新增文献后跑一次生成器即可恢复。
+
 | # | 角色 | 动作 | 预期 |
 |---|---|---|---|
 | 1 | `ex-<A>` | 读 `texts/<A>.txt` | 允许 |
 | 2 | `ex-<A>` | 读 `texts/<B>.txt`（别的文献） | **拒绝** |
-| 3 | `ex-<A>` | 读 `_probe/notes/<B>.md` | **拒绝** |
-| 4 | `ex-<A>` | 写 `notes/<B>.md` | **拒绝** |
+| 3 | `ex-<A>` | 读别人的卡片 | **拒绝** |
+| 4 | `ex-<A>` | 写别人的卡片 | **拒绝** |
 | 5 | `qx-<A>` | 改 `notes/<A>.md` | 允许 |
 | 6 | `qx-<A>` | 改 `notes/<B>.md` | **拒绝** |
 | 7 | `auditor-<批次1>` | 读 `FRAG_B2.md`（别的批次） | **拒绝** |
@@ -113,6 +115,8 @@ python tools/gen_subagents.py          # 新增批次 → 生成 auditor-sample-
 3. **静态权限 ≠ 任务级沙箱**：本次用「按文件生成 agent」逼近任务级隔离（每篇文献一对 `ex-`/`qx-`，每个批次一个 `auditor-`）。代价是 agent 数量随文献数线性增长，新增文献必须跑生成器。
 4. **`subagent_depth = 1`**：仍是单层。不要在 Litreview 里为了"看起来更像多智能体"而打开二级调度——本项目的任务不需要。要做二级调度，在 `Opencode_Subagent` 项目里单独验证。另：新版本 OpenCode 文档把该键放进 `experimental`，升级时按实际 Schema 核对，不要照搬根级写法。
 5. **工具与路径的匹配细节未完全查明**：复合 bash 命令（`;` 拼接）的匹配规则不直观，已实测出现过"部分放行"的怪现象。因此 `checker` 的命令一律写成**单条、不带 `cd`、不带 `&&`**。
+6. **版面重建对公式/上下标区无效**：`text` 能把逐词断行修成正常行（Borner 1.03→7.87 词/行、Zhang 3.08→6.83），但含上下标的公式区仍会交错（`Zhang2006` p.2 的 `m m, c m, is the upper limit of m`）。这类区域不要从 txt 抄引文，改成挑同一段里不含公式的句子，或标注为已知问题。
+7. **Borner1993 是 Type3 字体**：`fi`/`fl`/`ff` 连字没有 ToUnicode，被丢成空格（`The rst`、`ap proach o ers`、`modi cation`，约 0.9% 的 token）。`verify` 按 txt 比对放行，但引文里带这种缺口不能直接用在成稿；要么按原样保留并注明，要么避开该词。
 
 ## 八、变更记录
 

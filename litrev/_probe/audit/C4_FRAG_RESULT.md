@@ -245,3 +245,15 @@
 - 48 条里 14 条来自 Borner1993（7）与 Zhang2006（7）的文字层碎片，扩句无效；见 `CORPUS_TEXT_HEALTH.md`。在重新抽取前，这 14 条只记为“已知有问题”。
 - `SUPPORTED` 只是分诊，不是合格证；第三方抽检 6 条中 B3-10、B3-11、B3-13 偏宽。用 1 个 auditor 闭卷复核这 3 条：B3-10 → `PARTIAL / DEPENDENT`，B3-11 → `PARTIAL / DEPENDENT`，B3-13 → `UNSUPPORTED / SELF`。
 - 并入返工与抽检后，48 条片段由 S28 / P19 / U1、SELF35 / D13 变为 **S24 / P22 / U2、SELF39 / D9**；131 条全量由 S88 / P42 / U1、SELF114 / D17 变为 **S84 / P45 / U2、SELF118 / D13**（非 SUPPORTED 47/131 = 35.9%）。
+
+## 八、T2 抽检后（round-03）
+
+- 2026-11-09 T2 S1 抽检触发 `frag_b3` 整批重审，`out_B3.md` 已覆盖；本文件 §一/§二/§七 的 frag_b3 汇总为历史值。
+- 最新 131 条口径：S84 / P46 / U1；SELF112 / D19（非 SUPPORTED 47/131 = 35.9%）。
+- **数字来源**：`python litrev/litrev.py audit-count`。本节初版写的 83/47/1、115/16 是手算错误，已按命令输出更正。详见 `reports/round-03-sample.md`。
+
+## 九、T1 扩句后（round-03）
+
+- Borner1993、Zhang2006 的 14 条逻辑条目已扩句；Borner #5 按用户选择 B 拆成 p.8 + p.9 两条引文。
+- `verify`：Borner 8/8 PASS、Zhang 7/7 PASS，两篇 15/15 PASS（逻辑 14 条）。
+- 本文件里的旧引文与旧 C4 判定保留为历史；最新引文见 `full/Borner...md` / `full/Zhang...md`，T1 对照见 `reports/round-03-expand.md`。

@@ -1,5 +1,5 @@
 ---
-description: Napps2021_BIM_VariantRetrieval_CBR 的返工手。只改这一条笔记里的引文范围（扩句），其余一字不动。
+description: Napps2021_BIM_VariantRetrieval_CBR 的返工手。只改这一条笔记/卡片的引文范围（扩句），其余一字不动。
 mode: subagent
 permission:
   read:

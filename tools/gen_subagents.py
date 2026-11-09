@@ -114,7 +114,7 @@ READ_ONLY = [
 
 def build(roles):
     """返回 {相对路径: 文件内容} 与映射表行。"""
-    files, rows = {}, []
+    files, rows, done = {}, [], []
 
     if not TEXTS_DIR.exists():
         sys.exit(f"[!] 缺少正文目录：{TEXTS_DIR}（先跑 python litrev/litrev.py text）")
@@ -148,21 +148,31 @@ def build(roles):
         seen[slug] = stem
 
         txt = f"litrev/_probe/texts/{stem}.txt"
-        note = f"litrev/_probe/notes/{stem}.md"
+        # 卡片落点：优先 full/ 的 7 字段卡片，没有则 notes/（旧基线）。ex 与 qx 必须同一处，
+        # 否则「首次抽取写 notes/、返工改 full/」会在 notes/ 留下一份没人读的副本。
+        target = f"litrev/_probe/full/{stem}.md"
+        if not (ROOT / target).exists():
+            target = f"litrev/_probe/notes/{stem}.md"
 
-        files[f".opencode/agents/ex-{slug}.md"] = agent_md(
-            f"{stem} 的抽取工。只读一篇 txt、只创建一条笔记；逐字抄引文并标 PDF 物理页，找不到就报 NOT_FOUND。",
-            fill(roles["extractor"], DOC=stem, TXT=txt, NOTE=note, CONTRACT=CONTRACT),
-            [("read", [("*", "deny"), (CONTRACT, "allow"), (txt, "allow")]),
-             ("edit", [("*", "deny"), (note, "allow")])] + READ_ONLY,
-        )
+        if (ROOT / target).exists():
+            # 卡片已存在 = 首次抽取已完成。不生成 ex-：它只有创建权限，派它只会撞到已有文件。
+            done.append((stem, target))
+            ex = None
+        else:
+            ex = f"ex-{slug}"
+            files[f".opencode/agents/{ex}.md"] = agent_md(
+                f"{stem} 的抽取工。只读一篇 txt、只创建一条笔记；逐字抄引文并标 PDF 物理页，找不到就报 NOT_FOUND。",
+                fill(roles["extractor"], DOC=stem, TXT=txt, NOTE=target, CONTRACT=CONTRACT),
+                [("read", [("*", "deny"), (CONTRACT, "allow"), (txt, "allow")]),
+                 ("edit", [("*", "deny"), (target, "allow")])] + READ_ONLY,
+            )
         files[f".opencode/agents/qx-{slug}.md"] = agent_md(
-            f"{stem} 的返工手。只改这一条笔记里的引文范围（扩句），其余一字不动。",
-            fill(roles["quote-expander"], DOC=stem, TXT=txt, NOTE=note, CONTRACT=CONTRACT),
-            [("read", [("*", "deny"), (CONTRACT, "allow"), (txt, "allow"), (note, "allow")]),
-             ("edit", [("*", "deny"), (note, "allow")])] + READ_ONLY,
+            f"{stem} 的返工手。只改这一条笔记/卡片的引文范围（扩句），其余一字不动。",
+            fill(roles["quote-expander"], DOC=stem, TXT=txt, NOTE=target, CONTRACT=CONTRACT),
+            [("read", [("*", "deny"), (CONTRACT, "allow"), (txt, "allow"), (target, "allow")]),
+             ("edit", [("*", "deny"), (target, "allow")])] + READ_ONLY,
         )
-        rows.append({"doc": stem, "ex": f"ex-{slug}", "qx": f"qx-{slug}"})
+        rows.append({"doc": stem, "ex": ex, "qx": f"qx-{slug}"})
 
     batches = []
     if BATCH_FILE.exists():
@@ -196,7 +206,7 @@ def build(roles):
              ("websearch", "deny")],
         )
 
-    return files, rows, batch_rows, skipped
+    return files, rows, batch_rows, skipped, done
 
 
 def map_markdown(rows, batch_rows):
@@ -206,7 +216,8 @@ def map_markdown(rows, batch_rows):
              "## 文献级（文件级隔离：每个 agent 只能读自己那篇 txt、只能写自己那条笔记）", "",
              "| 文献 | 首次抽取 | 返工扩句 |", "|---|---|---|"]
     for r in rows:
-        lines.append(f"| `{r['doc']}` | `{r['ex']}` | `{r['qx']}` |")
+        ex = f"`{r['ex']}`" if r["ex"] else "—（卡片已存在）"
+        lines.append(f"| `{r['doc']}` | {ex} | `{r['qx']}` |")
     lines += ["", "## 审计批次（批次级隔离：只能读本批输入、只能写本批输出）", "",
               "| 批次 | Agent | 输入 | 输出 | 说明 |", "|---|---|---|---|---|"]
     for b in batch_rows:
@@ -226,7 +237,7 @@ def main():
     args = ap.parse_args()
 
     roles = load_roles()
-    files, rows, batch_rows, skipped = build(roles)
+    files, rows, batch_rows, skipped, done = build(roles)
     files["litrev/_probe/AGENT_MAP.md"] = map_markdown(rows, batch_rows)
 
     old = json.loads(MANIFEST.read_text(encoding="utf-8")) if MANIFEST.exists() else []
@@ -267,7 +278,13 @@ def main():
         (ROOT / rel).unlink(missing_ok=True)
     MANIFEST.write_text(json.dumps(sorted(files), ensure_ascii=False, indent=1), encoding="utf-8")
 
-    print(f"生成 {len(files)} 个文件（{len(rows)} 篇文献 × 2 + {len(batch_rows)} 个审计批次 + checker + 映射表）")
+    n_ex = sum(1 for r in rows if r["ex"])
+    print(f"生成 {len(files)} 个文件（{n_ex} 个抽取工 + {len(rows)} 个返工手 + "
+          f"{len(batch_rows)} 个审计批次 + checker + 映射表）")
+    if done:
+        print("\n已有卡片、不生成抽取工（首次抽取已完成，派 ex- 只会撞到已有文件）：")
+        for stem, target in done:
+            print(f"  - {stem} → {target}")
     if skipped:
         print("\n未生成（这些文献不该派抽取工）：")
         for stem, why in skipped:

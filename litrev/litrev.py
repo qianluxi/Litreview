@@ -15,6 +15,7 @@ litrev — 文献综述流水线的可机械验证层
   verify   扫描 Markdown 稿，核对每条引文与每条引用标注
   matrix   校验证据矩阵 xlsx：行数、篇目对应、重复、缺失
   sample   按固定比例与种子抽条目，生成可复现的闭卷审计批次
+  audit-count  汇总 out_*.md 判定表（唯一允许的汇总口径）并校验各文件合计行
 
 用法示例：
   python litrev.py index
@@ -23,6 +24,7 @@ litrev — 文献综述流水线的可机械验证层
   python litrev.py verify ../notes/文献综述_初稿_v1.md
   python litrev.py matrix ../notes/证据矩阵_v2_定稿.xlsx
   python litrev.py sample ../_probe/full --rate 0.12 --seed 42 --out ../_probe/audit/SUPPORTED_S1.md
+  python litrev.py audit-count --check
 """
 
 import argparse
@@ -134,23 +136,72 @@ def _xy_cut(items, min_gutter=8.0, depth=0):
     return sorted(items, key=lambda i: (round(i[1]), i[0]))
 
 
+def _block_rows(words, ytol=2.5):
+    """把一个 block 内的词聚成视觉行 -> [(y中心, [词...]), ...]（行内按 x 排序）。
+
+    按 y 排序后「相邻差分 <= ytol/2」聚成一行，不用 round(y/ytol) 分桶：
+    分桶在 66.25pt 这类边界上会把同一条视觉行劈开（中心 66.2 与 66.3 落到不同桶）。
+    """
+    ws = sorted(words, key=lambda w: (w[1] + w[3]) / 2)
+    groups = []
+    for w in ws:
+        yc = (w[1] + w[3]) / 2
+        if groups and abs(yc - groups[-1][0]) <= ytol / 2:
+            groups[-1][1].append(w)
+            n = len(groups[-1][1])
+            groups[-1][0] = (groups[-1][0] * (n - 1) + yc) / n
+        else:
+            groups.append([yc, [w]])
+    return [(yc, sorted(g, key=lambda w: w[0])) for yc, g in groups]
+
+
+def _join_row(ws, space_gap=1.0):
+    """行内按 x 拼词；x 间距小于 space_gap 不插空格（修 'Similarit'+'y'）。"""
+    buf, prev_x1 = "", None
+    for w in sorted(ws, key=lambda x: x[0]):
+        if prev_x1 is not None and w[0] - prev_x1 > space_gap:
+            buf += " "
+        buf += w[4]
+        prev_x1 = w[2]
+    return buf.strip()
+
+
+def _span(ws):
+    return min(w[0] for w in ws), max(w[2] for w in ws)
+
+
+def _same_baseline(a, b, ytol=1.2):
+    """两行的 y 中心足够近，且行的纵向范围确实重叠（避免把上/下标当成同一行）。"""
+    (ya, wa), (yb, wb) = a, b
+    if abs(ya - yb) > ytol:
+        return False
+    ay0 = min(w[1] for w in wa); ay1 = max(w[3] for w in wa)
+    by0 = min(w[1] for w in wb); by1 = max(w[3] for w in wb)
+    return min(ay1, by1) - max(ay0, by0) > 0
+
+
+def _merge_rows(rows):
+    """PyMuPDF 会把一条视觉行切成两个 block（标题/正文同基线连排时常见）。
+    同基线且 x 区间交叠 → 并回一行；真双栏的 x 区间不交叠，不会被误合。
+    合并结果保留「首次出现」的位置，因此不破坏 XY-cut 给出的分栏阅读顺序。"""
+    merged = []
+    for r in rows:
+        for i, m in enumerate(merged):
+            if _same_baseline(m, r):
+                a0, a1 = _span(m[1])
+                b0, b1 = _span(r[1])
+                if a0 < b1 and b0 < a1:          # x 区间交叠 = 同一条视觉行被切开
+                    ws = m[1] + r[1]
+                    merged[i] = (sum((w[1] + w[3]) / 2 for w in ws) / len(ws), ws)
+                    break
+        else:
+            merged.append(r)
+    return merged
+
+
 def _block_lines(words, ytol=2.5, space_gap=1.0):
     """把一个 block 内的词重建为若干视觉行。"""
-    rows = {}
-    for w in words:
-        rows.setdefault(round(((w[1] + w[3]) / 2) / ytol), []).append(w)
-    out = []
-    for key in sorted(rows):
-        buf, prev_x1 = "", None
-        for w in sorted(rows[key], key=lambda x: x[0]):
-            if prev_x1 is not None and w[0] - prev_x1 > space_gap:
-                buf += " "
-            buf += w[4]
-            prev_x1 = w[2]
-        line = buf.strip()
-        if line:
-            out.append(line)
-    return out
+    return [l for l in (_join_row(ws, space_gap) for _, ws in _block_rows(words, ytol)) if l]
 
 
 def page_layout_text(page):
@@ -165,10 +216,10 @@ def page_layout_text(page):
              for b in page.get_text("blocks") if b[5] in by_block]
     if not items:
         return page.get_text()
-    lines = []
+    rows = []
     for item in _xy_cut(items):
-        lines.extend(_block_lines(item[4]))
-    return "\n".join(lines)
+        rows.extend(_block_rows(item[4]))
+    return "\n".join(_join_row(ws) for _, ws in _merge_rows(rows))
 
 
 def text_health(text):
@@ -896,6 +947,99 @@ def cmd_sample(args):
     return 0
 
 
+AUDIT_DIR = BASE / "_probe" / "audit"
+SUPPORT = ("SUPPORTED", "PARTIAL", "UNSUPPORTED")
+SELFSUF = ("SELF", "DEPENDENT")
+
+
+def parse_audit_rows(text: str):
+    """从审计输出表里取 (id, 支撑, 自足)；只认以批次号开头的表格行。"""
+    rows = []
+    for line in text.splitlines():
+        if not re.match(r"^\|\s*[A-Z]+\d+(-\d+)?\s*\|", line):
+            continue
+        cell = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cell) < 3:
+            continue
+        rows.append((cell[0], cell[1], cell[2]))
+    return rows
+
+
+def cmd_audit_count(args):
+    """从 out_*.md 机械汇总判定表，并校验每个文件自报的「合计」行。
+
+    存在的理由：汇总数字手工加减已经错过两次，且错到下几份报告里。
+    汇总只能由这条命令产生。
+    """
+    d = Path(args.dir)
+    if not d.is_dir():
+        print(f"[!] 目录不存在：{d}")
+        return 2
+    prefixes = [p.strip().upper() for p in args.prefixes.split(",") if p.strip()]
+    files = []
+    for p in sorted(d.glob("out_*.md")):
+        m = re.match(r"^out_([A-Z]+)(\d+)\.md$", p.name)
+        if m and m.group(1) in prefixes:
+            files.append((m.group(1) + m.group(2), p))
+    if not files:
+        print("[!] 没有匹配的 out_*.md")
+        return 1
+
+    head = f"{'批次':<8}{'条数':>5}{'SUPP':>6}{'PART':>6}{'UNSU':>6}{'SELF':>6}{'DEP':>6}  合计行"
+    print(head)
+    print("-" * 62)
+    tot = {k: 0 for k in SUPPORT}
+    tot2 = {k: 0 for k in SELFSUF}
+    n_all = 0
+    bad = []
+    for name, p in files:
+        txt = p.read_text(encoding="utf-8")
+        rows = parse_audit_rows(txt)
+        c = {k: sum(1 for r in rows if r[1] == k) for k in SUPPORT}
+        c2 = {k: sum(1 for r in rows if r[2] == k) for k in SELFSUF}
+        other = [r for r in rows if r[1] not in SUPPORT or r[2] not in SELFSUF]
+        for k in SUPPORT:
+            tot[k] += c[k]
+        for k in SELFSUF:
+            tot2[k] += c2[k]
+        n_all += len(rows)
+
+        line = next((l for l in txt.splitlines() if l.startswith("合计")), "")
+        mm = re.search(r"(\d+)\s*条.*?SUPPORTED\s*(\d+)\s*/\s*PARTIAL\s*(\d+)\s*/\s*"
+                       r"UNSUPPORTED\s*(\d+).*?DEPENDENT\s*(\d+)", line)
+        if not mm:
+            mark = "缺合计行"
+            bad.append(f"{name}：缺合计行")
+        else:
+            want = (int(mm.group(1)), int(mm.group(2)), int(mm.group(3)),
+                    int(mm.group(4)), int(mm.group(5)))
+            got = (len(rows), c["SUPPORTED"], c["PARTIAL"], c["UNSUPPORTED"], c2["DEPENDENT"])
+            mark = "✓" if want == got else f"✗ 表内 {got[0]}/S{got[1]}/P{got[2]}/U{got[3]}/D{got[4]}"
+            if want != got:
+                bad.append(f"{name}：合计行 {want} ≠ 明细 {got}")
+        if other:
+            mark += f"  (+{len(other)} 行字段异常)"
+        print(f"{name:<8}{len(rows):>5}{c['SUPPORTED']:>6}{c['PARTIAL']:>6}"
+              f"{c['UNSUPPORTED']:>6}{c2['SELF']:>6}{c2['DEPENDENT']:>6}  {mark}")
+
+    print("-" * 62)
+    print(f"{'合计':<8}{n_all:>5}{tot['SUPPORTED']:>6}{tot['PARTIAL']:>6}"
+          f"{tot['UNSUPPORTED']:>6}{tot2['SELF']:>6}{tot2['DEPENDENT']:>6}")
+    nons = n_all - tot["SUPPORTED"]
+    pct = nons / n_all * 100 if n_all else 0
+    print()
+    print(f"口径：{n_all} 条 · SUPPORTED {tot['SUPPORTED']} / PARTIAL {tot['PARTIAL']} / "
+          f"UNSUPPORTED {tot['UNSUPPORTED']} · SELF {tot2['SELF']} / DEPENDENT {tot2['DEPENDENT']}")
+    print(f"非 SUPPORTED：{nons}/{n_all} = {pct:.1f}%")
+    if bad:
+        print()
+        print("[!] 合计行与明细不一致，报告里的数字不要照抄该文件：")
+        for b in bad:
+            print(f"  - {b}")
+        return 1 if args.check else 0
+    return 0
+
+
 def cmd_locate(args):
     corpus = load_corpus()
     found = find_quote(corpus, args.text)
@@ -1082,6 +1226,12 @@ def main():
     p.add_argument("--prefix", default="S", help="条目编号前缀")
     p.add_argument("--out", default=None, help="写入文件；不给则打印")
     p.set_defaults(func=cmd_sample)
+
+    p = sub.add_parser("audit-count", help="汇总 out_*.md 判定表，并校验各文件的合计行")
+    p.add_argument("--dir", default=str(AUDIT_DIR), help="审计输出目录（默认 _probe/audit）")
+    p.add_argument("--prefixes", default="B,R", help="纳入的批次前缀，逗号分隔（默认 B,R）")
+    p.add_argument("--check", action="store_true", help="合计行与明细不一致时以退出码 1 结束")
+    p.set_defaults(func=cmd_audit_count)
 
     p = sub.add_parser("locate", help="回查一段文字的确切出处")
     p.add_argument("text")
