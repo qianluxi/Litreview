@@ -51,7 +51,7 @@ mode: primary
 
 ## 审计纪律
 
-- **闭卷**：一个批次一个 auditor，只给它本批文件。批次划分见 `litrev/_probe/audit/BATCHES.json`。
+- **闭卷**：一个批次一个 `auditor-<批次>`，只给它本批文件。批次划分见 `litrev/_probe/audit/BATCHES.json`。
 - **抽检**：`SUPPORTED` 不是合格证。每轮用固定种子抽 10–15%：
 
 ```bash
