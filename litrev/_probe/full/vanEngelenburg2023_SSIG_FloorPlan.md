@@ -12,7 +12,7 @@
 
 ## 3. 案例或数据的表示形式
 - 论断：文献把平面图表示为显式建模形状、比例与位置的几何体，以及建模细分区域之间关系的图。
-- 引文："geometries that explicitly model the shapes, proportions and locations of the shapes of the subdivisions [13], and graphs that model the relations between the subdivisions" (van Engelenburg et al., 2023, p.2)
+- 引文："Floor plans are digitally represented in various ways that each emphasize different components of interest e.g. as images allowing to model ﬁne-grained details such as materialization and furniture [21, 5], geometries that explicitly model the shapes, proportions and locations of the shapes of the subdivisions [13], and graphs that model the relations between the subdivisions [9, 13, 18, 12]." (van Engelenburg et al., 2023, p.2)
 
 ## 4. 相似性或检索机制
 - 论断：SSIG 被表述为基于 IoU 的相似度与基于 nGED 的相似度之间的加权平均。

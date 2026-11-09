@@ -12,7 +12,7 @@
 
 ## 3. 案例或数据的表示形式
 - 论断：案例中的对象由空间尺寸和另外九个属性表示。
-- 引文："represen ted b y its spatial dimensions and nine further attributes" (Borner, 1993, p.5)
+- 引文："eac h ob ject circle or ellipse will b e represen ted b y its spatial dimensions and nine further attributes lik e time at whic h this ob ject w as created asp e ct whic h assumes one of return air fresh air etc and morpholo gy whic h refers to access connection etc" (Borner, 1993, p.5)
 
 ## 4. 相似性或检索机制
 - 论断：检索流程先对新问题做低成本的表面相似性初始分析。

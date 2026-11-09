@@ -12,7 +12,7 @@
 
 ## 3. 案例或数据的表示形式
 - 论断：案例以属性-值对（attribute-value pair）来描述。
-- 引文："uses attribute-value pairs to describe a case." (Maher and Gomez, 1996, p.6)
+- 引文："and the primary object-based representation uses attribute-value pairs to describe a case." (Maher and Gomez, 1996, p.6)
 
 ## 4. 相似性或检索机制
 - 论断：系统通过查找问题描述与记忆项中属性及取值的匹配来度量相关性。
@@ -24,7 +24,7 @@
 
 ## 6. 评价方式
 - 论断：评价所依据的案例数据规模为 14 个设计项目。
-- 引文："data from 14 design projects" (Maher and Gomez, 1996, p.2)
+- 引文："Finally, we reviewed and collected data from 14 design projects." (Maher and Gomez, 1996, p.2)
 
 ## 7. 明确写出的局限
 - 论断：作者指出这种检索方式只在案例记忆中的案例数量有限时适用。

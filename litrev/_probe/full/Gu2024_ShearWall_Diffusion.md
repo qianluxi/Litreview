@@ -16,7 +16,7 @@
 
 ## 4. 相似性或检索机制
 - 论断：该文采用的生成机制是带掩码张量的图像提示扩散模型。
-- 引文："methods for an image-prompt diffusion model with a mask tensor." (Gu et al., 2024, p.6)
+- 引文："To focus on the diffusion process features of the shear wall portion, this section introduces the construction, training, and inference methods for an image-prompt diffusion model with a mask tensor." (Gu et al., 2024, p.6)
 
 ## 5. 系统形态
 - 论断：该文基于所提训练方法开发了剪力墙布置设计模型。
