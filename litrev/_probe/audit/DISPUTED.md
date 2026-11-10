@@ -20,7 +20,7 @@
 
 ## D-01 · B3-10 / S05
 
-- 状态：**OPEN**
+- 状态：**OPEN**（证据已补足，建议 CLOSED=支撑改 `PARTIAL`、自足不动；待裁决人确认，见文末「当前裁决状态」）
 - 文献 / 节：`SriramMaherFenves1985_KBES_StructuralDesign` · 问题域 · p.4
 - 批次输入：`FRAG_B3.md` 的 `B3-10`；抽检输入：`SAMPLE_S1.md` 的 `S05`
 - 输入逐字比对：**论断与引文完全相同**（抽检输入只少一行「形式特征」），不存在「换了材料」的解释。
@@ -37,7 +37,7 @@
 "structural design are not amenable to purely algorithmic solutions. These problems are often ill-" (Sriram et al., 1985, p.4)
 ```
 
-### 同一输入的四次独立判定（git / 文件取证）
+### 第 1–4 次判定（历史取证；第 5、6 次见文末）
 
 | # | 来源 | 支撑 | 自足 | 依据 | 缺什么 / 说明 |
 |---|---|---|---|---|---|
@@ -46,9 +46,11 @@
 | 3 | `691939a` `out_B3.md`（round-04，当前表） | SUPPORTED | SELF | `"not amenable to"` | — |
 | 4 | `out_S1.md` `S05`（round-05 抽检） | **PARTIAL** | **DEPENDENT** | `"not amenable"` | 引文截断于 "ill-"、"病构性" 无原词；"尤其" 系加强；主语碎片起于句中，需补完整主语 |
 
-支撑轴 3:1、自足轴 2:2，`audit-stale` 四次依据都逐字命中引文——**依据没过期，不等于判定正确**，本条即实例。
+前四次：支撑轴 3:1、自足轴 2:2，`audit-stale` 四次依据都逐字命中引文——**依据没过期，不等于判定正确**，本条即实例。
 `reports/round-04-verification.md` §三 已点名第 3 次「更像判错而非漂移」；第 4 次在自足轴上回到 `DEPENDENT`，
 在支撑轴上首次给出 `PARTIAL`。四个结果，没有一次可以自动充当标准答案。
+
+> 注意口径：第 1、2 次在契约 v1.1 定型之前，**不能与后四次直接合并计数**。固定 v1.1 的只有第 3–6 次，见文末汇总。
 
 ### 第 4 次判据与契约的逐条对照（为什么不能直接采信）
 
@@ -103,6 +105,56 @@ D-01 仍 **OPEN**。现有证据不足以收口：
 4. 三个独立来源判 D-01 为 PARTIAL（native-run-02 核验者、out_SAMPLE3、round-05 抽检），一个判 SUPPORTED（round-04 重审）——但"多数"不等于"正确"。
 
 **建议收口路径**：对 B3-10 做第三次独立判定（同一输入、新 dup agent），需重启 OpenCode。若第三次仍 PARTIAL → 2/2 一致改判；若 SUPPORTED → 三种判定 1:2 属漂移，B3 不动。**等你裁决，本轮未做。**
+
+#### 路径 4：B3-10 第三次独立判定 —— **已执行（2026-11-10，round-07）**
+
+`auditor-frag-b3-probe` 读 `FRAG_B3P.md`（与 `SAMPLE_S1.md` 的 `S05` 论断/引文逐字相同，只少一行「形式特征」，戳 `e894bb155c`），
+写 `out_B3P.md`。`opencode.db` 取证：子会话 `ses_e3bbe85e5ffeT5I4W8wJyVBpBu`，只 read 契约 + 该输入、只 write 该输出，
+`status=error` 计数 0（无权限拒绝）。
+
+判定：**PARTIAL / DEPENDENT**，依据 `"not amenable to"`。
+
+#### 路径 5：frag 双跑三批 —— **已执行（2026-11-10，round-07）**
+
+`auditor-frag-b{1-3}-dup` 对原 `FRAG_B*.md` 重判，另存 `out_E{1-3}.md`（不覆盖 `out_B*.md`）。其中 `out_E3.md` 也含 `B3-10`，
+判 **PARTIAL / SELF**，依据 `"often ill-"`。
+
+双跑结果见 `reports/round-07-probe-dup.md` 与 `reports/round-07-verification.md`：frag 三批支撑轴漂移 12.5%（6/48）、
+自足轴 4.2%（2/48）、任一轴 16.7%（8/48）；与 REST 五批合并后 131 条配对，任一轴 19.1%，支撑轴 9:4（`P≈13%`，不显著）、
+**自足轴 11:1 单向（`P≈0.3%`）**。
+
+### 第六次判定后的证据汇总（v1.1 固定契约下的 4 次）
+
+| # | 来源 | 支撑 | 自足 | 依据 |
+|---|---|---|---|---|
+| 3 | `691939a`（当前表） | SUPPORTED | SELF | `"not amenable to"` |
+| 4 | `out_S1.md` S05 | PARTIAL | DEPENDENT | `"not amenable"` |
+| 5 | `out_B3P.md` | PARTIAL | DEPENDENT | `"not amenable to"` |
+| 6 | `out_E3.md` | PARTIAL | SELF | `"often ill-"` |
+
+**支撑轴 1:3、自足轴 2:2。**
+
+**稳健交集**：#4/#5/#6 三条独立判定都指向同一个可机械核验的缺陷——引文在 `often ill-` 处截断，论断的「病构性」在引文内
+没有完词依据（契约 §二「混入了引文无法证明的成分」）。这一条不依赖任何有争议口径（代词主语、范围收窄、加强词）。
+
+**必须记录的反面证据**：#5 给出的另外两条理由与事实不符——「`structural design are` 主语在引号外」（实际在引号内）、
+「`These problems` 的指代对象未在引文内出现」（`problems` 就在同一引文第二句）。#4 也有三条理由与契约有张力（见上文对照表）。
+**因此采信的是「截断」这一条，不是那几条理由**；若日后有人引用本裁决，不得把那几条错误理由一并背书。
+
+### 当前裁决状态
+
+证据已到位，建议 **CLOSED**（待裁决人确认，本轮未落表）：
+
+| 轴 | 建议 | 依据 |
+|---|---|---|
+| 支撑 | **`SUPPORTED → PARTIAL`** | v1.1 下 3:1；三条独立判定收敛到「截断」这一可核验缺陷 |
+| 自足 | **不动**（保持 `SELF`） | 2:2 无法裁；自足轴本身存在 11:1 系统性口径差（`P≈0.3%`），单条裁决会被口径差污染；留给契约 v1.2 一并解决 |
+
+若采纳：`131 条 · S80 / P50 / U1 · SELF118 / D13`。
+
+**级联代价**（改判前必读）：判定表一改，抽检候选池 81→80，`seed=42` 重抽的 10 条与现有只有 4 条重合（`S05` 消失）→
+`sample --check` 变红 → 需重生成 `SAMPLE_S1` + 答案键 → 旧 `out_S1.md` 与磁盘上的样本不再对应 → 需再派一次
+`auditor-sample-s1`（该 agent 已存在，**不需要重启 OpenCode**）。详见 `RUNBOOK.md` §五「改判的级联代价」。
 
 ### 明确不做
 

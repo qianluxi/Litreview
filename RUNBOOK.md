@@ -126,6 +126,11 @@ python tools/audit_prep.py review             # 非 SUPPORTED 人工复核清单
   是否整批重审、重审哪个批次，必须由**主控人工裁决**并写进 `reports/` 后才能派发。
 - **答案键冻结**：判定表一旦变更，`SAMPLE_S1_KEYS.md` 即失效（`sample --check` 会报不一致）。
   重审前先留档当前答案键与 `out_S1.md`，不要在重审后拿新表复算旧答案键。
+- **改判的级联代价（裁决前必算）**：候选池 = 当前 `SUPPORTED`，所以**任何一条改判都会移动池、换掉抽样**。
+  实测：`B3-10` 从 `SUPPORTED` 改 `PARTIAL` 后池 81→80，`seed=42` 重抽的 10 条与现有只有 4 条重合（`S05` 直接消失）。
+  后果链：`sample --check` 变红 → 需重生成输入与答案键 → 旧 `out_S1.md` 不再是磁盘上那 10 条 → `verify-sample` 变红 → 需再派一次
+  `auditor-sample-s1`。**裁决一条 ≠ 改一个单元格**，派发前先按这个链路估工。
+  根治办法（未实施）：把 `sample` 语义从「当前池」改为「池快照」（在答案键里记抽样时点的池），使已完成抽检对后续裁决免疫。
 - 争议条目登记在 `litrev/_probe/audit/DISPUTED.md`（人工维护，不进 `BATCHES.json`、不贴给任何子代理）；
   `REVIEW_NONSUPPORTED.md` 是 `review` 自动生成的非 SUPPORTED 清单，两者不要混写。
 - 抽检结论写进 `reports/`：命中率、方向、差异条目、是否补证据、裁决结果。`out_S1.md` 不进 131 条汇总（`audit-count` 默认前缀 B,R）。
@@ -151,14 +156,31 @@ python tools/audit_prep.py verify-golden      # 比对人判 vs 判定表，输�
 round-04 用「跨版本重审」当双跑，得到 14.3% 漂移上界，但混入了契约版本变更。正规做法是**固定契约、同输入、另存对照**：
 
 ```bash
-# 派 auditor-rest-b{1-5}-dup（输入 REST_B*.md、输出 out_D{1-5}.md，不覆盖 out_R*.md）
+# REST 五批：派 auditor-rest-b{1-5}-dup（输入 REST_B*.md、输出 out_D{1-5}.md，不覆盖 out_R*.md）
 python litrev/litrev.py audit-count --prefixes D --check   # 双跑 5 表自洽（D 不进 131 口径）
-python tools/audit_prep.py diff-dup                        # R vs D 逐条比对，输出漂移率
+python tools/audit_prep.py diff-dup                        # 默认 R:D，输出漂移率
+
+# frag 三批：派 auditor-frag-b{1-3}-dup（输入 FRAG_B*.md、输出 out_E{1-3}.md，不覆盖 out_B*.md）
+python litrev/litrev.py audit-count --prefixes E --check
+python tools/audit_prep.py diff-dup --pair B:E             # 前缀可配，默认 R:D
 ```
 
 - 双跑测的是「同输入重复判定的随机漂移」，**不裁定谁判对**。
 - 漂移率给「抽检 1/N 差异是噪声还是信号」一个基线；漂移率 ≠ 0 是预期，不是失败。
 - 顺序派发（不并发），避免资源竞争噪声污染一致性测量。
+- **已测基线（2026-11-10，v1.1 固定契约）**：
+
+  | 配对框 | 条数 | 支撑 | 自足 | 任一 | 方向 |
+  |---|---|---|---|---|---|
+  | `R:D` | 83 | 8.4% | 12.0% | 20.5% | 自足 **10/10** SELF→DEP |
+  | `B:E` | 48 | 12.5% | 4.2% | 16.7% | 支撑 S→P 5 / P→S 1；自足两向各 1 |
+  | 合并 | 131 | 9.9%（9:4） | 9.2%（**11:1**） | 19.1% | — |
+
+- **读数纪律**：自足轴 11:1 单向，二项检验 `P≈0.3%` → 属**系统性口径差**（重复判定更倾向判 `DEPENDENT`），
+  且集中在长引文的 REST 批次（frag 侧几乎不漂）。支撑轴 9:4 单向，`P≈13%` → **不显著**，只能说方向提示偏松，
+  不能据此断言判定表系统性偏松，更不能据此整批重审。
+- 两组配对框不重叠（83+48=131），但 D 与 E 是不同 agent 实例、不同批次类型 → 合并值只作量级参考，
+  **不得表述为「131 条在同一条件下的双跑」**。
 
 ## 六、权限回归测试（每次改权限必跑）
 
@@ -207,3 +229,4 @@ python tools/audit_prep.py diff-dup                        # R vs D 逐条比对
 | 2026-11-10 | §五 补「差异 ≠ 错误」与方向分治：抽检降档**不自动**触发整批重审；新增争议项登记、答案键冻结、补证据两条正规路径，`verify-sample` 提示语同步按方向输出；判定表、`litrev.py`、`AUDIT_CONTRACT.md` 与 agent 定义均未改 |
 | 2026-11-10 | §五 加金标准（`golden`/`verify-golden`）与固定契约双跑（`dup`/`diff-dup`）两条规程；新增 `tools/check.py` 一键回归（8 项结构性检查）；修 auditor 读回权限（read 加 `out_*` allow，需重启）；加 5 个 dup agent；删 round-03 遗留 `out_REWORK3`/`out_SAMPLE3` |
 | 2026-11-10 | 双跑 5 批完成（漂移率：支撑 8.4% / 自足 12.0% / 任一轴 20.5%；自足轴 10/10 单向 SELF→DEPENDENT）；金标准 25 条填完（一致率 92%，2 条偏松 G03/G18）；修 `golden --check`（已填 GOLDEN.md 不再误报）；D-01 仍 OPEN，建议第三次独立判定 |
+| 2026-11-10 | 双跑扩到 frag 三批（`--pair B:E`）：支撑 12.5% / 自足 4.2% / 任一 16.7%；**合并 131 条配对**任一轴 19.1%，自足轴 11:1 单向（`P≈0.3%`，系统性口径差）、支撑轴 9:4（`P≈13%`，不显著）。§五 增「改判的级联代价」（改判会移动抽检候选池、作废现有批次；实测重抽仅 4/10 重合）。D-01 证据到位（v1.1 下支撑 3:1），待裁决 |
