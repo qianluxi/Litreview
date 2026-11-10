@@ -1073,15 +1073,30 @@ def cmd_card_check(args):
     """
     d = Path(args.card_dir)
     files = sorted(p for p in d.glob("*.md") if "引文核验" not in p.name)
-    if args.only:
-        keep = {s.strip() for s in args.only.split(",") if s.strip()}
-        files = [p for p in files if p.stem in keep]
     if not files:
         print(f"[!] {d} 下没有卡片")
         return 2
+    if args.only:
+        # 允许写主干全称，也允许写唯一前缀：HANDOFF 里让人手打全称很容易打错，
+        # 而打错时若返回「下没有卡片」会被读成「没有卡片可查，正常」，等于假绿。
+        keep, hit = [s.strip() for s in args.only.split(",") if s.strip()], []
+        for k in keep:
+            exact = [p for p in files if p.stem == k]
+            pref = [p for p in files if p.stem.startswith(k)]
+            if exact:
+                hit += exact
+            elif len(pref) == 1:
+                hit.append(pref[0])
+            elif pref:
+                print(f"[!] 「{k}」匹配到 {len(pref)} 张，请写全称：{[p.stem for p in pref]}")
+                return 2
+            else:
+                print(f"[!] 没有主干为「{k}」（或以此为前缀）的卡片")
+                return 2
+        files = sorted({p: None for p in hit})
 
     aliases = load_aliases()
-    problems, total_q = {}, 0
+    problems, total_q, numgap = {}, 0, []
     for p in files:
         errs = []
         text = p.read_text(encoding="utf-8")
@@ -1093,6 +1108,18 @@ def cmd_card_check(args):
             errs.append(f"首行应为「# {stem}」，实为「{first[:40]}」")
         if not re.search(r"^- 抽取范围：", text, re.M):
             errs.append("缺「- 抽取范围：」行（写清用了哪几页、哪几页是封面/参考文献）")
+        else:
+            # 页数能对账：范围行的末页必须等于 txt 的实际页数，否则说明抄错了页或漏导了页。
+            # 「p.1 为封面页」这种标签查不出来（round-15 实测写错过一次：p.1 其实是正文首页），
+            # 那部分只能靠人看一眼——但页数这一半是机械的。
+            # 只认模板产出的「全文 p.1–N」写法。学位论文那种「摘要 p.21–22；§3.5 p.50–57；
+            # 结论 p.142–145」是多段范围（Sharma 151 页即此形），不该按单段对账。
+            rng = re.search(r"抽取范围：全文\s*p\.1\s*[–\-—~]\s*(\d+)", text)
+            txt = BASE / "_probe" / "texts" / f"{stem}.txt"
+            if rng and txt.exists():
+                real = len(re.findall(r"^<<<PAGE \d+>>>", txt.read_text(encoding="utf-8", errors="replace"), re.M))
+                if int(rng.group(1)) != real:
+                    errs.append(f"抽取范围写 p.1–{rng.group(1)}，但 txt 实际 {real} 页")
 
         secs = [(m.group(1), m.group(2).strip(), m.end())
                 for m in re.finditer(r"^## (\d+)\.\s*(.+)$", text, re.M)]
@@ -1140,6 +1167,16 @@ def cmd_card_check(args):
             if len(re.sub(r"[^A-Za-z]", "", q)) < 20:
                 errs.append(f"「{name}」引文不足 20 个英文字母，会被核验静默跳过")
 
+            # 论断里的数值应在同节引文里出现（`0,694` 与 `0.694` 视为同一个数）。
+            # 数值是最容易在「论断」里被顺手补上的成分：round-15 实测 §6 论断写
+            # 0.694 / 0.86，这两个数在 p.5 的公式里，不在 p.6 那条引文内。
+            # 只提示、不判红——判定码它管不着，但它指出的位置基本都要人再看一眼。
+            norm = lambda s: re.sub(r"(\d),(\d)", r"\1.\2", s)
+            q_nums = set(re.findall(r"\d+(?:[.,]\d+)*", norm(q)))
+            for x in re.findall(r"\d+(?:[.,]\d+)*", norm(claim)):
+                if x not in q_nums and not re.fullmatch(r"(19|20)\d{2}", x):
+                    numgap.append((stem, name, x))
+
         # 多余的英文双引号会被 verify 当成待校验引文，制造假失败
         n_dq = text.count('"')
         if n_dq != 2 * nquote:
@@ -1163,6 +1200,19 @@ def cmd_card_check(args):
                if q[:1].islower())
     if frag:
         print(f"  [i] 其中 {frag} 条引文首字母小写（片段，非整句）：新卡片应为 0 条")
+    if numgap:
+        cards = sorted({s for s, _, _ in numgap})
+        print(f"  [i] {len(cards)} 张卡片的论断里出现引文外的数值（{len(numgap)} 处，新卡片应为 0）；示例：")
+        seen = set()
+        for stem, name, x in numgap:
+            if stem in seen:
+                continue
+            seen.add(stem)
+            xs = [y for s, n, y in numgap if s == stem]
+            print(f"        {stem[:52]} · {name} → {', '.join(xs)}")
+            if len(seen) >= 6:
+                print(f"        …（还有 {len(cards) - 6} 张）")
+                break
     if problems:
         for name, errs in problems.items():
             print(f"  ✗ {name}")
@@ -1171,6 +1221,56 @@ def cmd_card_check(args):
         print(f"\n✗ {len(problems)}/{len(files)} 张不合格")
         return 1
     print(f"  ✓ {len(files)}/{len(files)} 全部符合 7 节结构（节名/顺序/每节 1 条引文/标注可对上）")
+    return 0
+
+
+def cmd_card_coverage(args):
+    """对账：卡片里的每一节都必须落进某个批次输入，否则就是「没人审的证据」。
+
+    存在的理由（round-15 演练实测）：把一张新卡片放进 `full/` 之后，`verify` 从 131 变 138、
+    `card-check` 照样全绿、`audit-count` 仍是 131——三道门禁没有一道会说出「这 7 条谁都没审」。
+    卡片目录和判定表是两个账本，必须有一步机械对账，否则「新文献能进判定表」全靠人记得跑 batch。
+    """
+    aud = Path(args.audit_dir)
+    reg = json.loads((aud / "BATCHES.json").read_text(encoding="utf-8"))["batches"]
+
+    def resolve(p):
+        q = Path(p)
+        return q if q.exists() else BASE.parent / p
+
+    covered, done = set(), set()
+    for b in reg:
+        p = resolve(b["input"])
+        if not p.exists() or p.name in done:
+            continue
+        done.add(p.name)
+        for m in re.finditer(r"^###\s+(\S+)\s*・\s*(\S+)\s*・\s*(\S+)", p.read_text(encoding="utf-8"), re.M):
+            covered.add((m.group(2), m.group(3)))
+
+    d = Path(args.card_dir)
+    cards = sorted(p for p in d.glob("*.md") if "引文核验" not in p.name)
+    pairs, missing = 0, []
+    for p in cards:
+        text = p.read_text(encoding="utf-8")
+        secs = [(m.group(1), m.group(2).strip(), m.end())
+                for m in re.finditer(r"^## (\d+)\.\s*(.+)$", text, re.M)]
+        for i, (num, name, end) in enumerate(secs):
+            nxt = secs[i + 1][2] if i + 1 < len(secs) else len(text)
+            blk = text[end:nxt]
+            if not QUOTE_LINE_RE.findall(blk):
+                continue  # 「未涉及」节没有引文，本来就不该进判定表
+            pairs += 1
+            if (p.stem, name) not in covered:
+                missing.append((p.stem, name))
+
+    print(f"卡片-批次对账：{d} · 卡片 {len(cards)} 张 · 带引文的节 {pairs} 条 · "
+          f"批次输入 {len(done)} 个 · 覆盖 {len(covered)} 组(文献, 节)")
+    if missing:
+        print(f"  ✗ {len(missing)} 节不在任何批次输入里（进了卡片但没人审）：")
+        for stem, name in missing:
+            print(f"      - {stem} · {name}")
+        return 1
+    print("  ✓ 每一条带引文的节都已落进某个批次输入（卡片与判定表同一本账）")
     return 0
 
 
@@ -1858,6 +1958,11 @@ def main():
     p.add_argument("--card-dir", default=str(CARD_DIR), help="卡片目录（默认 _probe/full）")
     p.add_argument("--only", default=None, help="只查指定文献名，逗号分隔")
     p.set_defaults(func=cmd_card_check)
+
+    p = sub.add_parser("card-coverage", help="对账：卡片里带引文的节是否都已落进某个批次输入")
+    p.add_argument("--audit-dir", default=str(AUDIT_DIR), help="批次输入目录（默认 _probe/audit）")
+    p.add_argument("--card-dir", default=str(CARD_DIR), help="卡片目录（默认 _probe/full）")
+    p.set_defaults(func=cmd_card_coverage)
 
     p = sub.add_parser("batch", help="从卡片刷新审计批次输入（保留 id/文献/节，只换论断与引文）")
     p.add_argument("--audit-dir", default=str(AUDIT_DIR), help="批次输入目录（默认 _probe/audit）")
