@@ -491,17 +491,30 @@ def cmd_golden(args):
     n_by = {s: sum(1 for r in picked if r["support"] == s) for s in SUPPORT}
     if args.check:
         bad = []
-        for path, want in ((GOLDEN, text), (GOLDEN_MAP, gmap)):
-            if not path.exists():
-                bad.append(f"缺失 {path.name}")
-            elif path.read_text(encoding="utf-8") != want:
-                bad.append(f"与当前判定表复算不一致：{path.name}（判定表变了，需重做金标准）")
+        # GOLDEN_MAP 全文比对（答案键，无人填，必须逐字一致）
+        if not GOLDEN_MAP.exists():
+            bad.append("缺失 GOLDEN_MAP.md")
+        elif GOLDEN_MAP.read_text(encoding="utf-8") != gmap:
+            bad.append("与当前判定表复算不一致：GOLDEN_MAP.md（判定表变了，需重做金标准）")
+        # GOLDEN.md 只比对条目详情部分（表格是人填的，填后必然与空模板不同，不比对）
+        marker = "## 条目详情"
+        if not GOLDEN.exists():
+            bad.append("缺失 GOLDEN.md")
+        elif marker not in text:
+            bad.append("GOLDEN.md 模板缺少「## 条目详情」标记（工具版本不匹配）")
+        else:
+            disk = GOLDEN.read_text(encoding="utf-8")
+            want_detail = text[text.index(marker):]
+            disk_detail = disk[disk.index(marker):] if marker in disk else ""
+            if disk_detail != want_detail:
+                bad.append("GOLDEN.md 条目详情与当前判定表复算不一致（判定表变了，需重做金标准）")
         if bad:
             print("✗ 金标准自检未通过：")
             for b in bad:
                 print("  -", b)
             return 1
-        print(f"✓ 金标准可复现：{len(picked)} 条（S{n_by['SUPPORTED']}/P{n_by['PARTIAL']}/U{n_by['UNSUPPORTED']}），戳 {st}。")
+        print(f"✓ 金标准可复现：{len(picked)} 条（S{n_by['SUPPORTED']}/P{n_by['PARTIAL']}/U{n_by['UNSUPPORTED']}），戳 {st}。"
+              + "（GOLDEN.md 表格为人填部分，不纳入比对）")
         return 0
     GOLDEN.write_text(text, encoding="utf-8")
     GOLDEN_MAP.write_text(gmap, encoding="utf-8")

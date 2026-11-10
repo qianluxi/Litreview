@@ -9,33 +9,34 @@
 
 ## 待填判定表（照契约 §四，人填）
 
-| id | 支撑 | 自足 | 引文里的依据（≤15 字，必须是引文原词） | 缺什么 / 需补的一句 |
-|----|------|------|--------------------------------------|--------------------|
-| G01 |  |  |  |  |
-| G02 |  |  |  |  |
-| G03 |  |  |  |  |
-| G04 |  |  |  |  |
-| G05 |  |  |  |  |
-| G06 |  |  |  |  |
-| G07 |  |  |  |  |
-| G08 |  |  |  |  |
-| G09 |  |  |  |  |
-| G10 |  |  |  |  |
-| G11 |  |  |  |  |
-| G12 |  |  |  |  |
-| G13 |  |  |  |  |
-| G14 |  |  |  |  |
-| G15 |  |  |  |  |
-| G16 |  |  |  |  |
-| G17 |  |  |  |  |
-| G18 |  |  |  |  |
-| G19 |  |  |  |  |
-| G20 |  |  |  |  |
-| G21 |  |  |  |  |
-| G22 |  |  |  |  |
-| G23 |  |  |  |  |
-| G24 |  |  |  |  |
-| G25 |  |  |  |  |
+| id  | 支撑          | 自足        | 引文里的依据（≤15 字，必须是引文原词）          | 缺什么 / 需补的一句                            |
+| --- | ----------- | --------- | ------------------------------ | -------------------------------------- |
+| G01 | UNSUPPORTED | SELF      | "to illustrate"                | 引文未触及 CBR/相似度度量问题域，论断主体无依据             |
+| G02 | PARTIAL     | SELF      | "being developed"              | "案例"超出引文（止于 failure analysis），需补 cases |
+| G03 | PARTIAL     | SELF      | "Ward linkage"                 | 引文止于 distance as，"度量"一词不在引文内           |
+| G04 | PARTIAL     | SELF      | "implemented in"               | "原型形态"无依据（引文无 prototype），范围放大          |
+| G05 | PARTIAL     | DEPENDENT | "can overcome"                 | such 指代对象不在引文内，"现有案例检索方法"需补            |
+| G06 | SUPPORTED   | SELF      | "mature and systematic theory" | —                                      |
+| G07 | PARTIAL     | SELF      | "supply the system"            | "子系统""构成"无依据，引文只说 supply               |
+| G08 | PARTIAL     | SELF      | "could be"                     | "取值"超出引文，could be 升级为实际                |
+| G09 | SUPPORTED   | SELF      | "GNN-based shear wall"         | —                                      |
+| G10 | SUPPORTED   | SELF      | "characteristic attributes"    | —                                      |
+| G11 | PARTIAL     | DEPENDENT | "the same with"                | This 指代不在引文内，"验证依据"超出引文                |
+| G12 | SUPPORTED   | SELF      | "frames and rules"             | —                                      |
+| G13 | PARTIAL     | SELF      | "key factor"                   | "面向建筑设计中的平面图"引文无依据                     |
+| G14 | PARTIAL     | SELF      | "no universal"                 | "本文讨论通用方法论"引文无对应                       |
+| G15 | SUPPORTED   | SELF      | "combines CBR"                 | —                                      |
+| G16 | SUPPORTED   | SELF      | "conceptual design"            | —                                      |
+| G17 | SUPPORTED   | SELF      | "0.247"                        | —                                      |
+| G18 | PARTIAL     | SELF      | "surface match"                | PATDEX 不在引文内，论断主体为引文外专有名词              |
+| G19 | SUPPORTED   | SELF      | "12 fingerprints"              | —                                      |
+| G20 | SUPPORTED   | SELF      | "XML-based"                    | —                                      |
+| G21 | SUPPORTED   | SELF      | "tree editing distance"        | —                                      |
+| G22 | SUPPORTED   | SELF      | "perceptual model"             | —                                      |
+| G23 | PARTIAL     | SELF      | "can be encoded"               | can be 可能性写成实际采用，情态升级                  |
+| G24 | SUPPORTED   | DEPENDENT | "same shape type"              | it 指代 this descriptor，需补主语             |
+| G25 | SUPPORTED   | SELF      | "production rules"             | —                                      |
+合计：25 条（SUPPORTED 13 / PARTIAL 11 / UNSUPPORTED 1；DEPENDENT 3）
 
 ## 条目详情（判定时可读卡片原文，开卷）
 

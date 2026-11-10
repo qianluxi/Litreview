@@ -144,6 +144,7 @@ python tools/audit_prep.py verify-golden      # 比对人判 vs 判定表，输�
 - `GOLDEN.md` 是给人填的表，**不进 `BATCHES.json`、不生成 agent、不被 `audit-count` 扫**（文件名不是 `out_*`）。
 - `GOLDEN_MAP.md` 是答案键（G id → 原批次/原判定），主控留档，**不贴给任何人**；判定者填表时读不到它。
 - `verify-golden` 的一致率是判定表可信度的**唯一估计**；差异不自动触发重审，按 §五「差异 ≠ 错误」登记 `DISPUTED.md` 后人工裁决。
+- `golden --check` 只比对 `GOLDEN_MAP.md`（答案键）+ `GOLDEN.md` 的条目详情部分；**人填的判定表不纳入比对**（填后必然不等于空模板）。判定表一变，`GOLDEN_MAP` 即失效。
 
 ### 固定契约双跑（测漂移率，2026-11-10 加入）
 
@@ -205,3 +206,4 @@ python tools/audit_prep.py diff-dup                        # R vs D 逐条比对
 | 2026-11-10 | §五 抽检候选集改为「当前 SUPPORTED」（`tools/audit_prep.py`），新增答案键闭卷纪律、`--check` 复现校验与 `verify-sample` 机械验收；`litrev.py` 未改 |
 | 2026-11-10 | §五 补「差异 ≠ 错误」与方向分治：抽检降档**不自动**触发整批重审；新增争议项登记、答案键冻结、补证据两条正规路径，`verify-sample` 提示语同步按方向输出；判定表、`litrev.py`、`AUDIT_CONTRACT.md` 与 agent 定义均未改 |
 | 2026-11-10 | §五 加金标准（`golden`/`verify-golden`）与固定契约双跑（`dup`/`diff-dup`）两条规程；新增 `tools/check.py` 一键回归（8 项结构性检查）；修 auditor 读回权限（read 加 `out_*` allow，需重启）；加 5 个 dup agent；删 round-03 遗留 `out_REWORK3`/`out_SAMPLE3` |
+| 2026-11-10 | 双跑 5 批完成（漂移率：支撑 8.4% / 自足 12.0% / 任一轴 20.5%；自足轴 10/10 单向 SELF→DEPENDENT）；金标准 25 条填完（一致率 92%，2 条偏松 G03/G18）；修 `golden --check`（已填 GOLDEN.md 不再误报）；D-01 仍 OPEN，建议第三次独立判定 |
