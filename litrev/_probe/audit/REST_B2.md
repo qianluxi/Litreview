@@ -3,7 +3,7 @@
 > 判定标准：`litrev/_probe/AUDIT_CONTRACT.md`（含第五节口径修订）。
 > 全部条目已通过 `verify`：逐字存在、页码为 PDF 物理页。**不要判真伪与页码**，只判论断层。
 > 不要读任何 PDF 或 `full/*.md`。只依据下面给出的论断与引文判定。
-> 快照 sha1: 6e0fdbeb4f
+> 快照 sha1: 1c518a453b
 
 输出：只输出表格 + 一行合计，行序与本文件条目顺序一致。
 
@@ -12,7 +12,7 @@
 
 ### R2-01 ・ AamodtPlaza1994_CBR_Foundations ・ 问题域 ・ p.7
 
-- 论断：本文讨论的是案例推理的通用方法论，作者指出并不存在适用于每一个应用领域的通用案例推理方法。
+- 论断：作者指出，并不存在适用于每一个应用领域的通用案例推理方法。
 - 引文："As for AI in general, there are no universal CBR methods suitable for every domain of application." (Aamodt and Plaza, 1994, p.7)
 - 源文件：第 11 行
 
@@ -42,7 +42,7 @@
 
 ### R2-06 ・ Rodrigues2017_Clustering_FloorPlans ・ 案例或数据的表示形式 ・ p.6
 
-- 论断：每种描述子都表示成长度相同的数值向量（100 个值），因此表示类型不影响算法性能。
+- 论断：各聚类过程使用的向量长度相同（100 个值），因此形状表示类型不影响算法性能。
 - 引文："As the vector in every clustering process had the same length (100 values), the type of shape representation did not affect the performance of the algorithm." (Rodrigues et al., 2017, p.6)
 - 源文件：第 15 行
 
@@ -96,7 +96,7 @@
 
 ### R2-15 ・ Xia2025_CoDesign_ShearWallBeam_GNN ・ 评价方式 ・ p.13
 
-- 论断：评价采用与工程师设计对比的交并比（SIoU、BIoU）：协同设计方法的 SIoU 为 0.625、BIoU 为 0.548，顺序设计方法分别为 0.544 与 0.404。
+- 论断：评价采用交并比（SIoU、BIoU）对比协同设计与顺序设计方法：协同设计方法 SIoU 0.625、BIoU 0.548，顺序设计方法 0.544、0.404。
 - 引文："The SIoU and BIoU obtained using the proposed co-design method were 0.625 and 0.548, respectively, whereas those obtained using the successive design method were 0.544 and 0.404, respectively." (Xia et al., 2025, p.13)
 - 源文件：第 27 行
 

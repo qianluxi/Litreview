@@ -11,7 +11,7 @@
 - 引文："Generative design methods are able to produce a large number of potential solutions of architectural ﬂoor plans, which may be overwhelming for the decision-maker to cope with." (Rodrigues et al., 2017, p.1)
 
 ## 3. 案例或数据的表示形式
-- 论断：每种描述子都表示成长度相同的数值向量（100 个值），因此表示类型不影响算法性能。
+- 论断：各聚类过程使用的向量长度相同（100 个值），因此形状表示类型不影响算法性能。
 - 引文："As the vector in every clustering process had the same length (100 values), the type of shape representation did not affect the performance of the algorithm." (Rodrigues et al., 2017, p.6)
 
 ## 4. 相似性或检索机制

@@ -3,7 +3,7 @@
 - 抽取范围：全文 1–21 页
 
 ## 1. 一句话主张
-- 论断：作者将论文定位为介绍卡内基梅隆大学开发的四个专家系统，用以探索并界定初步设计阶段所做的决策。
+- 论断：论文第二部分介绍卡内基梅隆大学开发的四个专家系统，用以探索并界定初步设计阶段所做的决策。
 - 引文："The second part presents four expert systems, developed at Carnegie Mellon University, that explore and define the decisions made during preliminary design." (Maher, 1987, p.3)
 
 ## 2. 问题域

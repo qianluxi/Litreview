@@ -1365,6 +1365,171 @@ def cmd_batch(args):
     return 0
 
 
+def _batch_blocks(text):
+    """从批次输入里取 {id: (论断, 引文)}；只认 ### 条目块。"""
+    got = {}
+    for blk in re.split(r"^### ", text, flags=re.M)[1:]:
+        m = BATCH_IN_RE.match("### " + blk.splitlines()[0])
+        if not m:
+            continue
+        c = re.search(r"^- 论断：(.+)$", blk, re.M)
+        q = re.search(r'^- 引文："(.+?)"\s*\(', blk, re.M)
+        got[m.group(1)] = (c.group(1).strip() if c else "", q.group(1) if q else "")
+    return got
+
+
+def _payload_stamp(text):
+    """批次输入的「快照 sha1」算法：论断行 + 引文行拼接后取 sha1 前 10 位。"""
+    payload = "".join(re.findall(r"^- (?:论断|引文)：.+$", text, re.M))
+    return hashlib.sha1(payload.encode("utf-8")).hexdigest()[:10]
+
+
+def cmd_reseal(args):
+    """把「定点重判」的结果并回原批次判定表，并重封快照戳。
+
+    为什么需要：卡片返工后 `batch` 会把批次输入刷成新文字，而 `stamp-out` 按文件级 sha1
+    判「输入被改过」，只能要求整批重审。若某批次 16 条里只改了 4 条，整批重掷既浪费，
+    又会把已经人工复核过的结论推翻。reseal 是这个缺口的出口，但它必须先**逐条**证明：
+      1. 定点输出的戳 = 定点输入的戳（否则不是同一批文字判出来的）；
+      2. 原批次里「与上次判定时不同」的条目，全部落在定点输出里；
+      3. 定点行的依据词能在新引文里逐字命中。
+    三条全过才替换行、重算合计、重封戳；任何一条不过就拒绝，让人回去整批重审。
+    """
+    import subprocess
+    root = BASE.parent
+
+    def git(*a):
+        return subprocess.run(["git", "-C", str(root)] + list(a),
+                              capture_output=True, text=True, encoding="utf-8")
+
+    audit = Path(args.audit_dir)
+    fixin = audit / args.fix_input
+    fixout = audit / args.fix_out
+    for p in (fixin, fixout):
+        if not p.exists():
+            print(f"[!] 缺文件：{p}")
+            return 2
+
+    fixin_text = fixin.read_text(encoding="utf-8")
+    if batch_stamp(fixin) != _payload_stamp(fixin_text):
+        print(f"[!] {fixin.name} 头部戳与内容不符（被改过但没重算戳）")
+        return 2
+    if batch_stamp(fixout) != batch_stamp(fixin):
+        print(f"[!] {fixout.name} 的戳 {batch_stamp(fixout)} ≠ {fixin.name} 的戳 "
+              f"{batch_stamp(fixin)}：不是同一批文字判出来的，拒绝合并")
+        return 2
+
+    fix_rows = {}
+    for line in fixout.read_text(encoding="utf-8").splitlines():
+        if not re.match(r"^\|\s*[A-Z]+\d+-\d+\s*\|", line):
+            continue
+        cell = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cell) >= 5:
+            fix_rows[cell[0]] = (cell[1], cell[2], cell[3], cell[4])
+    if not fix_rows:
+        print(f"[!] {fixout.name} 里没有判定行")
+        return 2
+
+    plan, refuse = [], []
+    for p in sorted(audit.glob("*.md")):
+        m = re.match(r"^(FRAG|REST)_B(\d+)\.md$", p.name)
+        if not m:
+            continue
+        tag = ("B" if m.group(1) == "FRAG" else "R") + m.group(2)
+        out = audit / f"out_{tag}.md"
+        if not out.exists():
+            continue
+        commit = git("log", "-1", "--format=%H", "--", out.relative_to(root).as_posix()).stdout.strip()
+        if not commit:
+            continue
+        shown = git("show", f"{commit}:{p.relative_to(root).as_posix()}")
+        if shown.returncode != 0:
+            continue
+        old = _batch_blocks(shown.stdout)
+        cur_text = p.read_text(encoding="utf-8")
+        cur = _batch_blocks(cur_text)
+        changed = {i for i in cur if old.get(i) != cur[i]}
+
+        otext = out.read_text(encoding="utf-8")
+        judged = {r[0] for r in parse_audit_rows(otext)}
+        if not changed:
+            if batch_stamp(out) != batch_stamp(p):
+                refuse.append((tag, "无条目变化但戳不一致（疑似旧戳）", []))
+            continue
+
+        naked = sorted(changed - set(fix_rows))
+        if naked:
+            refuse.append((tag, "输入已改但无新判定", naked))
+            continue
+        orphan = sorted((changed & set(fix_rows)) - judged)
+        if orphan:
+            refuse.append((tag, "定点判定行在原表里找不到对应 id", orphan))
+            continue
+
+        bad_basis = []
+        for i in sorted(changed):
+            basis = fix_rows[i][2].strip().strip('"“”')
+            if basis and basis not in cur[i][1]:
+                bad_basis.append((i, basis))
+        if bad_basis:
+            refuse.append((tag, "定点判定的依据词不在新引文里", [b[0] for b in bad_basis]))
+            continue
+
+        want = _payload_stamp(cur_text)
+        if batch_stamp(p) != want:
+            refuse.append((tag, "批次输入的头部戳与内容不符", []))
+            continue
+        plan.append((tag, p, out, changed, want, commit))
+
+    if not plan:
+        print("[!] 没有可重封的批次")
+        for tag, why, ids in refuse:
+            print(f"  {tag:<4} {why}  {' '.join(ids)}")
+        return 1
+
+    if args.check:
+        for tag, p, out, changed, want, commit in plan:
+            print(f"{tag:<4} 可重封 {len(changed)} 条（{', '.join(sorted(changed))}）→ {want}")
+        for tag, why, ids in refuse:
+            print(f"{tag:<4} ✗ {why}  {' '.join(ids)}")
+        return 1 if refuse else 0
+
+    ledger = [f"\n## {__import__('datetime').date.today()} · reseal\n",
+              f"- 定点输入：`{fixin.name}`（戳 `{batch_stamp(fixin)}`）；输出：`{fixout.name}`\n"]
+    for tag, p, out, changed, want, commit in plan:
+        lines = out.read_text(encoding="utf-8").splitlines()
+        repl = 0
+        for k, line in enumerate(lines):
+            mm = re.match(r"^\|\s*([A-Z]+\d+-\d+)\s*\|", line)
+            if mm and mm.group(1) in changed:
+                i = mm.group(1)
+                sp, sf, basis, gap = fix_rows[i]
+                lines[k] = f"| {i} | {sp} | {sf} | {basis} | {gap} |"
+                repl += 1
+        rows = parse_audit_rows("\n".join(lines))
+        c = {k: sum(1 for r in rows if r[1] == k) for k in SUPPORT}
+        dep = sum(1 for r in rows if r[2] == "DEPENDENT")
+        total = "".join(lines)
+        total = f"合计：{len(rows)} 条（SUPPORTED {c['SUPPORTED']} / PARTIAL {c['PARTIAL']} / " \
+                f"UNSUPPORTED {c['UNSUPPORTED']}；DEPENDENT {dep}）"
+        lines = [total if l.startswith("合计") else l for l in lines]
+        note = ("> 快照 sha1: " + want +
+                f"（由 litrev.py reseal 重封：{len(changed)} 条经 {fixin.name} 定点重判，"
+                f"其余条目输入逐字未变；原判定提交 {commit[:7]}）\n\n")
+        out.write_text(note + _strip_stamp("\n".join(lines)) + "\n", encoding="utf-8")
+        print(f"{tag:<4} 重封 {repl} 行 → 戳 {want}（原 {commit[:7]}）")
+        ledger.append(f"- `{tag}`：替换 {repl} 行（{', '.join(sorted(changed))}），"
+                      f"戳 `{want}`，原判定提交 `{commit[:7]}`\n")
+
+    with (audit / "RESEAL.md").open("a", encoding="utf-8") as f:
+        f.writelines(ledger)
+
+    for tag, why, ids in refuse:
+        print(f"{tag:<4} ✗ {why}  {' '.join(ids)}")
+    print("\n台账已追加：litrev/_probe/audit/RESEAL.md")
+    return 1 if refuse else 0
+
+
 def cmd_locate(args):
     corpus = load_corpus()
     found = find_quote(corpus, args.text)
@@ -1575,6 +1740,13 @@ def main():
     p.add_argument("--audit-dir", default=str(AUDIT_DIR), help="审计目录（默认 _probe/audit）")
     p.add_argument("--check", action="store_true", help="存在必须重审的批次时以退出码 1 结束")
     p.set_defaults(func=cmd_stamp_out)
+
+    p = sub.add_parser("reseal", help="把定点重判结果并回原判定表并重封戳（先逐条证明只改了这些）")
+    p.add_argument("--audit-dir", default=str(AUDIT_DIR), help="审计目录（默认 _probe/audit）")
+    p.add_argument("--fix-input", default="FIX_B1.md", help="定点重判的输入文件（默认 FIX_B1.md）")
+    p.add_argument("--fix-out", default="out_FIX.md", help="定点重判的输出文件（默认 out_FIX.md）")
+    p.add_argument("--check", action="store_true", help="只报告能否重封，不写盘")
+    p.set_defaults(func=cmd_reseal)
 
     p = sub.add_parser("locate", help="回查一段文字的确切出处")
     p.add_argument("text")

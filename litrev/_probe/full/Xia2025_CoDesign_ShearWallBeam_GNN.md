@@ -19,11 +19,11 @@
 - 引文："The process of predicting edge labels using the GNN comprises passing the input features through GraphSAGE algorithm layers, followed by the application of an MLP to predict the edge features using the combined feature values of each edge and its two corresponding nodes as input. Finally, the feature information for each edge is processed using a classification algorithm to yield the corresponding predicted values." (Xia et al., 2025, p.8)
 
 ## 5. 系统形态
-- 论断：系统形态为可运行的设计—分析流程原型：研究中调用 AIStructure 接口自动布置楼板并施加荷载，再用 PKPM API 完成自动建模与力学分析。
+- 论断：系统形态为设计—分析流程的实现：研究中调用 AIStructure 接口快速布置楼板并施加荷载，再用 PKPM API 完成自动建模与力学分析。
 - 引文："This study utilized the AIStructure application programming interface (API) [30] to realize the rapid arrangement of floor slabs and application of loads to the beams and slabs. Subsequently, the PKPM API software development tool was employed to achieve automated structural modeling and mechanical analysis." (Xia et al., 2025, p.13)
 
 ## 6. 评价方式
-- 论断：评价采用与工程师设计对比的交并比（SIoU、BIoU）：协同设计方法的 SIoU 为 0.625、BIoU 为 0.548，顺序设计方法分别为 0.544 与 0.404。
+- 论断：评价采用交并比（SIoU、BIoU）对比协同设计与顺序设计方法：协同设计方法 SIoU 0.625、BIoU 0.548，顺序设计方法 0.544、0.404。
 - 引文："The SIoU and BIoU obtained using the proposed co-design method were 0.625 and 0.548, respectively, whereas those obtained using the successive design method were 0.544 and 0.404, respectively." (Xia et al., 2025, p.13)
 
 ## 7. 明确写出的局限

@@ -3,11 +3,11 @@
 - 抽取范围：全文 1–21 页
 
 ## 1. 一句话主张
-- 论断：本文提出一个通用的描述框架，用于描述案例推理方法，后续的描述与讨论都参照该框架。
+- 论断：本文提出一个通用的描述框架，后续的描述与讨论都参照该框架。
 - 引文："Initially, a general framework is defined, to which the subsequent descriptions and discussions will refer." (Aamodt and Plaza, 1994, p.1)
 
 ## 2. 问题域
-- 论断：本文讨论的是案例推理的通用方法论，作者指出并不存在适用于每一个应用领域的通用案例推理方法。
+- 论断：作者指出，并不存在适用于每一个应用领域的通用案例推理方法。
 - 引文："As for AI in general, there are no universal CBR methods suitable for every domain of application." (Aamodt and Plaza, 1994, p.7)
 
 ## 3. 案例或数据的表示形式
@@ -23,7 +23,7 @@
 - 引文："The two models are complementary and represent two views on case-based reasoning." (Aamodt and Plaza, 1994, p.6)
 
 ## 6. 评价方式
-- 论断：评价以已部署应用的实际运行数据呈现，例如在 1990 年 12 月至 1991 年 9 月间处理了 20,000 个 non-conformance。
+- 论断：1990 年 12 月至 1991 年 9 月间处理了 20,000 个 non-conformance。
 - 引文："In the period December 90 - September 91 20.000 non-conformances were handled." (Aamodt and Plaza, 1994, p.17)
 
 ## 7. 明确写出的局限

@@ -1,9 +1,10 @@
-> 快照 sha1: c8ad398b0d（由 litrev.py stamp-out 依 git 历史补写：判定产出后输入未变）
+> 快照 sha1: 4b2ce8c0a4（由 litrev.py reseal 重封：4 条经 FIX_B1.md 定点重判，其余条目输入逐字未变；原判定提交 4dff615）
+
 
 | id | 支撑 | 自足 | 引文里的依据（≤15 字，必须是引文原词） | 缺什么 / 需补的一句 |
 |----|------|------|--------------------------------------|--------------------|
-| R1-01 | PARTIAL | SELF | "a general framework is defined" | 引文没有提到“用于描述案例推理方法”；请删去这一目的，或补充原文依据 |
-| R1-02 | PARTIAL | SELF | "20.000 non-conformances were handled" | 引文只给出了处理的数值，没有提到“已部署应用”和“评价”；请删去这些说法，或补充部署应用的依据 |
+| R1-01 | SUPPORTED | SELF | "general framework" | — |
+| R1-02 | SUPPORTED | SELF | "were handled" | — |
 | R1-03 | SUPPORTED | SELF | "aforementioned training method" | — |
 | R1-04 | SUPPORTED | SELF | "in the form of frames and rules" | — |
 | R1-05 | PARTIAL | SELF | "may be overwhelming" | 引文中的“may be overwhelming”被写成了“超出处理能力”，情态强度被提高；请补充“可能” |
@@ -15,8 +16,9 @@
 | R1-11 | SUPPORTED | SELF | "uses backward chaining" | — |
 | R1-12 | SUPPORTED | SELF | "four primary features essential for the retrieval" | — |
 | R1-13 | SUPPORTED | SELF | "may not adequately represent" | — |
-| R1-14 | PARTIAL | SELF | "rapid arrangement of floor slabs" | 引文用的是“rapid arrangement”，没有提到“原型”；请删去“原型”，或补充依据（“自动”不删：引文有 automated structural modeling and mechanical analysis） |
+| R1-14 | SUPPORTED | SELF | "AIStructure" | — |
 | R1-15 | SUPPORTED | SELF | "A histogram of runs is calculated" | — |
-| R1-16 | PARTIAL | SELF | "a key factor in the architectural quality" | 引文没有提到“面向建筑设计中的平面图”；请删去这一说法，或补充依据 |
+| R1-16 | SUPPORTED | SELF | "one of the most" | — |
 
-合计：16 条（SUPPORTED 10 / PARTIAL 6 / UNSUPPORTED 0；DEPENDENT 0）
+合计：16 条（SUPPORTED 14 / PARTIAL 2 / UNSUPPORTED 0；DEPENDENT 0）
+

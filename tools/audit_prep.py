@@ -294,12 +294,31 @@ def build_keys(recs, picked, pool_n, k, rate, seed, stamps, st, name="S1"):
     return "\n".join(lines)
 
 
+def key_stamps(path):
+    """读答案键里的「源批次输入戳」表 -> {批次文件名: 戳}（抽样时点的历史记录）。"""
+    if not Path(path).exists():
+        return {}
+    out, on = {}, False
+    for line in Path(path).read_text(encoding="utf-8").splitlines():
+        if line.startswith("## 源批次输入戳"):
+            on = True
+            continue
+        if on and line.startswith("## "):
+            break
+        m = re.match(r"^\|\s*`([^`]+)`\s*\|\s*`([0-9a-f]+)`\s*\|$", line)
+        if on and m:
+            out[m.group(1)] = m.group(2)
+    return out
+
+
 def cmd_sample(args):
     recs, stamps = load()
     picked = meta = drift = None
+    hist_stamps = {}
     if args.check:
         picked, meta, extra = frozen_picks(recs, KEYS, args.seed)
         drift = extra.get("drift", []) if extra else []
+        hist_stamps = key_stamps(KEYS)      # 抽样时点的批次戳，不随后来重封漂移
     if picked is None:
         pool, picked, k = pick(recs, args.rate, args.seed)
         pool_n = len(pool)
@@ -307,7 +326,8 @@ def cmd_sample(args):
         pool_n = int((meta or {}).get("pool", len(picked)))
         k = int((meta or {}).get("k", len(picked)))
     text, st = build_sample(recs, picked, pool_n, k, args.rate, args.seed)
-    keys = build_keys(recs, picked, pool_n, k, args.rate, args.seed, stamps, st)
+    keys = build_keys(recs, picked, pool_n, k, args.rate, args.seed,
+                      hist_stamps or stamps, st)
     if args.check:
         bad = []
         for path, want in ((SAMPLE, text), (KEYS, keys)):
@@ -320,8 +340,13 @@ def cmd_sample(args):
             for b in bad:
                 print("  -", b)
             return 1
+        drift_stamp = {n: (hist_stamps.get(n), stamps.get(n)) for n in hist_stamps
+                       if stamps.get(n) and stamps.get(n) != hist_stamps[n]}
         print(f"✓ 抽检批次可复现：{k}/{pool_n} 条（{k/pool_n:.1%}，抽样时点），"
-              f"戳 {st}，答案键一致，8 个源批次输入戳未变。")
+              f"戳 {st}，答案键一致"
+              + ("。" if not drift_stamp else
+                 f"；{len(drift_stamp)} 个批次在抽样后重封（按抽样时点口径复现）："
+                 + "、".join(f"{n} {a}→{b}" for n, (a, b) in drift_stamp.items()) + "。"))
         if drift:
             print(f"  注：{len(drift)} 条在原判之后被裁决修改（{', '.join(drift)}），"
                   "仍按抽样时点原判复现，差异由 verify-sample 报告。")
@@ -451,6 +476,20 @@ def cmd_verify_review(args):
     print(f"非 SUPPORTED 复核：{rel(REVIEW)} · 条目 {len(items)} 条")
     order = ["维持", "改判 SUPPORTED", "改判 UNSUPPORTED", "待定", "未识别", "未填"]
     print("  " + "  ".join(f"{k} {tally.get(k, 0)}" for k in order if tally.get(k)))
+
+    # 覆盖门禁：台账只证明「登记过的都填了」，不证明「该登记的都没漏」。
+    # 判定表一改（resel / 改稿 / 改判）就可能出现新的非 SUPPORTED，
+    # 不重新生成台账时上面那些统计照样全绿 —— 必须与当前判定表对一次。
+    in_ledger = {i for i, _, _ in items}
+    live_non = [r["id"] for r in recs if r["support"] != "SUPPORTED"]
+    unlogged = [i for i in live_non if i not in in_ledger]
+    stale = [i for i in in_ledger if i in live and live[i]["support"] == "SUPPORTED"]
+    print(f"  覆盖：当前非 SUPPORTED {len(live_non)} 条，台账已登记 {len(live_non) - len(unlogged)} 条")
+    if unlogged:
+        print(f"  [!] 台账漏登 {len(unlogged)} 条（当前非 SUPPORTED 却不在台账）：{'、'.join(unlogged)}"
+              f" → 跑 python tools/audit_prep.py review 重新生成")
+    if stale:
+        print(f"  [i] 台账另有 {len(stale)} 条已转为 SUPPORTED（历史记录，保留不改）：{'、'.join(stale)}")
     if changed:
         print("  改判明细：")
         for i, old, new, n in changed:
@@ -464,7 +503,7 @@ def cmd_verify_review(args):
     left = tally.get("未填", 0)
     if left:
         print(f"  [i] 还有 {left} 条未填")
-    bad = bool(unknown or no_reason or undone or left)
+    bad = bool(unknown or no_reason or undone or left or unlogged)
     print(("✗ 复核未收口" if bad else "✓ 复核已收口：全部有结论、改判均带处理说明"))
     return 1 if bad else 0
 
@@ -608,7 +647,37 @@ def pick_golden(recs, seed=43):
     return picked
 
 
-def build_golden(recs, picked):
+GOLDEN_ARCHIVE_MARK = "## 原文存档（抽样时点，返工后按此复现）"
+
+
+def golden_archive(recs=None):
+    """读金标准的「抽样时点原文」-> {gid: (claim行, 引文行)}。
+
+    为什么要存档：金标准是人对着**抽样时点的论断**判的。稿件返工后论断会变，
+    若条目详情跟着当前卡片走，人判就会被悄悄算到新文字上，一致率变成假数字。
+    所以详情按存档复现（`golden --check` 仍绿），而 `verify-golden` 用存档 vs 当前
+    比对，把「判后被返工」的条目从分母剔除并单列。
+    """
+    text = GOLDEN_MAP.read_text(encoding="utf-8") if GOLDEN_MAP.exists() else ""
+    if GOLDEN_ARCHIVE_MARK in text:
+        body = text[text.index(GOLDEN_ARCHIVE_MARK):]
+    elif GOLDEN.exists():                      # 首次：从已生成的 GOLDEN.md 详情反推
+        body = GOLDEN.read_text(encoding="utf-8")
+    else:
+        return {}
+    arch = {}
+    for blk in re.split(r"^### ", body, flags=re.M)[1:]:
+        lines = blk.splitlines()
+        m = re.match(r"^(G\d\d)\s*・", lines[0])
+        if not m:
+            continue
+        claim = next((l.rstrip() for l in lines if l.startswith("- 论断：")), "")
+        quote = next((l.rstrip() for l in lines if l.startswith("- 引文：")), "")
+        arch[m.group(1)] = (claim, quote)
+    return arch
+
+
+def build_golden(recs, picked, arch=None):
     head = [
         "# 人工金标准 G1（25 条，开卷裁定）",
         "",
@@ -628,12 +697,16 @@ def build_golden(recs, picked):
         head.append(f"| G{n:02d} |  |  |  |  |")
     head += ["", "## 条目详情（判定时可读卡片原文，开卷）", ""]
     for n, r in enumerate(picked, 1):
+        gid = f"G{n:02d}"
+        claim, quote = r["claim"], r["quote_line"]
+        if arch and gid in arch:               # 判后返工：详情仍按抽样时点复现
+            claim, quote = arch[gid]
         card = f"litrev/_probe/full/{r['doc']}.md"
         head += [
-            f"### G{n:02d} ・ {r['doc']} ・ {r['sec']} ・ {r['page']}",
+            f"### {gid} ・ {r['doc']} ・ {r['sec']} ・ {r['page']}",
             "",
-            r["claim"],
-            r["quote_line"],
+            claim,
+            quote,
             f"- 卡片：`{card}`（可读原文上下文）",
             "",
         ]
@@ -643,7 +716,7 @@ def build_golden(recs, picked):
     return text, st
 
 
-def build_golden_map(recs, picked, st):
+def build_golden_map(recs, picked, st, arch=None):
     lines = [
         "# G1 金标准映射（主控侧留档，不贴给任何人）",
         "",
@@ -665,6 +738,17 @@ def build_golden_map(recs, picked, st):
         lines.append(f"| G{n:02d} | {r['id']} | {r['doc']} | {r['sec']} | "
                      f"{r['support']} | {r['self']} | {r['basis']} | {r['gap']} |")
     lines += ["", f"> 共 {len(picked)} 条。", ""]
+    # 原文存档：人判是对着这版文字做的，判后返工不得改写它
+    lines += [GOLDEN_ARCHIVE_MARK, "",
+              "> 判定时点给出的论断与引文原文。稿件返工后**本节不改写**：`GOLDEN.md` 的条目详情按本节复现，",
+              "> `verify-golden` 用本节 vs 当前批次输入比对，把判后被返工的条目列为「失效」并从分母剔除。",
+              ""]
+    for n, r in enumerate(picked, 1):
+        gid = f"G{n:02d}"
+        claim, quote = r["claim"], r["quote_line"]
+        if arch and gid in arch:
+            claim, quote = arch[gid]
+        lines += [f"### {gid} ・ {r['id']}", "", claim, quote, ""]
     return "\n".join(lines)
 
 
@@ -677,16 +761,25 @@ def cmd_golden(args):
         drift = extra.get("drift", []) if extra else []
     if picked is None:
         picked = pick_golden(recs, args.seed)
-    text, st = build_golden(recs, picked)
-    gmap = build_golden_map(recs, picked, st)
+    arch = golden_archive() if args.check else None   # 自检按存档复现，重抽用当前原文
+    text, st = build_golden(recs, picked, arch)
+    gmap = build_golden_map(recs, picked, st, arch)
     n_by = {s: sum(1 for r in picked if r["support"] == s) for s in SUPPORT}
     if args.check:
         bad = []
         # GOLDEN_MAP 全文比对（答案键，无人填，必须与冻结清单逐字一致）
         if not GOLDEN_MAP.exists():
             bad.append("缺失 GOLDEN_MAP.md")
-        elif GOLDEN_MAP.read_text(encoding="utf-8") != gmap:
-            bad.append("与冻结清单复算不一致：GOLDEN_MAP.md（抽样条目或批次输入变了，需重做金标准）")
+        else:
+            disk_map = GOLDEN_MAP.read_text(encoding="utf-8")
+            want_map = gmap
+            if GOLDEN_ARCHIVE_MARK not in disk_map:
+                # 旧版答案键无存档节：只比对存档之前的部分，并提示补写
+                want_map = gmap[:gmap.index(GOLDEN_ARCHIVE_MARK)].rstrip() + "\n"
+                print("  [i] GOLDEN_MAP 尚无原文存档节（旧版），本次跳过该段比对；"
+                      "建议跑一次 `python tools/audit_prep.py golden-migrate` 补写")
+            if disk_map != want_map:
+                bad.append("与冻结清单复算不一致：GOLDEN_MAP.md（抽样条目或批次输入变了，需重做金标准）")
         # GOLDEN.md 只比对条目详情部分（表格是人填的，填后必然与空模板不同，不比对）
         marker = "## 条目详情"
         if not GOLDEN.exists():
@@ -713,6 +806,30 @@ def cmd_golden(args):
     print(f"待填表：{rel(GOLDEN)}  > 快照 sha1: {st}")
     print(f"答案键：{rel(GOLDEN_MAP)}（禁止贴给任何人）")
     print("下一步：人填 GOLDEN.md 的判定表 → python tools/audit_prep.py verify-golden")
+    return 0
+
+
+def cmd_golden_migrate(args):
+    """给旧版 GOLDEN_MAP 补写「原文存档」节：存档取自已生成的 GOLDEN.md 条目详情。
+
+    只加存档，不动人物表、不动 picks、不动戳；`--check` 会复算一次确认仍可复现。
+    """
+    if not GOLDEN.exists() or not GOLDEN_MAP.exists():
+        print("✗ 缺 GOLDEN.md 或 GOLDEN_MAP.md")
+        return 1
+    if GOLDEN_ARCHIVE_MARK in GOLDEN_MAP.read_text(encoding="utf-8"):
+        print("[i] GOLDEN_MAP 已有原文存档节，无需迁移")
+        return 0
+    arch = golden_archive()
+    if not arch:
+        print("✗ 无法从 GOLDEN.md 反推原文（条目详情为空？）")
+        return 1
+    recs, _ = load()
+    picked, _m, _e = frozen_picks(recs, GOLDEN_MAP, args.seed)
+    text, st = build_golden(recs, picked, arch)
+    gmap = build_golden_map(recs, picked, st, arch)
+    GOLDEN_MAP.write_text(gmap, encoding="utf-8")
+    print(f"✓ 已补写原文存档节：{len(arch)} 条（戳 {st}，未改动 GOLDEN.md）")
     return 0
 
 
@@ -753,6 +870,26 @@ def cmd_verify_golden(args):
     if not filled:
         print("✗ 一条都没填")
         return 1
+
+    # 判后返工失效：人判是对着抽样时点的论断做的；稿件改了这条，人判就不能再算进一致率
+    arch = golden_archive()
+    ins = parse_inputs()
+    stale = []
+    for g in filled:
+        i = kmap.get(g)
+        if g in arch and i in ins:
+            cur = (ins[i]["claim"], ins[i]["quote_line"])
+            if cur != arch[g]:
+                stale.append(g)
+    active = [g for g in filled if g not in stale]
+    if stale:
+        print(f"  [!] 判后返工失效 {len(stale)} 条（人判基于旧文，已从分母剔除）："
+              f"{', '.join(g + '(' + kmap[g] + ')' for g in stale)}")
+    if not active:
+        print("✗ 全部分母条目都已失效，需重抽金标准")
+        return 1
+    filled = active
+
     sup_same = sum(1 for g in filled if grown[g]["support"] == krec[g]["support"])
     self_same = sum(1 for g in filled if grown[g]["self"] == krec[g]["self"])
     both = sum(1 for g in filled if grown[g]["support"] == krec[g]["support"]
@@ -1054,6 +1191,9 @@ def main():
     p.set_defaults(func=cmd_golden)
     p = sub.add_parser("verify-golden", help="人填完 GOLDEN.md 后比对判定表，输出一致率")
     p.set_defaults(func=cmd_verify_golden)
+    p = sub.add_parser("golden-migrate", help="给旧版 GOLDEN_MAP 补写原文存档节（不动 GOLDEN.md）")
+    p.add_argument("--seed", type=int, default=43)
+    p.set_defaults(func=cmd_golden_migrate)
     p = sub.add_parser("diff-dup", help="双跑后比对原判与双跑输出，输出漂移率（默认 R:D）")
     p.add_argument("--pair", default="R:D", help="原判前缀:双跑前缀，默认 R:D；frag 双跑用 B:E")
     p.set_defaults(func=cmd_diff_dup)

@@ -3,7 +3,7 @@
 > 判定标准：`litrev/_probe/AUDIT_CONTRACT.md`（含第五节口径修订）。
 > 全部条目已通过 `verify`：逐字存在、页码为 PDF 物理页。**不要判真伪与页码**，只判论断层。
 > 不要读任何 PDF 或 `full/*.md`。只依据下面给出的论断与引文判定。
-> 快照 sha1: 09168d9ad9
+> 快照 sha1: 3740f34619
 
 输出：只输出表格 + 一行合计，行序与本文件条目顺序一致。
 
@@ -24,7 +24,7 @@
 
 ### R4-03 ・ Maher1987_ExpertSystems_StructuralDesign ・ 一句话主张 ・ p.3
 
-- 论断：作者将论文定位为介绍卡内基梅隆大学开发的四个专家系统，用以探索并界定初步设计阶段所做的决策。
+- 论断：论文第二部分介绍卡内基梅隆大学开发的四个专家系统，用以探索并界定初步设计阶段所做的决策。
 - 引文："The second part presents four expert systems, developed at Carnegie Mellon University, that explore and define the decisions made during preliminary design." (Maher, 1987, p.3)
 - 源文件：第 7 行
 

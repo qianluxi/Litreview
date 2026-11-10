@@ -7,8 +7,8 @@
 - 引文："We overcome the shortcomings by combining IoU and GED into one metric, called SSIG." (van Engelenburg et al., 2023, p.8)
 
 ## 2. 问题域
-- 论断：论文面向建筑设计中的平面图，认为建筑的构图结构是建筑品质的关键因素。
-- 引文："The compositional structure of a building is a key factor in the architectural quality." (van Engelenburg et al., 2023, p.1)
+- 论断：平面图是建筑设计中用于交流与思考的最负盛名的媒介之一。
+- 引文："Floor plans, as one of the most celebrated media for communicating and thinking in architectural design, are horizontal orthographic projections of a particular building’s ﬂoor." (van Engelenburg et al., 2023, p.1)
 
 ## 3. 案例或数据的表示形式
 - 论断：文献把平面图表示为显式建模形状、比例与位置的几何体，以及建模细分区域之间关系的图。
