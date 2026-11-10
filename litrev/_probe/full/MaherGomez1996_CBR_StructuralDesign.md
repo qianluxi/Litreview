@@ -7,7 +7,7 @@
 - 引文："Toward that end, this article presents four" (Maher and Gomez, 1996, p.1)
 
 ## 2. 问题域
-- 论断：问题域是建筑结构设计，案例资料取自结构设计项目。
+- 论断：问题域是结构设计项目，关注的是这类项目上的信息。
 - 引文："information on structural design projects" (Maher and Gomez, 1996, p.1)
 
 ## 3. 案例或数据的表示形式
@@ -19,11 +19,11 @@
 - 引文："a given problem by finding matches between" (Maher and Gomez, 1996, p.4)
 
 ## 5. 系统形态
-- 论断：CaseCAD 以 Framekit 这一框架式表示语言实现。
+- 论断：CaseCAD 使用 Framekit。
 - 引文："CaseCAD using Framekit, a frame-based" (Maher and Gomez, 1996, p.2)
 
 ## 6. 评价方式
-- 论断：评价所依据的案例数据规模为 14 个设计项目。
+- 论断：作者从 14 个设计项目中回顾并收集了数据。
 - 引文："Finally, we reviewed and collected data from 14 design projects." (Maher and Gomez, 1996, p.2)
 
 ## 7. 明确写出的局限

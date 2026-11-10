@@ -19,11 +19,11 @@
 - 引文："To solve this problem and to be able to take into consideration everything important and necessary such as concurrence of quality, quantitative and fuzzy attributes and difference in dimension, this paper established a new similarity measure method based on the relative Euclidean weight distance of attributes (see expression (5))." (Zhang, 2006, p.2)
 
 ## 5. 系统形态
-- 论断：系统的核心是单输出的三层 BP 神经网络。
+- 论断：作者构建了多输入单输出的三层 BP 网络。
 - 引文："Thereupon we have built the multi-input-and- single-output, three-layer BP network." (Zhang, 2006, p.3)
 
 ## 6. 评价方式
-- 论断：以工程实例的检索结果与工程实际选型相同作为验证依据。
+- 论断：选型结果与工程实践相同。
 - 引文："This selection is the same with the practice engineering." (Zhang, 2006, p.5)
 
 ## 7. 明确写出的局限

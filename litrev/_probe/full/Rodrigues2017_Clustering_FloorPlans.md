@@ -7,7 +7,7 @@
 - 引文："The perceptual analysis carried out on the four descriptors shows that Tangent Distance (TD) captures better ﬂoor plan shapes and presents fewer outliers." (Rodrigues et al., 2017, p.13)
 
 ## 2. 问题域
-- 论断：问题域是建筑平面图——生成式设计方法会产出大量候选平面方案，超出决策者的处理能力。
+- 论断：问题域是建筑平面图——生成式设计方法能产出大量平面方案，这可能令决策者难以应对。
 - 引文："Generative design methods are able to produce a large number of potential solutions of architectural ﬂoor plans, which may be overwhelming for the decision-maker to cope with." (Rodrigues et al., 2017, p.1)
 
 ## 3. 案例或数据的表示形式
@@ -19,7 +19,7 @@
 - 引文："The dataset was clustered using an agglomerative hierarchical algorithm with Ward linkage [33] and the Euclidean distance as" (Rodrigues et al., 2017, p.4)
 
 ## 5. 系统形态
-- 论断：本文形态是在同一设置下把四种形状表示作为平面图设计描述子进行对比的实验研究。
+- 论断：本文在同一设置下把四种形状表示作为平面图设计描述子加以研究。
 - 引文："In this paper, four shape representations are studied as ﬂoor plan design descriptors under the same settings." (Rodrigues et al., 2017, p.2)
 
 ## 6. 评价方式

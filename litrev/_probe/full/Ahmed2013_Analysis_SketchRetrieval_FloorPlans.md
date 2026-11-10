@@ -19,7 +19,7 @@
 - 引文："As for the retrieval algorithm, subgraph matching approaches" (Ahmed et al., 2013, p.3)
 
 ## 5. 系统形态
-- 论断：系统形态是为 Touch & Write 触控笔桌实现的原型。
+- 论断：系统形态是一个为 Touch & Write 实现的原型。
 - 引文："the prototype is implemented for the Touch & Write" (Ahmed et al., 2013, p.8)
 
 ## 6. 评价方式

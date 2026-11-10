@@ -3,7 +3,7 @@
 > 判定标准：`litrev/_probe/AUDIT_CONTRACT.md`（含第五节口径修订）。
 > 全部条目已通过 `verify`：逐字存在、页码为 PDF 物理页。**不要判真伪与页码**，只判论断层。
 > 不要读任何 PDF 或 `full/*.md`。只依据下面给出的论断与引文判定。
-> 快照 sha1: 902e819463
+> 快照 sha1: 404680fbc0
 
 输出：只输出表格 + 一行合计，行序与本文件条目顺序一致。
 
@@ -30,7 +30,7 @@
 
 ### B2-04 ・ Borner1993_StructuralSimilarity_CBR ・ 系统形态 ・ p.9
 
-- 论断：系统由 SynTerm 与 SynGraph 两个子系统构成，二者为同一系统提供专项设计问题的解法。
+- 论断：SynTerm 与 SynGraph 为系统提供专项设计问题的解法。
 - 引文："SynTerm and SynGraph supply the system with solutions for special design problems" (Borner, 1993, p.9)
 - 形式特征：未以句末标点结尾（源文件第 23 行）
 
@@ -42,13 +42,13 @@
 
 ### B2-06 ・ Liao1998_SimilarityMeasures_CBR ・ 案例或数据的表示形式 ・ p.14
 
-- 论断：失效分析案例以属性（attribute）表示，属性再与相应的取值相关联。
+- 论断：失效案例用属性来表示。
 - 引文："The attributes used to represent failure cases could be associated with" (Liao et al., 1998, p.14)
 - 形式特征：未以句末标点结尾（源文件第 15 行）
 
 ### B2-07 ・ Liao1998_SimilarityMeasures_CBR ・ 评价方式 ・ p.19
 
-- 论断：评价以一对失效分析案例（case1 与 case2）做单个算例演示，用以说明所提混合度量的计算过程。
+- 论断：评价使用两个失效分析案例 X(case1) 与 Y(case2)。
 - 引文："Two cases X(case1) and Y(case2) of failure analysis are used ; n1, n2, n3, and" (Liao et al., 1998, p.19)
 - 形式特征：未以句末标点结尾（源文件第 27 行）
 
@@ -60,13 +60,13 @@
 
 ### B2-09 ・ MaherGomez1996_CBR_StructuralDesign ・ 评价方式 ・ p.2
 
-- 论断：评价所依据的案例数据规模为 14 个设计项目。
+- 论断：作者从 14 个设计项目中回顾并收集了数据。
 - 引文："Finally, we reviewed and collected data from 14 design projects." (Maher and Gomez, 1996, p.2)
 - 形式特征：完整句（源文件第 27 行）
 
 ### B2-10 ・ SriramMaherFenves1985_KBES_StructuralDesign ・ 一句话主张 ・ p.3
 
-- 论断：作者把本文定位为介绍知识基专家系统（KBES）在结构设计的初步设计、分析与详细设计阶段的应用。
+- 论断：本文介绍 KBES 在 preliminary design、analysts 与 detailed design 的应用。
 - 引文："In this paper applications of KBES to the preliminary design, analysts, and detailed design" (Sriram et al., 1985, p.3)
 - 形式特征：未以句末标点结尾（源文件第 7 行）
 
@@ -84,13 +84,13 @@
 
 ### B2-13 ・ Zhang2006_BP_CaseRetrieval_HighriseStructureForm ・ 系统形态 ・ p.3
 
-- 论断：系统的核心是单输出的三层 BP 神经网络。
+- 论断：作者构建了多输入单输出的三层 BP 网络。
 - 引文："Thereupon we have built the multi-input-and- single-output, three-layer BP network." (Zhang, 2006, p.3)
 - 形式特征：完整句（源文件第 23 行）
 
 ### B2-14 ・ Zhao2023_ShearWall_GNN ・ 问题域 ・ p.1
 
-- 论断：问题域是剪力墙结构的结构方案设计，作者称其为引导整个结构设计过程的第一阶段。
+- 论断：问题域是剪力墙结构的结构方案设计，作者称其重要，因为它是引导整个项目的第一个阶段。
 - 引文："Structural scheme design of shear wall structures is important because it is the first stage that guides the project along its entire" (Zhao et al., 2023, p.1)
 - 形式特征：未以句末标点结尾（源文件第 11 行）
 

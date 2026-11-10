@@ -3,7 +3,7 @@
 > 判定标准：`litrev/_probe/AUDIT_CONTRACT.md`（含第五节口径修订）。
 > 全部条目已通过 `verify`：逐字存在、页码为 PDF 物理页。**不要判真伪与页码**，只判论断层。
 > 不要读任何 PDF 或 `full/*.md`。只依据下面给出的论断与引文判定。
-> 快照 sha1: 2861fd7ff6
+> 快照 sha1: d8ca4201bf
 
 输出：只输出表格 + 一行合计，行序与本文件条目顺序一致。
 
@@ -12,7 +12,7 @@
 
 ### R3-01 ・ AamodtPlaza1994_CBR_Foundations ・ 案例或数据的表示形式 ・ p.9
 
-- 论断：案例记忆以泛化情节组织，泛化情节包含 norms、cases 与 indices 三类对象，norms 是其下所有案例共有的特征。
+- 论断：泛化情节（GE）包含 norms、cases 与 indices 三类对象，norms 是索引于该 GE 下的所有案例共有的特征。
 - 引文："A generalized episode contains three different types of objects: Norms, cases and indices. Norms are features common to all cases indexed under a GE." (Aamodt and Plaza, 1994, p.9)
 - 源文件：第 15 行
 
@@ -30,13 +30,13 @@
 
 ### R3-04 ・ Maher1987_ExpertSystems_StructuralDesign ・ 系统形态 ・ p.6
 
-- 论断：系统形态是已实现的专家系统原型，例如 HI-RISE 在 PSRL 中实现，PSRL 是产生式系统与框架表示语言的组合。
+- 论断：HI-RISE 在 PSRL 中实现，PSRL 是产生式系统与框架表示语言的组合。
 - 引文："HI-RISE is implemented in PSRL [7], a combination of a production system and frame representation language." (Maher, 1987, p.6)
 - 源文件：第 23 行
 
 ### R3-05 ・ Rodrigues2017_Clustering_FloorPlans ・ 系统形态 ・ p.2
 
-- 论断：本文形态是在同一设置下把四种形状表示作为平面图设计描述子进行对比的实验研究。
+- 论断：本文在同一设置下把四种形状表示作为平面图设计描述子加以研究。
 - 引文："In this paper, four shape representations are studied as ﬂoor plan design descriptors under the same settings." (Rodrigues et al., 2017, p.2)
 - 源文件：第 23 行
 
@@ -78,13 +78,13 @@
 
 ### R3-12 ・ Survey2025_FloorPlanRetrieval_MDPI ・ 案例或数据的表示形式 ・ p.3
 
-- 论断：平面图以高层语义特征与特征向量的形式表示，并用特征向量计算图像相似度。
+- 论断：表示上识别独特的高层语义特征，并用特征向量计算图像相似度，以实现对建筑平面图的有效检索。
 - 引文："By identifying unique high-level semantic features and employing feature vectors to calculate image similarity, this approach enables effective retrieval of building floor plans." (Ling et al., 2025, p.3)
 - 源文件：第 15 行
 
 ### R3-13 ・ Xia2025_CoDesign_ShearWallBeam_GNN ・ 问题域 ・ p.1
 
-- 论断：问题域为剪力墙与梁的结构方案布置；既有方法分别生成剪力墙或梁，未处理二者的相互依赖，因此需要剪力墙与梁的协同设计方法。
+- 论断：既有方法对剪力墙与梁分别设计，未能充分处理这些构件之间的强相互依赖，因此需要针对剪力墙与梁结构的智能协同设计方法。
 - 引文："However, as the separate design of shear walls and beams fails to adequately address the strong interdependence of these components, an intelligent co-design approach for shear wall and beam structures is required." (Xia et al., 2025, p.1)
 - 源文件：第 11 行
 
@@ -108,6 +108,6 @@
 
 ### R3-17 ・ vanEngelenburg2023_SSIG_FloorPlan ・ 系统形态 ・ p.1
 
-- 论断：产出形态是一个用 SSIG 对大规模平面图库排序的高效算法，作者称代码将公开。
+- 论断：此外还开发了一个高效算法，用 SSIG 对大规模平面图库排序。
 - 引文："In addition, an efﬁcient algorithm is developed that uses SSIG to rank a large-scale ﬂoor plan database." (van Engelenburg et al., 2023, p.1)
 - 源文件：第 23 行

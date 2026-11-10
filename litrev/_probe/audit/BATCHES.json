@@ -114,6 +114,12 @@
       "input": "litrev/_probe/audit/FIX_B1.md",
       "output": "litrev/_probe/audit/out_FIX.md",
       "note": "改稿后定点重判 8 条（R1-01/R1-02/R1-14/R1-16/R2-01/R2-06/R2-15/R4-03）；不覆盖 out_R*.md，文件名不匹配 out_[A-Z]+<数字> 口径，故不进 131 条汇总"
+    },
+    {
+      "id": "fix_b2",
+      "input": "litrev/_probe/audit/FIX_B2.md",
+      "output": "litrev/_probe/audit/out_FIX_2.md",
+      "note": "第二轮定点重判 31 条（A 情态加强 8 + B 术语属性添加 23）；不覆盖 out_*.md，输出名带下划线以避开 out_[A-Z]+<数字> 口径，不进 131 条汇总"
     }
   ]
 }

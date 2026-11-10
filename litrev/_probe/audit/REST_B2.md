@@ -3,7 +3,7 @@
 > 判定标准：`litrev/_probe/AUDIT_CONTRACT.md`（含第五节口径修订）。
 > 全部条目已通过 `verify`：逐字存在、页码为 PDF 物理页。**不要判真伪与页码**，只判论断层。
 > 不要读任何 PDF 或 `full/*.md`。只依据下面给出的论断与引文判定。
-> 快照 sha1: 1c518a453b
+> 快照 sha1: 7695094c1c
 
 输出：只输出表格 + 一行合计，行序与本文件条目顺序一致。
 
@@ -18,7 +18,7 @@
 
 ### R2-02 ・ AamodtPlaza1994_CBR_Foundations ・ 明确写出的局限 ・ p.10
 
-- 论断：作者明确指出，这种索引方式会随案例数量的增加而轻易导致索引的爆炸式增长。
+- 论断：作者指出，随着案例数量增加，这可能轻易导致索引的爆炸式增长。
 - 引文："This may easily lead to an explosive growth of indices with increased number of cases." (Aamodt and Plaza, 1994, p.10)
 - 源文件：第 31 行
 
@@ -96,7 +96,7 @@
 
 ### R2-15 ・ Xia2025_CoDesign_ShearWallBeam_GNN ・ 评价方式 ・ p.13
 
-- 论断：评价采用交并比（SIoU、BIoU）对比协同设计与顺序设计方法：协同设计方法 SIoU 0.625、BIoU 0.548，顺序设计方法 0.544、0.404。
+- 论断：评价用 SIoU 与 BIoU 对比协同设计与顺序设计方法：协同设计方法 SIoU 0.625、BIoU 0.548，顺序设计方法 0.544、0.404。
 - 引文："The SIoU and BIoU obtained using the proposed co-design method were 0.625 and 0.548, respectively, whereas those obtained using the successive design method were 0.544 and 0.404, respectively." (Xia et al., 2025, p.13)
 - 源文件：第 27 行
 

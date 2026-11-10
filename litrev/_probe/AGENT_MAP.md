@@ -52,6 +52,7 @@
 | `frag_b2_dup` | `auditor-frag-b2-dup` | `litrev/_probe/audit/FRAG_B2.md` | `litrev/_probe/audit/out_E2.md` | 固定契约双跑 B2（补 131 条全量基线的 frag 部分；前缀 E 不进 131 口径） |
 | `frag_b3_dup` | `auditor-frag-b3-dup` | `litrev/_probe/audit/FRAG_B3.md` | `litrev/_probe/audit/out_E3.md` | 固定契约双跑 B3（补 131 条全量基线的 frag 部分；前缀 E 不进 131 口径） |
 | `fix_b1` | `auditor-fix-b1` | `litrev/_probe/audit/FIX_B1.md` | `litrev/_probe/audit/out_FIX.md` | 改稿后定点重判 8 条（R1-01/R1-02/R1-14/R1-16/R2-01/R2-06/R2-15/R4-03）；不覆盖 out_R*.md，文件名不匹配 out_[A-Z]+<数字> 口径，故不进 131 条汇总 |
+| `fix_b2` | `auditor-fix-b2` | `litrev/_probe/audit/FIX_B2.md` | `litrev/_probe/audit/out_FIX_2.md` | 第二轮定点重判 31 条（A 情态加强 8 + B 术语属性添加 23）；不覆盖 out_*.md，输出名带下划线以避开 out_[A-Z]+<数字> 口径，不进 131 条汇总 |
 
 ## 固定角色
 

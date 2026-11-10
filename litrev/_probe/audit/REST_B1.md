@@ -3,7 +3,7 @@
 > 判定标准：`litrev/_probe/AUDIT_CONTRACT.md`（含第五节口径修订）。
 > 全部条目已通过 `verify`：逐字存在、页码为 PDF 物理页。**不要判真伪与页码**，只判论断层。
 > 不要读任何 PDF 或 `full/*.md`。只依据下面给出的论断与引文判定。
-> 快照 sha1: 4b2ce8c0a4
+> 快照 sha1: 84be957ff5
 
 输出：只输出表格 + 一行合计，行序与本文件条目顺序一致。
 
@@ -36,7 +36,7 @@
 
 ### R1-05 ・ Rodrigues2017_Clustering_FloorPlans ・ 问题域 ・ p.1
 
-- 论断：问题域是建筑平面图——生成式设计方法会产出大量候选平面方案，超出决策者的处理能力。
+- 论断：问题域是建筑平面图——生成式设计方法能产出大量平面方案，这可能令决策者难以应对。
 - 引文："Generative design methods are able to produce a large number of potential solutions of architectural ﬂoor plans, which may be overwhelming for the decision-maker to cope with." (Rodrigues et al., 2017, p.1)
 - 源文件：第 11 行
 
@@ -66,7 +66,7 @@
 
 ### R1-10 ・ SoibelmanPenaMora2000_MRAM_ConceptualStructuralDesign ・ 案例或数据的表示形式 ・ p.6
 
-- 论断：案例以描述该案例的 19 个属性的取值来表示，这些取值构成案例描述，并被定义为案例表型。
+- 论断：与案例描述中 19 个属性各自相关联的取值构成案例描述，并可被定义为案例表型。
 - 引文："The values that are associated with each of the 19 attributes in the description of a case make up the case description and can be deﬁned as the case phenotype (Fig. 3)." (Soibelman et al., 2000, p.6)
 - 源文件：第 15 行
 

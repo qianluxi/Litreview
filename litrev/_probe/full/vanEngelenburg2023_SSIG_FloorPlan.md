@@ -19,7 +19,7 @@
 - 引文："Coined as SSIG (Structural Similarity by IoU and GED), 7 essentially computes a weighted average between a IoU-based and a nGED-based similarity metric." (van Engelenburg et al., 2023, p.5)
 
 ## 5. 系统形态
-- 论断：产出形态是一个用 SSIG 对大规模平面图库排序的高效算法，作者称代码将公开。
+- 论断：此外还开发了一个高效算法，用 SSIG 对大规模平面图库排序。
 - 引文："In addition, an efﬁcient algorithm is developed that uses SSIG to rank a large-scale ﬂoor plan database." (van Engelenburg et al., 2023, p.1)
 
 ## 6. 评价方式

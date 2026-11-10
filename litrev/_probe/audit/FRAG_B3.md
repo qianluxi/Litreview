@@ -3,7 +3,7 @@
 > 判定标准：`litrev/_probe/AUDIT_CONTRACT.md`（含第五节口径修订）。
 > 全部条目已通过 `verify`：逐字存在、页码为 PDF 物理页。**不要判真伪与页码**，只判论断层。
 > 不要读任何 PDF 或 `full/*.md`。只依据下面给出的论断与引文判定。
-> 快照 sha1: a52c3ea485
+> 快照 sha1: 28f98b5c58
 
 输出：只输出表格 + 一行合计，行序与本文件条目顺序一致。
 
@@ -84,7 +84,7 @@
 
 ### B3-13 ・ Zhang2006_BP_CaseRetrieval_HighriseStructureForm ・ 评价方式 ・ p.5
 
-- 论断：以工程实例的检索结果与工程实际选型相同作为验证依据。
+- 论断：选型结果与工程实践相同。
 - 引文："This selection is the same with the practice engineering." (Zhang, 2006, p.5)
 - 形式特征：完整句（源文件第 27 行）
 

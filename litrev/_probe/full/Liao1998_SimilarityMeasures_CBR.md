@@ -11,7 +11,7 @@
 - 引文："analysis (Esaklul, 1990) is used to illustrate that applications with a mixture" (Liao et al., 1998, p.13)
 
 ## 3. 案例或数据的表示形式
-- 论断：失效分析案例以属性（attribute）表示，属性再与相应的取值相关联。
+- 论断：失效案例用属性来表示。
 - 引文："The attributes used to represent failure cases could be associated with" (Liao et al., 1998, p.14)
 
 ## 4. 相似性或检索机制
@@ -19,11 +19,11 @@
 - 引文："The area ratio method calculates the similarity between two fuzzy" (Liao et al., 1998, p.17)
 
 ## 5. 系统形态
-- 论断：该文所依托的系统是一个正在开发、用于存储失效分析案例的 CBR 系统。
+- 论断：有一个 CBR 系统正在开发中，用于存储失效分析。
 - 引文："than 20 years. A CBR system is being developed to store failure analysis" (Liao et al., 1998, p.13)
 
 ## 6. 评价方式
-- 论断：评价以一对失效分析案例（case1 与 case2）做单个算例演示，用以说明所提混合度量的计算过程。
+- 论断：评价使用两个失效分析案例 X(case1) 与 Y(case2)。
 - 引文："Two cases X(case1) and Y(case2) of failure analysis are used ; n1, n2, n3, and" (Liao et al., 1998, p.19)
 
 ## 7. 明确写出的局限

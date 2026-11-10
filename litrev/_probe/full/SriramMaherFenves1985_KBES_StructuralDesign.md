@@ -3,7 +3,7 @@
 - 抽取范围：全文 1–22 页
 
 ## 1. 一句话主张
-- 论断：作者把本文定位为介绍知识基专家系统（KBES）在结构设计的初步设计、分析与详细设计阶段的应用。
+- 论断：本文介绍 KBES 在 preliminary design、analysts 与 detailed design 的应用。
 - 引文："In this paper applications of KBES to the preliminary design, analysts, and detailed design" (Sriram et al., 1985, p.3)
 
 ## 2. 问题域
@@ -19,7 +19,7 @@
 - 引文："The inference mechanism uses backward chaining that produces a depth-first search of a goal tree." (Sriram et al., 1985, p.11)
 
 ## 5. 系统形态
-- 论断：文中系统以已实现的原型形态给出，例如 HI-RISE 在 PSRL 中实现。
+- 论断：文中举例 HI-RISE 在 PSRL 中实现，PSRL 是框架式产生式系统。
 - 引文："buildings (HI-RISE) [18]. HI-RISE is implemented in PSRL [24], a frame based production system" (Sriram et al., 1985, p.7)
 
 ## 6. 评价方式

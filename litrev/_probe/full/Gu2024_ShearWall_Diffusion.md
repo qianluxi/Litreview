@@ -11,7 +11,7 @@
 - 引文："This study proposes a shear wall layout generation method based on a diffusion process." (Gu et al., 2024, p.2)
 
 ## 3. 案例或数据的表示形式
-- 论断：该文用图像中的颜色编码不同构件与剪力墙。
+- 论断：不同构件与剪力墙可以用图像中的颜色编码。
 - 引文："Different components and shear walls can be encoded using the colors in the image." (Gu et al., 2024, p.4)
 
 ## 4. 相似性或检索机制

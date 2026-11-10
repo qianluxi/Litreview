@@ -3,7 +3,7 @@
 > 判定标准：`litrev/_probe/AUDIT_CONTRACT.md`（含第五节口径修订）。
 > 全部条目已通过 `verify`：逐字存在、页码为 PDF 物理页。**不要判真伪与页码**，只判论断层。
 > 不要读任何 PDF 或 `full/*.md`。只依据下面给出的论断与引文判定。
-> 快照 sha1: b8a12801bd
+> 快照 sha1: 6cad652fa1
 
 输出：只输出表格 + 一行合计，行序与本文件条目顺序一致。
 
@@ -12,13 +12,13 @@
 
 ### R5-01 ・ AamodtPlaza1994_CBR_Foundations ・ 系统形态 ・ p.6
 
-- 论断：系统形态是理论性的描述框架，用两个互补的模型来代表对案例推理的两种视角。
+- 论断：系统形态是两个互补的模型，分别代表对案例推理的两种视角。
 - 引文："The two models are complementary and represent two views on case-based reasoning." (Aamodt and Plaza, 1994, p.6)
 - 源文件：第 23 行
 
 ### R5-02 ・ Gu2024_ShearWall_Diffusion ・ 案例或数据的表示形式 ・ p.4
 
-- 论断：该文用图像中的颜色编码不同构件与剪力墙。
+- 论断：不同构件与剪力墙可以用图像中的颜色编码。
 - 引文："Different components and shear walls can be encoded using the colors in the image." (Gu et al., 2024, p.4)
 - 源文件：第 15 行
 
@@ -90,7 +90,7 @@
 
 ### R5-14 ・ Xia2025_CoDesign_ShearWallBeam_GNN ・ 相似性或检索机制 ・ p.8
 
-- 论断：机制不是相似度检索，而是把布置设计转化为图上的边标签预测：输入特征经 GraphSAGE 层与 MLP 组合每条边及其两端节点的特征，再由分类算法输出预测值。
+- 论断：机制是用 GNN 预测边标签：输入特征先经 GraphSAGE 层，再由 MLP 以每条边及其两个对应节点的组合特征值为输入来预测边特征。
 - 引文："The process of predicting edge labels using the GNN comprises passing the input features through GraphSAGE algorithm layers, followed by the application of an MLP to predict the edge features using the combined feature values of each edge and its two corresponding nodes as input. Finally, the feature information for each edge is processed using a classification algorithm to yield the corresponding predicted values." (Xia et al., 2025, p.8)
 - 源文件：第 19 行
 

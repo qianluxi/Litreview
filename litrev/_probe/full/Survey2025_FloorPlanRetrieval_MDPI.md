@@ -11,7 +11,7 @@
 - 引文："Feature retrieval technology for building floor plans has garnered significant attention in recent years due to its critical role in the efficient management and execution of construction projects." (Ling et al., 2025, p.1)
 
 ## 3. 案例或数据的表示形式
-- 论断：平面图以高层语义特征与特征向量的形式表示，并用特征向量计算图像相似度。
+- 论断：表示上识别独特的高层语义特征，并用特征向量计算图像相似度，以实现对建筑平面图的有效检索。
 - 引文："By identifying unique high-level semantic features and employing feature vectors to calculate image similarity, this approach enables effective retrieval of building floor plans." (Ling et al., 2025, p.3)
 
 ## 4. 相似性或检索机制

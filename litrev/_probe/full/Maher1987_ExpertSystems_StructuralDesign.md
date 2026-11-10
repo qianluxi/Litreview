@@ -19,11 +19,11 @@
 - 引文："The similarity metric is described by a set of criteria, also called matching criteria, which define what significant common aspects the matching buildings and the input building should share." (Maher, 1987, p.16)
 
 ## 5. 系统形态
-- 论断：系统形态是已实现的专家系统原型，例如 HI-RISE 在 PSRL 中实现，PSRL 是产生式系统与框架表示语言的组合。
+- 论断：HI-RISE 在 PSRL 中实现，PSRL 是产生式系统与框架表示语言的组合。
 - 引文："HI-RISE is implemented in PSRL [7], a combination of a production system and frame representation language." (Maher, 1987, p.6)
 
 ## 6. 评价方式
-- 论断：论文所述的评价方式是用线性评价函数评价备选结构方案。
+- 论断：评价方式是用线性评价函数评价备选方案。
 - 引文："HI-RISE evaluates alternatives with a linear evaluation function." (Maher, 1987, p.7)
 
 ## 7. 明确写出的局限

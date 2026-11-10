@@ -7,7 +7,7 @@
 - 引文："Therefore, this study develops an intelligent design method for shear wall layouts based on GNNs." (Zhao et al., 2023, p.1)
 
 ## 2. 问题域
-- 论断：问题域是剪力墙结构的结构方案设计，作者称其为引导整个结构设计过程的第一阶段。
+- 论断：问题域是剪力墙结构的结构方案设计，作者称其重要，因为它是引导整个项目的第一个阶段。
 - 引文："Structural scheme design of shear wall structures is important because it is the first stage that guides the project along its entire" (Zhao et al., 2023, p.1)
 
 ## 3. 案例或数据的表示形式
@@ -27,5 +27,5 @@
 - 引文："Ten-fold cross-validation is performed for each model during training. Subsequently, the validation-set average and standard" (Zhao et al., 2023, p.10)
 
 ## 7. 明确写出的局限
-- 论断：作者明确写出用于训练的剪力墙样本有限，需避免过拟合。
+- 论断：作者指出，由于剪力墙样本有限，过拟合更容易避免。
 - 引文："easier to avoid overfitting owing to the limited shear wall samples." (Zhao et al., 2023, p.11)

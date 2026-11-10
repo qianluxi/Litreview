@@ -3,7 +3,7 @@
 > 判定标准：`litrev/_probe/AUDIT_CONTRACT.md`（含第五节口径修订）。
 > 全部条目已通过 `verify`：逐字存在、页码为 PDF 物理页。**不要判真伪与页码**，只判论断层。
 > 不要读任何 PDF 或 `full/*.md`。只依据下面给出的论断与引文判定。
-> 快照 sha1: 9ff1753875
+> 快照 sha1: 18fb4ad3bc
 
 输出：只输出表格 + 一行合计，行序与本文件条目顺序一致。
 
@@ -18,7 +18,7 @@
 
 ### B1-02 ・ Ahmed2013_Analysis_SketchRetrieval_FloorPlans ・ 系统形态 ・ p.8
 
-- 论断：系统形态是为 Touch & Write 触控笔桌实现的原型。
+- 论断：系统形态是一个为 Touch & Write 实现的原型。
 - 引文："the prototype is implemented for the Touch & Write" (Ahmed et al., 2013, p.8)
 - 形式特征：首字母小写+未以句末标点结尾（源文件第 23 行）
 
@@ -30,13 +30,13 @@
 
 ### B1-04 ・ Borner1993_StructuralSimilarity_CBR ・ 相似性或检索机制 ・ p.6
 
-- 论断：检索流程先对新问题做低成本的表面相似性初始分析。
+- 论断：对新问题的初始分析可以通过基于属性描述的、成本不高的表面相似性评估来完成。
 - 引文："The rst initial analysis of the new problem can be done by an inexpensive surface similarity assessment based on the attribute based descriptions" (Borner, 1993, p.6)
 - 形式特征：未以句末标点结尾（源文件第 19 行）
 
 ### B1-05 ・ Borner1993_StructuralSimilarity_CBR ・ 明确写出的局限 ・ p.10
 
-- 论断：作者明确写出，修改规则条件或权重的学习未被处理。
+- 论断：作者明确写出，修改规则条件或权重的学习在本实现中未被处理。
 - 引文："Learning e g the storage of new cases new rules and the application of techniques like Knuth Bendix completion to guarantee completeness of struc tural knowledge or learning of modi cation rule conditions or weights are not addressed in this implementation" (Borner, 1993, p.10)
 - 形式特征：未以句末标点结尾（源文件第 31 行）
 
@@ -48,19 +48,19 @@
 
 ### B1-07 ・ Liao1998_SimilarityMeasures_CBR ・ 系统形态 ・ p.13
 
-- 论断：该文所依托的系统是一个正在开发、用于存储失效分析案例的 CBR 系统。
+- 论断：有一个 CBR 系统正在开发中，用于存储失效分析。
 - 引文："than 20 years. A CBR system is being developed to store failure analysis" (Liao et al., 1998, p.13)
 - 形式特征：首字母小写+未以句末标点结尾（源文件第 23 行）
 
 ### B1-08 ・ MaherGomez1996_CBR_StructuralDesign ・ 问题域 ・ p.1
 
-- 论断：问题域是建筑结构设计，案例资料取自结构设计项目。
+- 论断：问题域是结构设计项目，关注的是这类项目上的信息。
 - 引文："information on structural design projects" (Maher and Gomez, 1996, p.1)
 - 形式特征：首字母小写+未以句末标点结尾（源文件第 11 行）
 
 ### B1-09 ・ MaherGomez1996_CBR_StructuralDesign ・ 系统形态 ・ p.2
 
-- 论断：CaseCAD 以 Framekit 这一框架式表示语言实现。
+- 论断：CaseCAD 使用 Framekit。
 - 引文："CaseCAD using Framekit, a frame-based" (Maher and Gomez, 1996, p.2)
 - 形式特征：未以句末标点结尾（源文件第 23 行）
 
@@ -72,7 +72,7 @@
 
 ### B1-11 ・ SriramMaherFenves1985_KBES_StructuralDesign ・ 系统形态 ・ p.7
 
-- 论断：文中系统以已实现的原型形态给出，例如 HI-RISE 在 PSRL 中实现。
+- 论断：文中举例 HI-RISE 在 PSRL 中实现，PSRL 是框架式产生式系统。
 - 引文："buildings (HI-RISE) [18]. HI-RISE is implemented in PSRL [24], a frame based production system" (Sriram et al., 1985, p.7)
 - 形式特征：首字母小写+未以句末标点结尾（源文件第 23 行）
 
@@ -102,6 +102,6 @@
 
 ### B1-16 ・ Zhao2023_ShearWall_GNN ・ 明确写出的局限 ・ p.11
 
-- 论断：作者明确写出用于训练的剪力墙样本有限，需避免过拟合。
+- 论断：作者指出，由于剪力墙样本有限，过拟合更容易避免。
 - 引文："easier to avoid overfitting owing to the limited shear wall samples." (Zhao et al., 2023, p.11)
 - 形式特征：首字母小写（源文件第 31 行）
