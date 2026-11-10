@@ -194,6 +194,7 @@ python tools/audit_prep.py verify-sample     # 审计员回写 out_S1.md 后机�
 - **不要再直接用 `litrev.py sample` 生成 S1**：那条命令从全库 131 条抽，会混入本来就要人看的 PARTIAL/UNSUPPORTED。
   本工具只读判定表与批次输入，裁判 `litrev.py` 一字不改。
 - 种子与比例写进批次文件头，**同一批数据重跑必须抽出同一组条目**；答案键 `SAMPLE_S1_KEYS.md` 留在主控侧，不进派发提示词。
-- 抽检出现"该判 PARTIAL 却给 SUPPORTED"→ 整批重审，不逐条修补（逐条修会把系统性偏松掩盖成偶发）；
+- 抽检与原判定出现**差异** → 先登记争议项、冻结 131 条汇总、补证据，由主控人工裁决（差异只说明两次判定不一致，
+  不说明谁对）；禁止自动整批重审，也禁止逐条改一条把差异抹平。方向分治与两条补证据路径见 `RUNBOOK.md` §五；
 - 新批次要在 `_probe/audit/BATCHES.json` 登记并跑 `tools/gen_subagents.py`，才会有对应的 `auditor-<批次>`（它只能读这一批、只能写这一批的输出）。完整规程见 `RUNBOOK.md` §五。
 

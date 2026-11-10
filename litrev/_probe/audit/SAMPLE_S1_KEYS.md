@@ -38,4 +38,7 @@
 | S09 | R3-16 | delasHeras2014_RunlengthHistogram_FloorPlans | 评价方式 | SUPPORTED | SELF | "compared to gtA" | — |
 | S10 | R5-05 | Rodrigues2017_Clustering_FloorPlans | 一句话主张 | SUPPORTED | SELF | "captures better" | — |
 
-> 全部候选条目在抽样时点的支撑码都是 `SUPPORTED`；若 `verify-sample` 发现抽检回写里出现降档，按 RUNBOOK §五「整批重审」，不逐条修补。
+> 全部候选条目在抽样时点的支撑码都是 `SUPPORTED`；本文件记录的是**抽样时点的原判**，不是标准答案。
+> `verify-sample` 只报差异、不裁定谁对。若报差异，按 RUNBOOK §五：登记争议项、冻结 131 条汇总、
+> 先补证据（定向扩抽 / 固定契约双跑），由主控人工裁决后才决定是否整批重审；不自动重审、不逐条修补。
+> 判定表一改，本答案键即失效（`sample --check` 会报不一致），重审前须先留档冻结。

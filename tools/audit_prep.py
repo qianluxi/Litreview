@@ -213,8 +213,11 @@ def build_keys(recs, picked, pool, k, rate, seed, stamps, st):
     for n, r in enumerate(picked, 1):
         lines.append(f"| S{n:02d} | {r['id']} | {r['doc']} | {r['sec']} | "
                      f"{r['support']} | {r['self']} | {r['basis']} | {r['gap']} |")
-    lines += ["", "> 全部候选条目在抽样时点的支撑码都是 `SUPPORTED`；若 `verify-sample` 发现抽检回写里出现降档，"
-              "按 RUNBOOK §五「整批重审」，不逐条修补。", ""]
+    lines += ["",
+              "> 全部候选条目在抽样时点的支撑码都是 `SUPPORTED`；本文件记录的是**抽样时点的原判**，不是标准答案。",
+              "> `verify-sample` 只报差异、不裁定谁对。若报差异，按 RUNBOOK §五：登记争议项、冻结 131 条汇总、",
+              "> 先补证据（定向扩抽 / 固定契约双跑），由主控人工裁决后才决定是否整批重审；不自动重审、不逐条修补。",
+              "> 判定表一改，本答案键即失效（`sample --check` 会报不一致），重审前须先留档冻结。", ""]
     return "\n".join(lines)
 
 
@@ -370,22 +373,35 @@ def cmd_verify_sample(args):
         else:
             notes.append(f"合计行自洽：{want}")
 
-    down = [(i, c[1], ksup.get(i, "?")) for i, c in rows
+    diff = [(i, c[1], ksup.get(i, "?")) for i, c in rows
             if len(c) > 1 and i in ksup and c[1] != ksup[i]]
-    kept = len(rows) - len(down)
+    # 方向必须分开报：两种差异要重审的对象完全不同。
+    strict = [d for d in diff if d[2] == "SUPPORTED" and d[1] != "SUPPORTED"]  # 原表偏松
+    loose = [d for d in diff if d[2] != "SUPPORTED" and d[1] == "SUPPORTED"]   # 抽检偏松
+    other = [d for d in diff if d not in strict and d not in loose]
+    kept = len(rows) - len(diff)
     print(f"抽检回写：{rel(OUT_S1)} · 戳 {st} · {len(rows)} 条")
     for n in notes:
         print("  ✓", n)
-    print(f"  与答案键一致：{kept}/{len(rows)}（答案键里候选条目原判均为 SUPPORTED）"
-          + (f" · 降档 {', '.join(i + ':' + old + '→' + new for i, new, old in down)}" if down else ""))
-    if down:
-        print("  [!] 按 RUNBOOK §五：抽检出现「该判 PARTIAL 却给了 SUPPORTED」→ 整批重审，不逐条修补。")
+    print(f"  与答案键一致：{kept}/{len(rows)}（答案键记录的是抽样时点的原判，不是标准答案）"
+          + (f" · 差异 {', '.join(i + ':' + old + '→' + new for i, new, old in diff)}" if diff else ""))
+    if diff:
+        print("  [i] 机械工具只报差异，不裁定哪一侧判对；格式项与一致项是两套独立判据。")
+    if strict:
+        print("  [!] 方向：原表 SUPPORTED → 抽检更严（疑似原表偏松）。按 RUNBOOK §五：")
+        print("      登记争议项、冻结 131 条汇总，先补证据（定向扩抽 / 固定契约双跑），")
+        print("      由主控人工裁决后才决定是否整批重审；不自动整批重审，也不逐条改判定表凑数。")
+    if loose:
+        print("  [!] 方向：原表非 SUPPORTED → 抽检 SUPPORTED（疑似抽检偏松）。按 RUNBOOK §五：")
+        print("      重审对象是抽检侧判读，不是原批次；同样先登记争议项，不自动改任何表。")
+    if other:
+        print("  [!] 存在双向/跨码差异，逐条列出并交人工裁定。")
     if problems:
         print("\n✗ 未通过：")
         for p in problems:
             print("  -", p)
         return 1
-    if down:
+    if diff:
         return 1
     print("\n✓ 抽检格式与命中率全部通过。")
     return 0

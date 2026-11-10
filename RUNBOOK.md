@@ -110,8 +110,25 @@ python tools/audit_prep.py review             # 非 SUPPORTED 人工复核清单
 - 输入第 6 行是 `> 快照 sha1: <10 位>`，输出首行必须原样抄；戳由所有 `- 论断：`/`- 引文：` 行算出（与 `batch` 同算法）。
 - 派 `auditor-sample-s1` 写 `out_S1.md` 后，先跑 `python litrev/litrev.py audit-count --prefixes S --check`（表自洽），
   再跑 `python tools/audit_prep.py verify-sample`（戳/表头/10 行/合计行/依据逐字命中/命中率；退 0 才算过）。
-- 抽检条目若出现"该判 PARTIAL 却给了 SUPPORTED" → **整批重审**（该条所属原批次），不逐条修补。
-- 抽检结论写进 `reports/`：命中率、偏松方向、是否整批重审。`out_S1.md` 不进 131 条汇总（`audit-count` 默认前缀 B,R）。
+- **差异 ≠ 错误**：`verify-sample` 只把回写与答案键（**抽样时点的原判**）逐条比对，它没有判定哪一侧判对的能力。
+  退 1 只表示「两次判定不一致」，不构成「原表判错」或「抽检判错」的结论。
+- 出现差异时**先登记、后裁决**，按方向分开处置（2026-11-10 修订，见 `reports/round-05-arbitration.md`）：
+
+  | 方向 | 含义 | 第一步处置 |
+  |---|---|---|
+  | 原表 `SUPPORTED` → 抽检更严 | 疑似**原表偏松** | 登记争议项、冻结 131 条汇总，补证据后再定是否整批重审该条所属原批次 |
+  | 原表非 `SUPPORTED` → 抽检 `SUPPORTED` | 疑似**抽检偏松** | 重审对象是抽检侧判读，不是原批次；同样先登记、后裁决 |
+
+  补证据的两条正规路径：**① 对该条所属原批次的全部 `SUPPORTED` 定向扩抽**（判断是单条噪声还是系统性偏松）；
+  **② 固定契约双跑**（另存对照文件、不覆盖旧表，测同一输入重复判定的漂移率）。两者都不改判定表。
+- **禁止两种自动动作**：不因一次差异就自动「整批重审」（10 条抽检里某批次常只占 1–2 条，样本撑不起「系统性偏松」）；
+  更不许「逐条改一条」把差异抹掉（逐条修会把系统性偏松掩盖成偶发，且 `S80/P50/U1` 这类数字只对应逐条修补）。
+  是否整批重审、重审哪个批次，必须由**主控人工裁决**并写进 `reports/` 后才能派发。
+- **答案键冻结**：判定表一旦变更，`SAMPLE_S1_KEYS.md` 即失效（`sample --check` 会报不一致）。
+  重审前先留档当前答案键与 `out_S1.md`，不要在重审后拿新表复算旧答案键。
+- 争议条目登记在 `litrev/_probe/audit/DISPUTED.md`（人工维护，不进 `BATCHES.json`、不贴给任何子代理）；
+  `REVIEW_NONSUPPORTED.md` 是 `review` 自动生成的非 SUPPORTED 清单，两者不要混写。
+- 抽检结论写进 `reports/`：命中率、方向、差异条目、是否补证据、裁决结果。`out_S1.md` 不进 131 条汇总（`audit-count` 默认前缀 B,R）。
 
 ## 六、权限回归测试（每次改权限必跑）
 
@@ -157,3 +174,4 @@ python tools/audit_prep.py review             # 非 SUPPORTED 人工复核清单
 |---|---|
 | 2026-11-09 | 建立本规约；agents 改为模板生成（`AGENT_ROLES.md` + `gen_subagents.py`）；验收、空结果恢复、抽检、权限回归四条规程成文 |
 | 2026-11-10 | §五 抽检候选集改为「当前 SUPPORTED」（`tools/audit_prep.py`），新增答案键闭卷纪律、`--check` 复现校验与 `verify-sample` 机械验收；`litrev.py` 未改 |
+| 2026-11-10 | §五 补「差异 ≠ 错误」与方向分治：抽检降档**不自动**触发整批重审；新增争议项登记、答案键冻结、补证据两条正规路径，`verify-sample` 提示语同步按方向输出；判定表、`litrev.py`、`AUDIT_CONTRACT.md` 与 agent 定义均未改 |
