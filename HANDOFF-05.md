@@ -48,6 +48,9 @@
 | 5 | 机械验收 | `python tools/audit_prep.py verify-sample` 退 0：戳/表头/10 行/合计/依据逐字命中/**仍判 SUPPORTED 10/10** 全过 |
 | 6 | 改动范围 | `git status --short` 里除 `out_S1.md` 与本轮报告外没有别的文件；卡片、契约、`litrev.py`、`.opencode/agents/` 均未动 |
 
+> **别被旧文件骗了**：现在（派活前）跑 `audit-count --prefixes S --check` 会显示 `S1 16 条`，那是上一轮遗留的
+> 16 行旧表，退 0 只说明它自己自洽。OpenCode 覆盖后必须变成 **10 条**；`verify-sample` 才会卡住条数与戳。
+
 **已知且预期内的现象**：`auditor-sample-s1` 的 `read` 白名单只有「契约 + 本批输入」，没有 `out_S1.md`。
 如果它写完想读回自己的输出，会被拒（错误原文带完整 ruleset）。这是 `reports/round-04-verification.md` §二 记录的
 生成器缺口，**本轮决定不改**（改了要重生成 9 个 agent 并重启）。按文件为准验收即可，**不要因此重派、不要换 agent、不要当成失败**。
