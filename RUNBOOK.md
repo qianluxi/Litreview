@@ -86,9 +86,14 @@ python litrev/litrev.py stamp-out                # 4. 已有输出：能按 git 
 出口是定点通道，门槛比整批更高：
 
 ```bash
-python litrev/litrev.py reseal --check     # 只报告：这 8 条能否重封（不写盘，先跑这个）
-python litrev/litrev.py reseal             # 三条门槛全过才替换行 + 重算合计 + 重封戳 + 追加 RESEAL.md
+# ⚠ 默认值指向**上一轮**的定点批次（FIX_B1.md → out_FIX.md），每轮必须显式给参数：
+python litrev/litrev.py reseal --check --fix-input FIX_B2.md --fix-out out_FIX_2.md   # 只报告（不写盘，先跑这个）
+python litrev/litrev.py reseal         --fix-input FIX_B2.md --fix-out out_FIX_2.md   # 三条门槛全过才落盘
 ```
+
+不给参数时会去读上一轮的 `FIX_B1/out_FIX`，报错是**「输入已改但无新判定」**——方向安全（拒写、不坏数据），
+但极难懂（round-18 实际踩过：8 个批次全被列成"无新判定"）。现在每次运行第一行会自报
+`定点批次：FIX_B2.md → out_FIX_2.md（输入戳 16c50d4085）`，先读那行再读结论。
 
 三条门槛（缺一条就整条退回，不允许"改了再说"）：
 
@@ -271,6 +276,11 @@ python tools/audit_prep.py verify-cases    # 自足轴一致率 + 方向 + 表�
 - `verify-cases` 只裁自足轴；差异仍按 §五 登记 `DISPUTED.md`，不自动改表。
 - **两行读数**（2026-11-10 加）：第一行「自足轴一致」是**冻结基线**（答案键记录的回写时点原判），改判后永久不变；
   第二行「按当前判定表复算」是落地状态。两者不同 = 有改判已落表，不是工具出错。
+- **原文存档 + 判后返工剔除**（2026-11-10 round-18 加）：人是对着**抽样时点的论断**判的。稿件返工改了论断，
+  这条样本就不再是同一条样本——`cases --check` 曾因此每轮改稿都红，而人判又不能重做。已照金标准同规矩处理：
+  答案键存 `## 原文存档`，条目详情按存档复现，`verify-cases` 用存档 vs 当前比对，把返工条目**从分母剔除并单列**。
+  旧答案键用 `python tools/audit_prep.py cases-migrate` 补存档（**只改答案键，不动人填表**）。
+  实测（round-18）：4 条返工剔除，分母 20→16。
 
 **C1 结果（2026-11-10，`DISPUTED.md` D-02）**：20/20 全填，冻结基线 **16/20**，方向 **2:2**
 （`B2-05`/`B3-11` 表偏严、`R3-12`/`R4-13` 表偏松），表内 `DEPENDENT` 阳性确认 8/10。裁决按回写改判 4 条并落

@@ -1,4 +1,5 @@
-> 快照 sha1: a52c3ea485
+> 快照 sha1: 28f98b5c58（由 litrev.py reseal 重封：1 条经 FIX_B2.md 定点重判，其余条目输入逐字未变；原判定提交 531e480）
+
 
 | id | 支撑 | 自足 | 引文里的依据（≤15 字，必须是引文原词） | 缺什么 / 需补的一句 |
 |----|------|------|--------------------------------------|--------------------|
@@ -14,8 +15,9 @@
 | B3-10 | PARTIAL | SELF | "often ill-" | 引文在 `often ill-` 处截断，「病构性」（ill-structured）无完整词形依据，需补含该词的完整原句（D-01 裁决，见 `DISPUTED.md`） |
 | B3-11 | PARTIAL | SELF | "advanced fusion" | 补“综述/review”原词 |
 | B3-12 | SUPPORTED | SELF | "characteristic" | — |
-| B3-13 | PARTIAL | DEPENDENT | "the same with" | 补"验证依据""工程实例"依据（原文为 practice engineering） |
+| B3-13 | SUPPORTED | DEPENDENT | "the same with" | 自足缺先行词：this selection 的所指不在引文内，需补明"哪一项选型" |
 | B3-14 | SUPPORTED | SELF | "vectorized form" | — |
 | B3-15 | PARTIAL | SELF | "Ten-fold" | 引文断在 "standard"，补"标准差/评价指标"完整句 |
 | B3-16 | SUPPORTED | SELF | "explicitly" | — |
-合计：16 条（SUPPORTED 6 / PARTIAL 10 / UNSUPPORTED 0；DEPENDENT 3）
+合计：16 条（SUPPORTED 7 / PARTIAL 9 / UNSUPPORTED 0；DEPENDENT 3）
+

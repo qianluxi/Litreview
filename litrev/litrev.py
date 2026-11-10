@@ -1630,6 +1630,10 @@ def cmd_reseal(args):
     audit = Path(args.audit_dir)
     fixin = audit / args.fix_input
     fixout = audit / args.fix_out
+    # 默认值是上一轮的定点批次（FIX_B1→out_FIX）。不清不楚地读旧批次，报错会是
+    # 「输入已改但无新判定」——安全但难懂（round-18 踩过）。所以每次先自报正在用的是哪一对。
+    print(f"定点批次：{fixin.name} → {fixout.name}"
+          f"（输入戳 {batch_stamp(fixin) if fixin.exists() else '缺文件'}）")
     for p in (fixin, fixout):
         if not p.exists():
             print(f"[!] 缺文件：{p}")

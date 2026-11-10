@@ -988,7 +988,7 @@ def read_case_ids():
     return ids
 
 
-def build_cases(recs, picked, st_hint=None):
+def build_cases(recs, picked, st_hint=None, arch=None):
     head = [
         f"# 自足轴判例集 C1（{len(picked)} 条，开卷裁定）",
         "",
@@ -1009,12 +1009,16 @@ def build_cases(recs, picked, st_hint=None):
         head.append(f"| C{n:02d} |  |  |  |")
     head += ["", "## 条目详情（判定时可读卡片原文，开卷）", ""]
     for n, r in enumerate(picked, 1):
+        gid = f"C{n:02d}"
+        claim, quote = r["claim"], r["quote_line"]
+        if arch and gid in arch:               # 判后返工：详情仍按抽样时点复现
+            claim, quote = arch[gid]
         card = f"litrev/_probe/full/{r['doc']}.md"
         head += [
-            f"### C{n:02d} ・ {r['doc']} ・ {r['sec']} ・ {r['page']}",
+            f"### {gid} ・ {r['doc']} ・ {r['sec']} ・ {r['page']}",
             "",
-            r["claim"],
-            r["quote_line"],
+            claim,
+            quote,
             f"- 卡片：`{card}`（可读原文上下文）",
             "",
         ]
@@ -1023,7 +1027,41 @@ def build_cases(recs, picked, st_hint=None):
     return raw.replace("__STAMP__", st, 1), st
 
 
-def build_cases_map(recs, picked, st):
+CASES_ARCHIVE_MARK = "## 原文存档（抽样时点，返工后按此复现）"
+
+
+def cases_archive():
+    """读判例集的「抽样时点原文」-> {cid: (论断行, 引文行)}。
+
+    与金标准同因：人判是对着抽样时点的**论断**做的。稿件返工后论断会变，
+    若条目详情跟着当前卡片走，`cases --check` 每轮返工都红，人判却被悄悄算到新文字上。
+    → 详情按存档复现；`verify-cases` 用存档 vs 当前比对，把判后被返工的条目从分母剔除。
+    """
+    if CASES_MAP.exists():
+        text = CASES_MAP.read_text(encoding="utf-8")
+        if CASES_ARCHIVE_MARK in text:
+            body = text[text.index(CASES_ARCHIVE_MARK):]
+        elif CASES.exists():                    # 首次：从已生成的 CASES_SELF.md 详情反推
+            body = CASES.read_text(encoding="utf-8")
+        else:
+            return {}
+    elif CASES.exists():
+        body = CASES.read_text(encoding="utf-8")
+    else:
+        return {}
+    arch = {}
+    for blk in re.split(r"^### ", body, flags=re.M)[1:]:
+        lines = blk.splitlines()
+        m = re.match(r"^(C\d\d)\s*・", lines[0])
+        if not m:
+            continue
+        claim = next((l.rstrip() for l in lines if l.startswith("- 论断：")), "")
+        quote = next((l.rstrip() for l in lines if l.startswith("- 引文：")), "")
+        arch[m.group(1)] = (claim, quote)
+    return arch
+
+
+def build_cases_map(recs, picked, st, arch=None):
     lines = [
         "# C1 自足轴判例集映射（主控侧留档，不贴给任何人）",
         "",
@@ -1045,7 +1083,19 @@ def build_cases_map(recs, picked, st):
         lines.append(f"| C{n:02d} | {r['id']} | {r['doc']} | {r['sec']} | "
                      f"{r['support']} | {r['self']} | {r['basis']} | {r['gap']} |")
     lines += ["", f"> 共 {len(picked)} 条。", ""]
+    # 原文存档：人判是对着这版文字做的，判后返工不得改写它
+    lines += [CASES_ARCHIVE_MARK, "",
+              "> 判定时点给出的论断与引文原文。稿件返工后**本节不改写**：`CASES_SELF.md` 的条目详情按本节复现，",
+              "> `verify-cases` 用本节 vs 当前批次输入比对，把判后被返工的条目列为「失效」并从分母剔除。",
+              ""]
+    for n, r in enumerate(picked, 1):
+        gid = f"C{n:02d}"
+        claim, quote = r["claim"], r["quote_line"]
+        if arch and gid in arch:
+            claim, quote = arch[gid]
+        lines += [f"### {gid} ・ {r['id']}", "", claim, quote, ""]
     return "\n".join(lines)
+
 
 
 def cmd_cases(args):
@@ -1053,6 +1103,7 @@ def cmd_cases(args):
     by_id = {r["id"]: r for r in recs}
     drift = []
     picked = None
+    arch = cases_archive() if args.check else None
     if args.check:
         picked, _meta, extra = frozen_picks(recs, CASES_MAP, None)
         drift = extra.get("drift", []) if extra else []
@@ -1062,8 +1113,8 @@ def cmd_cases(args):
         if missing:
             sys.exit(f"[!] 清单里的 id 不在判定表中：{missing}")
         picked = [by_id[i] for i in ids]
-    text, st = build_cases(recs, picked)
-    cmap = build_cases_map(recs, picked, st)
+    text, st = build_cases(recs, picked, arch=arch)
+    cmap = build_cases_map(recs, picked, st, arch=arch)
     if args.check:
         bad = []
         if not CASES_MAP.exists():
@@ -1090,6 +1141,13 @@ def cmd_cases(args):
               + "（CASES_SELF.md 表格为人填部分，不纳入比对）")
         if drift:
             print(f"  注：{len(drift)} 条在原判之后被裁决修改（{', '.join(drift)}），仍按清单复现。")
+        if arch:
+            reworked = [f"{g}({r['id']})" for n, r in enumerate(picked, 1)
+                        for g in [f"C{n:02d}"]
+                        if g in arch and arch[g] != (r["claim"], r["quote_line"])]
+            if reworked:
+                print(f"  注：{len(reworked)} 条判后被返工（论断/引文已改），条目详情按存档复现："
+                      f"{', '.join(reworked)}")
         return 0
     CASES.write_text(text, encoding="utf-8")
     CASES_MAP.write_text(cmap, encoding="utf-8")
@@ -1098,6 +1156,36 @@ def cmd_cases(args):
     print(f"待填表：{rel(CASES)}  > 快照 sha1: {st}")
     print(f"答案键：{rel(CASES_MAP)}（禁止贴给任何人）")
     print("下一步：人填 CASES_SELF.md → python tools/audit_prep.py verify-cases")
+    return 0
+
+
+def cmd_cases_migrate(args):
+    """给判例集答案键补写「原文存档」节：存档取自 CASES_SELF.md 现存的条目详情。
+
+    为什么需要：判例集原先没有存档，判定表一返工（论断被改写）`cases --check` 就红，
+    而人判并不能因此重做。存档补上后详情按抽样时点复现，返工条目由 `verify-cases` 剔除。
+    **只改答案键，不动 CASES_SELF.md**（那是人填的，重生成会清空）。
+    """
+    if not CASES.exists() or not CASES_MAP.exists():
+        print("✗ 缺 CASES_SELF.md 或 CASES_SELF_KEYS.md")
+        return 1
+    if CASES_ARCHIVE_MARK in CASES_MAP.read_text(encoding="utf-8"):
+        print("[i] CASES_SELF_KEYS.md 已有原文存档节，无需迁移")
+        return 0
+    arch = cases_archive()                      # 无存档时自动回落到 CASES_SELF.md 详情
+    if not arch:
+        print("✗ 无法从 CASES_SELF.md 反推原文（条目详情为空？）")
+        return 1
+    recs, _ = load()
+    picked, _m, _e = frozen_picks(recs, CASES_MAP, None)
+    text, st = build_cases(recs, picked, arch=arch)
+    cmap = build_cases_map(recs, picked, st, arch=arch)
+    marker = "## 条目详情"
+    disk = CASES.read_text(encoding="utf-8")
+    same = marker in disk and disk[disk.index(marker):] == text[text.index(marker):]
+    CASES_MAP.write_text(cmap, encoding="utf-8")
+    print(f"✓ 已补写原文存档节：{len(arch)} 条（戳 {st}）")
+    print(f"  CASES_SELF.md 未改动；条目详情与存档复现{'一致' if same else '不一致（请跑 cases --check 查明）'}")
     return 0
 
 
@@ -1161,6 +1249,7 @@ def cmd_verify_cases(args):
     # 不给出落地状态就会被误读成「表还没改」。
     recs, _ = load()
     live = {r["id"]: r["self"] for r in recs}
+    live_rows = {r["id"]: r for r in recs}
     live_same = [g for g in want if g in filled and kmap[g] in live and filled[g]["self"] == live[kmap[g]]]
     if len(live_same) != len(same):
         tail = "全部与回写一致" if len(live_same) == len(filled) else \
@@ -1168,6 +1257,21 @@ def cmd_verify_cases(args):
         print(f"  按当前判定表复算：{len(live_same)}/{len(filled)}（{tail}；上行为冻结基线，不受改判影响）")
     else:
         print(f"  按当前判定表复算：{len(live_same)}/{len(filled)}（与冻结基线相同，无改判落表）")
+    # 判后返工：人是对着抽样时点的论断判的。论断被改过，这条样本就不再是同一条样本，
+    # 无论表内自足码有没有跟着变，都不能算进分母（金标准同规矩）。
+    arch = cases_archive()
+    reworked = [g for g in want if g in arch and kmap.get(g) in live_rows
+                and arch[g] != (live_rows[kmap[g]]["claim"], live_rows[kmap[g]]["quote_line"])]
+    if reworked:
+        eff = [g for g in filled if g not in reworked]
+        eff_same = [g for g in eff if filled[g]["self"] == krec[g]["self"]]
+        dep_eff = [g for g in eff if krec[g]["self"] == "DEPENDENT"]
+        dep_eff_ok = [g for g in dep_eff if filled[g]["self"] == "DEPENDENT"]
+        print(f"  [i] 判后返工 {len(reworked)} 条（论断/引文已改，人判不再对应当前文字）："
+              f"{'、'.join(g + '(' + kmap[g] + ')' for g in reworked)} → 从分母剔除")
+        print(f"      剔除后：自足轴一致 {len(eff_same)}/{len(eff)}"
+              f"（{len(eff_same)/len(eff):.0%}）；表内 DEPENDENT 阳性确认 "
+              f"{len(dep_eff_ok)}/{len(dep_eff)}")
     print("  [i] 本集只裁自足轴，不裁支撑轴；差异不自动改表，按 RUNBOOK §五 登记 DISPUTED.md 后人工裁决。")
     if blank:
         return 1
@@ -1204,6 +1308,8 @@ def main():
     p = sub.add_parser("cases", help="生成自足轴判例集 CASES_SELF.md（人判，条目由 IDS 清单冻结）")
     p.add_argument("--check", action="store_true", help="复算并比对现有文件，不写盘")
     p.set_defaults(func=cmd_cases)
+    p = sub.add_parser("cases-migrate", help="给旧版 CASES_SELF_KEYS.md 补写原文存档节（不动 CASES_SELF.md）")
+    p.set_defaults(func=cmd_cases_migrate)
     p = sub.add_parser("verify-cases", help="人填完 CASES_SELF.md 后比对表内现判，输出自足轴一致率")
     p.set_defaults(func=cmd_verify_cases)
     args = ap.parse_args()
