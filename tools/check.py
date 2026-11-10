@@ -48,6 +48,7 @@ def verify_all():
 
 CHECKS = [
     ("verify 全库", verify_all),
+    ("card-check 7 节结构", [PY, "litrev/litrev.py", "card-check"]),
     ("audit-count --check", [PY, "litrev/litrev.py", "audit-count", "--check"]),
     ("audit-count --prefixes S --check", [PY, "litrev/litrev.py", "audit-count", "--prefixes", "S", "--check"]),
     ("audit-stale --check", [PY, "litrev/litrev.py", "audit-stale", "--check"]),

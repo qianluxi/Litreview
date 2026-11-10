@@ -1048,6 +1048,131 @@ BATCH_IN_RE = re.compile(r"^###\s+(\S+)\s*・\s*(\S+)\s*・\s*(\S+)")
 STAMP_RE = re.compile(r"^> 快照 sha1: ([0-9a-f]{6,40})", re.M)
 CARD_DIR = BASE / "_probe" / "full"
 
+# 卡片的 7 节，顺序与节名都是硬约定：审计批次输入的第 3 段（`### ID ・ 文献 ・ 节`）
+# 必须逐字对上，否则 audit-stale 会报「卡片无该节」，而人只会以为是文件路径写错了。
+CARD_SECTIONS = [
+    "一句话主张",
+    "问题域",
+    "案例或数据的表示形式",
+    "相似性或检索机制",
+    "系统形态",
+    "评价方式",
+    "明确写出的局限",
+]
+QUOTE_LINE_RE = re.compile(r'^- 引文："(.+?)"\s*(\(.+?\))?\s*$', re.M)
+CLAIM_LINE_RE = re.compile(r"^- 论断：(.+)$", re.M)
+
+
+def cmd_card_check(args):
+    """校验卡片是否满足「7 节 / 每节一条引文」的结构约定。
+
+    存在的理由：抽取工写出来的东西，`verify` 只查引文真假，`parse_cards` 只认
+    `## N. 节名` + `- 论断：` + `- 引文：`。一份少了一节、或某节写了两条引文的卡片，
+    两种检查都不报错——但进了判定表就少一条或多一条没人审的证据（batch 只取 quotes[0]）。
+    所以结构必须是可执行的门禁，不能只写在提示词里。
+    """
+    d = Path(args.card_dir)
+    files = sorted(p for p in d.glob("*.md") if "引文核验" not in p.name)
+    if args.only:
+        keep = {s.strip() for s in args.only.split(",") if s.strip()}
+        files = [p for p in files if p.stem in keep]
+    if not files:
+        print(f"[!] {d} 下没有卡片")
+        return 2
+
+    aliases = load_aliases()
+    problems, total_q = {}, 0
+    for p in files:
+        errs = []
+        text = p.read_text(encoding="utf-8")
+        stem = p.stem
+        nquote = 0
+
+        first = text.splitlines()[0].strip() if text.strip() else ""
+        if first != f"# {stem}":
+            errs.append(f"首行应为「# {stem}」，实为「{first[:40]}」")
+        if not re.search(r"^- 抽取范围：", text, re.M):
+            errs.append("缺「- 抽取范围：」行（写清用了哪几页、哪几页是封面/参考文献）")
+
+        secs = [(m.group(1), m.group(2).strip(), m.end())
+                for m in re.finditer(r"^## (\d+)\.\s*(.+)$", text, re.M)]
+        names = [s[1] for s in secs]
+        if names != CARD_SECTIONS:
+            if len(names) != 7:
+                errs.append(f"应有 7 节，实有 {len(names)} 节：{names}")
+            else:
+                bad = [(i + 1, a, b) for i, (a, b) in enumerate(zip(names, CARD_SECTIONS)) if a != b]
+                errs.append("节名/顺序不符：" + "；".join(f"第{i}节「{a}」应为「{b}」" for i, a, b in bad))
+        for idx, (num, name, end) in enumerate(secs):
+            if num != str(idx + 1):
+                errs.append(f"第 {idx + 1} 节编号写成「{num}」")
+            nxt = secs[idx + 1][2] if idx + 1 < len(secs) else len(text)
+            blk = text[end:nxt]
+            claims = CLAIM_LINE_RE.findall(blk)
+            quotes = QUOTE_LINE_RE.findall(blk)
+            nquote += len(quotes)
+            if len(claims) != 1:
+                errs.append(f"「{name}」应有且仅有 1 行「- 论断：」，实有 {len(claims)} 行")
+                continue
+            claim = claims[0].strip()
+            if claim.startswith("未涉及"):
+                if quotes:
+                    errs.append(f"「{name}」论断写未涉及，却带了 {len(quotes)} 条引文")
+                continue
+            if len(quotes) != 1:
+                errs.append(f"「{name}」应有且仅有 1 条引文（batch 只取第 1 条），实有 {len(quotes)} 条")
+                continue
+            q, cite = quotes[0][0], quotes[0][1]
+            if not cite:
+                errs.append(f"「{name}」引文缺出处标注 (作者, 年份, p.N)")
+                continue
+            pm = re.search(r",\s*p{1,2}\.\s*([0-9]+)\s*\)?$", cite)
+            ym = YEAR_RE.search(cite)
+            cm = re.match(r"^\((.+?),\s*(19|20)\d{2}", cite)
+            if not pm:
+                errs.append(f"「{name}」出处标注没有页码：{cite}")
+            if not ym:
+                errs.append(f"「{name}」出处标注没有年份：{cite}")
+            if cm:
+                ok, note = match_author(cm.group(1), f"{stem}.pdf", aliases)
+                if ok is False:
+                    errs.append(f"「{name}」{note}（新文献须先在 litrev/aliases.json 登记姓氏）")
+            if len(re.sub(r"[^A-Za-z]", "", q)) < 20:
+                errs.append(f"「{name}」引文不足 20 个英文字母，会被核验静默跳过")
+
+        # 多余的英文双引号会被 verify 当成待校验引文，制造假失败
+        n_dq = text.count('"')
+        if n_dq != 2 * nquote:
+            errs.append(f'英文双引号 {n_dq} 个，应为 2×{nquote}={2 * nquote}（每对引号都会被当引文校验）')
+
+        # 同一句原文撑两节 = 其中一节其实没有证据，只是抄了一遍
+        all_q = QUOTE_LINE_RE.findall(text)
+        dups = [q for q, n in Counter(q for q, _ in all_q).items() if n > 1]
+        for q in dups:
+            errs.append(f"同一句引文被复用在多节：{q[:50]}")
+
+        if errs:
+            problems[p.name] = errs
+        total_q += nquote
+
+    print(f"卡片结构校验：{d} · 卡片 {len(files)} 张 · 引文 {total_q} 条")
+    # 软提示：首字母小写 = 从句中/图表标题处截的片段，脱离上下文读不懂，自足轴大概率判 DEPENDENT。
+    # 不判红——存量 19 张里有 15 条是这种（11.5%），判红等于把历史账算到结构检查头上；
+    # 但新卡片应做到 0 条，HANDOFF 的验收里按 0 卡。
+    frag = sum(1 for p in files for q, _ in QUOTE_LINE_RE.findall(p.read_text(encoding="utf-8"))
+               if q[:1].islower())
+    if frag:
+        print(f"  [i] 其中 {frag} 条引文首字母小写（片段，非整句）：新卡片应为 0 条")
+    if problems:
+        for name, errs in problems.items():
+            print(f"  ✗ {name}")
+            for e in errs:
+                print(f"      - {e}")
+        print(f"\n✗ {len(problems)}/{len(files)} 张不合格")
+        return 1
+    print(f"  ✓ {len(files)}/{len(files)} 全部符合 7 节结构（节名/顺序/每节 1 条引文/标注可对上）")
+    return 0
+
 
 def batch_stamp(path):
     """取批次输入/判定输出头部记录的「快照 sha1」；没有则返回 None。"""
@@ -1728,6 +1853,11 @@ def main():
     p.add_argument("--card-dir", default=str(CARD_DIR), help="卡片目录（默认 _probe/full）")
     p.add_argument("--check", action="store_true", help="存在过期判定时以退出码 1 结束")
     p.set_defaults(func=cmd_audit_stale)
+
+    p = sub.add_parser("card-check", help="校验卡片是否满足 7 节结构（节名/顺序/每节 1 条引文/标注）")
+    p.add_argument("--card-dir", default=str(CARD_DIR), help="卡片目录（默认 _probe/full）")
+    p.add_argument("--only", default=None, help="只查指定文献名，逗号分隔")
+    p.set_defaults(func=cmd_card_check)
 
     p = sub.add_parser("batch", help="从卡片刷新审计批次输入（保留 id/文献/节，只换论断与引文）")
     p.add_argument("--audit-dir", default=str(AUDIT_DIR), help="批次输入目录（默认 _probe/audit）")
