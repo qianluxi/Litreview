@@ -407,6 +407,217 @@ def cmd_verify_sample(args):
     return 0
 
 
+GOLDEN = AUDIT / "GOLDEN.md"
+GOLDEN_MAP = AUDIT / "GOLDEN_MAP.md"
+GOLDEN_QUOTAS = {"SUPPORTED": 15, "PARTIAL": 9, "UNSUPPORTED": 1}
+
+
+def pick_golden(recs, seed=43):
+    """分层抽样：S 15 / P 9 / U 1（U 不足则全抽），seed 固定可复现。"""
+    rng = random.Random(seed)
+    picked = []
+    for s in SUPPORT:
+        pool = sorted([r for r in recs if r["support"] == s], key=lambda r: r["id"])
+        q = min(GOLDEN_QUOTAS[s], len(pool))
+        idx = sorted(rng.sample(range(len(pool)), q))
+        picked.extend(pool[j] for j in idx)
+    picked.sort(key=lambda r: r["id"])
+    return picked
+
+
+def build_golden(recs, picked):
+    head = [
+        "# 人工金标准 G1（25 条，开卷裁定）",
+        "",
+        "> 由 `python tools/audit_prep.py golden` 生成，seed=43，分层（SUPPORTED 15 / PARTIAL 9 / UNSUPPORTED 1）。",
+        "> **这是给人填的表，不是给子代理的**：不进 `BATCHES.json`、不生成 agent、`auditor-*` 的 read 白名单不含本文件。",
+        "> 判定者可读卡片原文（开卷），独立于判定表给出判定——这是项目唯一的「判得对」参照系。",
+        "> 填法：在下表每行填 支撑/自足/依据/缺什么，照契约 §四 表头与判定码；首行原样抄本文件的 `> 快照 sha1:`。",
+        "> 不要读 `out_*.md`、`SAMPLE_S1_KEYS.md`、`GOLDEN_MAP.md`；可以读 `litrev/_probe/full/*.md` 卡片原文。",
+        "> 快照 sha1: __STAMP__",
+        "",
+        "## 待填判定表（照契约 §四，人填）",
+        "",
+        "| id | 支撑 | 自足 | 引文里的依据（≤15 字，必须是引文原词） | 缺什么 / 需补的一句 |",
+        "|----|------|------|--------------------------------------|--------------------|",
+    ]
+    for n, _ in enumerate(picked, 1):
+        head.append(f"| G{n:02d} |  |  |  |  |")
+    head += ["", "## 条目详情（判定时可读卡片原文，开卷）", ""]
+    for n, r in enumerate(picked, 1):
+        card = f"litrev/_probe/full/{r['doc']}.md"
+        head += [
+            f"### G{n:02d} ・ {r['doc']} ・ {r['sec']} ・ {r['page']}",
+            "",
+            r["claim"],
+            r["quote_line"],
+            f"- 卡片：`{card}`（可读原文上下文）",
+            "",
+        ]
+    raw = "\n".join(head).rstrip() + "\n"
+    st = stamp_text(raw)
+    text = raw.replace("__STAMP__", st, 1)
+    return text, st
+
+
+def build_golden_map(recs, picked, st):
+    lines = [
+        "# G1 金标准映射（主控侧留档，不贴给任何人）",
+        "",
+        "> 由 `python tools/audit_prep.py golden` 生成，与 `GOLDEN.md` 同源。",
+        f"> 判定表总条目 {len(recs)} · 分层抽 {len(picked)} 条 · seed=43。",
+        f"> 输入快照戳：`{st}`",
+        "> **本文件是答案键**：记录每条 G id 对应的原批次 id 与原判定。判定者填 `GOLDEN.md` 时读不到本文件。",
+        "> 人填完后跑 `python tools/audit_prep.py verify-golden` 比对，输出一致率与方向分布。",
+        "> 判定表一改，本映射即失效（`golden --check` 会报不一致）。",
+        "",
+        "## 对照表（G id → 原判定）",
+        "",
+        "| G id | 原批次 id | 文献 | 节 | 原支撑 | 原自足 | 原依据 | 原缺什么 |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+    for n, r in enumerate(picked, 1):
+        lines.append(f"| G{n:02d} | {r['id']} | {r['doc']} | {r['sec']} | "
+                     f"{r['support']} | {r['self']} | {r['basis']} | {r['gap']} |")
+    lines += ["", f"> 共 {len(picked)} 条。", ""]
+    return "\n".join(lines)
+
+
+def cmd_golden(args):
+    recs, _ = load()
+    picked = pick_golden(recs, args.seed)
+    text, st = build_golden(recs, picked)
+    gmap = build_golden_map(recs, picked, st)
+    n_by = {s: sum(1 for r in picked if r["support"] == s) for s in SUPPORT}
+    if args.check:
+        bad = []
+        for path, want in ((GOLDEN, text), (GOLDEN_MAP, gmap)):
+            if not path.exists():
+                bad.append(f"缺失 {path.name}")
+            elif path.read_text(encoding="utf-8") != want:
+                bad.append(f"与当前判定表复算不一致：{path.name}（判定表变了，需重做金标准）")
+        if bad:
+            print("✗ 金标准自检未通过：")
+            for b in bad:
+                print("  -", b)
+            return 1
+        print(f"✓ 金标准可复现：{len(picked)} 条（S{n_by['SUPPORTED']}/P{n_by['PARTIAL']}/U{n_by['UNSUPPORTED']}），戳 {st}。")
+        return 0
+    GOLDEN.write_text(text, encoding="utf-8")
+    GOLDEN_MAP.write_text(gmap, encoding="utf-8")
+    print(f"判定表 {len(recs)} 条 · 分层抽 {len(picked)} 条（S{n_by['SUPPORTED']}/P{n_by['PARTIAL']}/U{n_by['UNSUPPORTED']}，seed={args.seed}）")
+    print(f"待填表：{rel(GOLDEN)}  > 快照 sha1: {st}")
+    print(f"答案键：{rel(GOLDEN_MAP)}（禁止贴给任何人）")
+    print("下一步：人填 GOLDEN.md 的判定表 → python tools/audit_prep.py verify-golden")
+    return 0
+
+
+def cmd_verify_golden(args):
+    if not GOLDEN.exists() or not GOLDEN_MAP.exists():
+        print("✗ 缺 GOLDEN.md 或 GOLDEN_MAP.md（先跑 python tools/audit_prep.py golden）")
+        return 1
+    gtext = GOLDEN.read_text(encoding="utf-8")
+    st = stamp_of(GOLDEN)
+    grown = {}
+    for line in gtext.splitlines():
+        m = re.match(r"^\|\s*(G\d\d)\s*\|", line)
+        if not m:
+            continue
+        c = cells(line)
+        if len(c) < 5 or c[1] not in SUPPORT:
+            continue
+        grown[m.group(1)] = {"support": c[1], "self": c[2], "basis": c[3], "gap": c[4]}
+    kmap, krec = {}, {}
+    for line in GOLDEN_MAP.read_text(encoding="utf-8").splitlines():
+        m = re.match(r"^\|\s*(G\d\d)\s*\|\s*([A-Z]+\d+-\d+)\s*\|", line)
+        if not m:
+            continue
+        c = cells(line)
+        if len(c) < 8:
+            continue
+        kmap[m.group(1)] = c[1]
+        krec[m.group(1)] = {"support": c[4], "self": c[5], "basis": c[6], "gap": c[7]}
+    if not kmap:
+        print("✗ GOLDEN_MAP.md 解析失败")
+        return 1
+    want_ids = [f"G{n:02d}" for n in range(1, len(kmap) + 1)]
+    filled = [g for g in want_ids if g in grown]
+    missing = [g for g in want_ids if g not in grown]
+    print(f"金标准回写：{rel(GOLDEN)} · 戳 {st} · 填了 {len(filled)}/{len(kmap)} 条")
+    if missing:
+        print(f"  [i] 未填：{', '.join(missing)}（填完再复跑）")
+    if not filled:
+        print("✗ 一条都没填")
+        return 1
+    sup_same = sum(1 for g in filled if grown[g]["support"] == krec[g]["support"])
+    self_same = sum(1 for g in filled if grown[g]["self"] == krec[g]["self"])
+    both = sum(1 for g in filled if grown[g]["support"] == krec[g]["support"]
+               and grown[g]["self"] == krec[g]["self"])
+    strict = [g for g in filled if krec[g]["support"] == "SUPPORTED" and grown[g]["support"] != "SUPPORTED"]
+    loose = [g for g in filled if krec[g]["support"] != "SUPPORTED" and grown[g]["support"] == "SUPPORTED"]
+    cross = [g for g in filled if grown[g]["support"] != krec[g]["support"] and g not in strict and g not in loose]
+    from collections import Counter
+    diff_batch = Counter(kmap[g] for g in filled
+                         if grown[g]["support"] != krec[g]["support"] or grown[g]["self"] != krec[g]["self"])
+    print(f"  支撑轴一致：{sup_same}/{len(filled)}（{sup_same/len(filled):.0%}）")
+    print(f"  自足轴一致：{self_same}/{len(filled)}（{self_same/len(filled):.0%}）")
+    print(f"  双轴都一致：{both}/{len(filled)}（{both/len(filled):.0%}）")
+    if strict:
+        print(f"  [!] 人判更严（原 S → 人非 S）{len(strict)} 条：{', '.join(strict)} → 疑似原表偏松")
+    if loose:
+        print(f"  [!] 人判更松（原非 S → 人 S）{len(loose)} 条：{', '.join(loose)} → 疑似原表偏严")
+    if cross:
+        print(f"  [!] 跨档差异 {len(cross)} 条：{', '.join(cross)}")
+    if diff_batch:
+        print(f"  差异按原批次集中：{dict(diff_batch)}")
+    print("  [i] 金标准是独立参照系（人开卷裁定），一致率即判定表的可信度估计；")
+    print("      差异不自动触发重审，按 RUNBOOK §五 登记 DISPUTED.md 后人工裁决。")
+    if missing:
+        return 1
+    return 0
+
+
+def cmd_diff_dup(args):
+    """比对 out_R*.md 与 out_D*.md（固定契约双跑），输出同输入重复判定的漂移率。"""
+    rrows, drows = {}, {}
+    for p in sorted(AUDIT.glob("out_R[1-5].md")):
+        for line in p.read_text(encoding="utf-8").splitlines():
+            m = ROW_ID.match(line)
+            if m:
+                c = cells(line)
+                if len(c) >= 3:
+                    rrows[m.group(1)] = (c[1], c[2])
+    for p in sorted(AUDIT.glob("out_D[1-5].md")):
+        for line in p.read_text(encoding="utf-8").splitlines():
+            m = ROW_ID.match(line)
+            if m:
+                c = cells(line)
+                if len(c) >= 3:
+                    drows[m.group(1)] = (c[1], c[2])
+    common = sorted(set(rrows) & set(drows))
+    if not common:
+        print("✗ 没有可配对的 id（out_R* 与 out_D* 任一为空，双跑还没跑）")
+        return 1
+    sup_diff = [(i, rrows[i][0], drows[i][0]) for i in common if rrows[i][0] != drows[i][0]]
+    self_diff = [(i, rrows[i][1], drows[i][1]) for i in common if rrows[i][1] != drows[i][1]]
+    any_diff = [i for i in common if rrows[i] != drows[i]]
+    print(f"双跑配对：{len(common)} 条（R1-5 原判 vs D1-5 重判）")
+    print(f"  支撑轴漂移：{len(sup_diff)}/{len(common)}（{len(sup_diff)/len(common):.1%}）")
+    print(f"  自足轴漂移：{len(self_diff)}/{len(common)}（{len(self_diff)/len(common):.1%}）")
+    print(f"  任一轴漂移：{len(any_diff)}/{len(common)}（{len(any_diff)/len(common):.1%}）")
+    if sup_diff:
+        print("  支撑轴差异：")
+        for i, r, d in sup_diff:
+            print(f"    {i}: {r} → {d}")
+    if self_diff:
+        print("  自足轴差异：")
+        for i, r, d in self_diff:
+            print(f"    {i}: {r} → {d}")
+    print("  [i] 双跑测的是同输入重复判定的随机漂移，不裁定谁判对；")
+    print("      漂移率给「抽检 1/10 差异是噪声还是信号」一个基线（round-04 上界 14.3%）。")
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -419,6 +630,14 @@ def main():
     p.set_defaults(func=cmd_review)
     p = sub.add_parser("verify-sample", help="审计员回写 out_S1.md 后机械验收")
     p.set_defaults(func=cmd_verify_sample)
+    p = sub.add_parser("golden", help="生成人工金标准 GOLDEN.md + 答案键 GOLDEN_MAP.md")
+    p.add_argument("--seed", type=int, default=43)
+    p.add_argument("--check", action="store_true", help="复算并比对现有文件，不写盘")
+    p.set_defaults(func=cmd_golden)
+    p = sub.add_parser("verify-golden", help="人填完 GOLDEN.md 后比对判定表，输出一致率")
+    p.set_defaults(func=cmd_verify_golden)
+    p = sub.add_parser("diff-dup", help="双跑后比对 out_R* 与 out_D*，输出漂移率")
+    p.set_defaults(func=cmd_diff_dup)
     args = ap.parse_args()
     return args.func(args)
 

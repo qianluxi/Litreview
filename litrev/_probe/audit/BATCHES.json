@@ -54,6 +54,36 @@
       "input": "litrev/_probe/audit/SAMPLE_S1.md",
       "output": "litrev/_probe/audit/out_S1.md",
       "note": "抽检 S1（seed=42、10/81=12.3%；候选集构成不披露给审计员）"
+    },
+    {
+      "id": "rest_b1_dup",
+      "input": "litrev/_probe/audit/REST_B1.md",
+      "output": "litrev/_probe/audit/out_D1.md",
+      "note": "固定契约双跑 R1（同输入另存对照，不覆盖 out_R1.md；前缀 D 不进 131 口径）"
+    },
+    {
+      "id": "rest_b2_dup",
+      "input": "litrev/_probe/audit/REST_B2.md",
+      "output": "litrev/_probe/audit/out_D2.md",
+      "note": "固定契约双跑 R2（同输入另存对照，不覆盖 out_R2.md；前缀 D 不进 131 口径）"
+    },
+    {
+      "id": "rest_b3_dup",
+      "input": "litrev/_probe/audit/REST_B3.md",
+      "output": "litrev/_probe/audit/out_D3.md",
+      "note": "固定契约双跑 R3（同输入另存对照，不覆盖 out_R3.md；前缀 D 不进 131 口径）"
+    },
+    {
+      "id": "rest_b4_dup",
+      "input": "litrev/_probe/audit/REST_B4.md",
+      "output": "litrev/_probe/audit/out_D4.md",
+      "note": "固定契约双跑 R4（同输入另存对照，不覆盖 out_R4.md；前缀 D 不进 131 口径）"
+    },
+    {
+      "id": "rest_b5_dup",
+      "input": "litrev/_probe/audit/REST_B5.md",
+      "output": "litrev/_probe/audit/out_D5.md",
+      "note": "固定契约双跑 R5（同输入另存对照，不覆盖 out_R5.md；前缀 D 不进 131 口径）"
     }
   ]
 }

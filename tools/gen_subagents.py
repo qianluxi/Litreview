@@ -191,7 +191,7 @@ def build(roles):
         files[f".opencode/agents/auditor-{slugify(bid)}.md"] = agent_md(
             f"审计员 {bid}。闭卷判「引文是否撑得起论断」，只读本批次输入，只写本批次输出。",
             fill(roles["auditor"], BATCH_IN=inp, BATCH_OUT=outp, CONTRACT_AUDIT=CONTRACT_AUDIT),
-            [("read", [("*", "deny"), (CONTRACT_AUDIT, "allow"), (inp, "allow")]),
+            [("read", [("*", "deny"), (CONTRACT_AUDIT, "allow"), (inp, "allow"), (outp, "allow")]),
              ("edit", [("*", "deny"), (outp, "allow")])] + READ_ONLY,
         )
         batch_rows.append({"id": bid, "agent": f"auditor-{slugify(bid)}",

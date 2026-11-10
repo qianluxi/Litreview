@@ -130,6 +130,35 @@ python tools/audit_prep.py review             # 非 SUPPORTED 人工复核清单
   `REVIEW_NONSUPPORTED.md` 是 `review` 自动生成的非 SUPPORTED 清单，两者不要混写。
 - 抽检结论写进 `reports/`：命中率、方向、差异条目、是否补证据、裁决结果。`out_S1.md` 不进 131 条汇总（`audit-count` 默认前缀 B,R）。
 
+### 金标准（判得对的参照系，2026-11-10 加入）
+
+抽检只测**自洽**（同模型两次判定），不测**准确性**——抽的人和被抽的人是同一个判定者。要测准确性，必须有独立参照系：
+
+```bash
+python tools/audit_prep.py golden             # 分层抽 25 条（S15/P9/U1，seed=43）→ GOLDEN.md + GOLDEN_MAP.md
+python tools/audit_prep.py golden --check     # 复算比对，判定表一变就报不一致
+# 人填完 GOLDEN.md 的判定表（开卷，可读卡片原文，不读 out_*/答案键）
+python tools/audit_prep.py verify-golden      # 比对人判 vs 判定表，输出一致率与方向分布
+```
+
+- `GOLDEN.md` 是给人填的表，**不进 `BATCHES.json`、不生成 agent、不被 `audit-count` 扫**（文件名不是 `out_*`）。
+- `GOLDEN_MAP.md` 是答案键（G id → 原批次/原判定），主控留档，**不贴给任何人**；判定者填表时读不到它。
+- `verify-golden` 的一致率是判定表可信度的**唯一估计**；差异不自动触发重审，按 §五「差异 ≠ 错误」登记 `DISPUTED.md` 后人工裁决。
+
+### 固定契约双跑（测漂移率，2026-11-10 加入）
+
+round-04 用「跨版本重审」当双跑，得到 14.3% 漂移上界，但混入了契约版本变更。正规做法是**固定契约、同输入、另存对照**：
+
+```bash
+# 派 auditor-rest-b{1-5}-dup（输入 REST_B*.md、输出 out_D{1-5}.md，不覆盖 out_R*.md）
+python litrev/litrev.py audit-count --prefixes D --check   # 双跑 5 表自洽（D 不进 131 口径）
+python tools/audit_prep.py diff-dup                        # R vs D 逐条比对，输出漂移率
+```
+
+- 双跑测的是「同输入重复判定的随机漂移」，**不裁定谁判对**。
+- 漂移率给「抽检 1/N 差异是噪声还是信号」一个基线；漂移率 ≠ 0 是预期，不是失败。
+- 顺序派发（不并发），避免资源竞争噪声污染一致性测量。
+
 ## 六、权限回归测试（每次改权限必跑）
 
 改完 `.opencode/agents/` 里的 permission，逐条实测下列用例，**记录返回原文**（拒绝时错误信息里带完整 ruleset，这是证据）：
@@ -175,3 +204,4 @@ python tools/audit_prep.py review             # 非 SUPPORTED 人工复核清单
 | 2026-11-09 | 建立本规约；agents 改为模板生成（`AGENT_ROLES.md` + `gen_subagents.py`）；验收、空结果恢复、抽检、权限回归四条规程成文 |
 | 2026-11-10 | §五 抽检候选集改为「当前 SUPPORTED」（`tools/audit_prep.py`），新增答案键闭卷纪律、`--check` 复现校验与 `verify-sample` 机械验收；`litrev.py` 未改 |
 | 2026-11-10 | §五 补「差异 ≠ 错误」与方向分治：抽检降档**不自动**触发整批重审；新增争议项登记、答案键冻结、补证据两条正规路径，`verify-sample` 提示语同步按方向输出；判定表、`litrev.py`、`AUDIT_CONTRACT.md` 与 agent 定义均未改 |
+| 2026-11-10 | §五 加金标准（`golden`/`verify-golden`）与固定契约双跑（`dup`/`diff-dup`）两条规程；新增 `tools/check.py` 一键回归（8 项结构性检查）；修 auditor 读回权限（read 加 `out_*` allow，需重启）；加 5 个 dup agent；删 round-03 遗留 `out_REWORK3`/`out_SAMPLE3` |

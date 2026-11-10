@@ -6,6 +6,7 @@ permission:
     "*": deny
     "litrev/_probe/AUDIT_CONTRACT.md": allow
     "litrev/_probe/audit/REST_B4.md": allow
+    "litrev/_probe/audit/out_R4.md": allow
   edit:
     "*": deny
     "litrev/_probe/audit/out_R4.md": allow
