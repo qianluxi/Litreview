@@ -909,10 +909,10 @@ def cmd_verify_cases(args):
                    and krec[g]["self"] == "SELF" and filled[g]["self"] == "DEPENDENT"]
     print(f"  自足轴一致：{len(same)}/{len(filled)}（{len(same)/len(filled):.0%}）")
     if table_strict:
-        print(f"  [!] 表判 DEPENDENT、人判 SELF {len(table_strict)} 条："
+        print(f"  [!] 表判 DEPENDENT、回写 SELF {len(table_strict)} 条："
               f"{', '.join(g + '(' + kmap[g] + ')' for g in table_strict)} → 表偏严")
     if table_loose:
-        print(f"  [!] 表判 SELF、人判 DEPENDENT {len(table_loose)} 条："
+        print(f"  [!] 表判 SELF、回写 DEPENDENT {len(table_loose)} 条："
               f"{', '.join(g + '(' + kmap[g] + ')' for g in table_loose)} → 表偏松")
     dep_want = [g for g in want if krec[g]["self"] == "DEPENDENT"]
     dep_ok = [g for g in dep_want if g in filled and filled[g]["self"] == "DEPENDENT"]

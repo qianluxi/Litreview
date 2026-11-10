@@ -8,30 +8,39 @@
 > 缺什么（`DEPENDENT` 必须写明缺的是哪个指代/专有名词；`SELF` 填 `—`）。
 > 快照 sha1: a4e66877dc
 
+## 预填说明（主控代填，待你审核修改）
+
+> **判据**：自足轴看的是**引文**的主语在不在引号内（契约 §二 轴 2），不是看论断。
+> **判 `DEPENDENT` 的两族**：① 引文是名词/介词/从句片段、主谓落在引号外（C01 C02 C04 C05 C06）；② 引文以 `this/these` + 谓语开头且指代前文具体对象（C08 C10 C14 C16），或主句主语被分词吞掉（C09）。
+> **判 `SELF` 的自指族**：`this paper / this study / this work / this section / It is… that` 指的就是本文本节，不需要外部先行词（C03 C07 C11 C12 C13 C15 C17 C18 C19 C20）。
+> **与表内现判有 4 处不同**：C03、C07（表判 `DEP`，此处判 `SELF`）、C14、C16（表判 `SELF`，此处判 `DEP`）。
+> **这 4 条是同一个边界**：表内对自指句自己就不一致——C03「this section introduces」判 `DEP`，而 C17「This section presents」判 `SELF`；C07「This paper thoroughly examines」判 `DEP`，而 C19「This paper is」判 `SELF`。
+> 若按契约字面「引文以 this 开头即 `DEPENDENT`」，则 C03/C07/C12/C15/C17/C19/C20 七条自指句都该改成 `DEPENDENT`——这批判例要定的就是这件事。
+
 ## 待填判定表（人填）
 
 | id | 自足 | 引文里的依据（≤15 字，必须是引文原词） | 缺什么 / 需补的一句 |
 |----|------|--------------------------------------|--------------------|
-| C01 |  |  |  |
-| C02 |  |  |  |
-| C03 |  |  |  |
-| C04 |  |  |  |
-| C05 |  |  |  |
-| C06 |  |  |  |
-| C07 |  |  |  |
-| C08 |  |  |  |
-| C09 |  |  |  |
-| C10 |  |  |  |
-| C11 |  |  |  |
-| C12 |  |  |  |
-| C13 |  |  |  |
-| C14 |  |  |  |
-| C15 |  |  |  |
-| C16 |  |  |  |
-| C17 |  |  |  |
-| C18 |  |  |  |
-| C19 |  |  |  |
-| C20 |  |  |  |
+| C01 | DEPENDENT | "design projects" | 引文是名词短语（information on…），无主谓；缺"资料出自哪个项目/谁的研究" |
+| C02 | DEPENDENT | "limited shear" | 引文是 easier to… 片段，主语在引号外；缺"是什么使过拟合更易避免" |
+| C03 | SELF | "diffusion model" | —（主控预填 SELF：this section 是自指，非外部指代） |
+| C04 | DEPENDENT | "user interfaces" | 引文是名词列举，无主谓；缺"谁需要、需要做到什么"（主谓都在引号外） |
+| C05 | DEPENDENT | "finding matches" | finding matches between 的宾语缺失，主句在引号外 |
+| C06 | DEPENDENT | "case memory" | 只有 when 从句，结论主句在引号外；limited 后还截断 |
+| C07 | SELF | "advanced fusion" | —（主控预填 SELF：This paper 是自指） |
+| C08 | DEPENDENT | "explosive" | This 指代前文的索引做法，先行词在引号外 |
+| C09 | DEPENDENT | "weighted" | Coined as… 是分词开头，主句主语缺失（"7" 是脚注号） |
+| C10 | DEPENDENT | "timeout errors" | These limitations 指代前文列出的局限，先行词在引号外 |
+| C11 | SELF | "aforementioned" | — |
+| C12 | SELF | "diffusion model" | — |
+| C13 | SELF | "preliminary" | —（It 是形式主语，真主语在引号内） |
+| C14 | DEPENDENT | "this approach" | this approach 指代前文介绍的方法，先行词在引号外 |
+| C15 | SELF | "based on GNNs" | — |
+| C16 | DEPENDENT | "input graphs" | these input graphs 指代前文构造的图，先行词在引号外 |
+| C17 | SELF | "three matching" | — |
+| C18 | SELF | "generalization" | —（主句主语 We 完整；these data 指代属边界，见注记） |
+| C19 | SELF | "aesthetics" | — |
+| C20 | SELF | "limited to" | — |
 
 ## 条目详情（判定时可读卡片原文，开卷）
 
