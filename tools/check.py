@@ -55,6 +55,7 @@ CHECKS = [
     ("gen_subagents --check", [PY, "tools/gen_subagents.py", "--check"]),
     ("audit_prep sample --check", [PY, "tools/audit_prep.py", "sample", "--check"]),
     ("audit_prep golden --check", [PY, "tools/audit_prep.py", "golden", "--check"]),
+    ("audit_prep cases --check", [PY, "tools/audit_prep.py", "cases", "--check"]),
 ]
 
 

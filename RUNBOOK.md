@@ -189,6 +189,22 @@ python tools/audit_prep.py diff-dup --pair B:E             # 前缀可配，默�
 - 两组配对框不重叠（83+48=131），但 D 与 E 是不同 agent 实例、不同批次类型 → 合并值只作量级参考，
   **不得表述为「131 条在同一条件下的双跑」**。
 
+### 自足轴判例集（定向扩抽边界情形，2026-11-10 加入）
+
+双跑只证明自足轴**不稳**（11:1 单向），不证明**判错**；金标准 25 条自足轴 25/25 全对，但其中 `DEPENDENT` 只有 3 条——阳性样本太少，撑不起「判准了」的结论。判例集把边界情形全部挖出来，人判一次即可定性：
+
+```bash
+python tools/audit_prep.py cases           # 按 CASES_SELF_IDS.txt 冻结清单生成 CASES_SELF.md（20 条）+ CASES_SELF_KEYS.md
+python tools/audit_prep.py cases --check   # 复算比对（人填表不纳入比对）
+# 人填 CASES_SELF.md：只填自足轴（SELF/DEPENDENT + 引文原词依据 + 缺什么）
+python tools/audit_prep.py verify-cases    # 自足轴一致率 + 方向 + 表内 DEPENDENT 阳性确认率
+```
+
+- 条目清单 `CASES_SELF_IDS.txt` 是**显式冻结**的（一行 `id | 理由`）：不随机、不按判定表重抽、不随改判移动。
+- 选取口径 = 表内 13 条 `DEPENDENT` **并** 12 条双跑自足轴不一致的条目，再去掉金标准已人判确认的 4 条 → 20 条。
+- 与金标准分工：`GOLDEN.md` 随机分层测双轴（判定表可信度）；`CASES_SELF.md` 定向选边只测自足轴（阳性确认）。同一 id 不重复入选。
+- `verify-cases` 只裁自足轴；差异仍按 §五 登记 `DISPUTED.md`，不自动改表。
+
 ## 六、权限回归测试（每次改权限必跑）
 
 改完 `.opencode/agents/` 里的 permission，逐条实测下列用例，**记录返回原文**（拒绝时错误信息里带完整 ruleset，这是证据）：
@@ -238,3 +254,4 @@ python tools/audit_prep.py diff-dup --pair B:E             # 前缀可配，默�
 | 2026-11-10 | 双跑 5 批完成（漂移率：支撑 8.4% / 自足 12.0% / 任一轴 20.5%；自足轴 10/10 单向 SELF→DEPENDENT）；金标准 25 条填完（一致率 92%，2 条偏松 G03/G18）；修 `golden --check`（已填 GOLDEN.md 不再误报）；D-01 仍 OPEN，建议第三次独立判定 |
 | 2026-11-10 | 双跑扩到 frag 三批（`--pair B:E`）：支撑 12.5% / 自足 4.2% / 任一 16.7%；**合并 131 条配对**任一轴 19.1%，自足轴 11:1 单向（`P≈0.3%`，系统性口径差）、支撑轴 9:4（`P≈13%`，不显著）。§五 增「改判的级联代价」。D-01 证据到位（v1.1 下支撑 3:1），待裁决 |
 | 2026-11-10 | **D-01 CLOSED**：`B3-10` 支撑 `SUPPORTED→PARTIAL`、自足不动，汇总 `S81/P49/U1 → S80/P50/U1`。§五 参考集改为**冻结清单**（`<!-- picks -->`，`--check` 不再按当前池重算），修 `verify-sample` 的戳门禁（不同源直接退 1，不再算假一致率）；`SAMPLE_S1` 按新池 80 重抽（戳 `7d1a204d54`），旧样本留档于 `7077b6f` |
+| 2026-11-10 | 新一批抽检（戳 `7d1a204d54`）通过：`out_S1.md` 10/10 与抽样时点原判一致、依据逐字命中 10/10、子会话只读「契约+本批输入」。金标准自足轴一致 **25/25**（支撑 23/25）。新增 `cases`/`verify-cases` 与 `CASES_SELF_IDS.txt`（自足轴定向判例集 20 条），`tools/check.py` 扩到 **9 项** |

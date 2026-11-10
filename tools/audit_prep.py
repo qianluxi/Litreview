@@ -729,6 +729,203 @@ def cmd_diff_dup(args):
     return 0
 
 
+CASES = AUDIT / "CASES_SELF.md"
+CASES_MAP = AUDIT / "CASES_SELF_KEYS.md"
+CASES_IDS = AUDIT / "CASES_SELF_IDS.txt"
+
+
+def read_case_ids():
+    """从冻结清单读 id（一行 `id | 理由`，`#` 开头为注释）。"""
+    if not CASES_IDS.exists():
+        sys.exit(f"[!] 缺 {rel(CASES_IDS)}：自足轴判例集的条目清单必须由主控显式冻结")
+    ids = []
+    for line in CASES_IDS.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        i = line.split("|")[0].strip()
+        if i:
+            ids.append(i)
+    if not ids:
+        sys.exit(f"[!] {rel(CASES_IDS)} 里没有条目")
+    return ids
+
+
+def build_cases(recs, picked, st_hint=None):
+    head = [
+        f"# 自足轴判例集 C1（{len(picked)} 条，开卷裁定）",
+        "",
+        f"> 由 `python tools/audit_prep.py cases` 生成；条目清单见 `CASES_SELF_IDS.txt`（冻结，抽完不再重抽）。",
+        "> **这是给人填的表**：不进 `BATCHES.json`、不生成 agent、`auditor-*` 的 read 白名单不含本文件。",
+        "> 只判**自足轴**：论断脱离引文与上下文能不能独立读懂。可读卡片原文（开卷），但不要读 `out_*.md`、",
+        "> `SAMPLE_S1_KEYS.md`、`GOLDEN.md`、`CASES_SELF_KEYS.md`。",
+        "> 填法：每行填 自足（`SELF` / `DEPENDENT`）、引文里的依据（≤15 字，必须是引文原词）、",
+        "> 缺什么（`DEPENDENT` 必须写明缺的是哪个指代/专有名词；`SELF` 填 `—`）。",
+        "> 快照 sha1: __STAMP__",
+        "",
+        "## 待填判定表（人填）",
+        "",
+        "| id | 自足 | 引文里的依据（≤15 字，必须是引文原词） | 缺什么 / 需补的一句 |",
+        "|----|------|--------------------------------------|--------------------|",
+    ]
+    for n, _ in enumerate(picked, 1):
+        head.append(f"| C{n:02d} |  |  |  |")
+    head += ["", "## 条目详情（判定时可读卡片原文，开卷）", ""]
+    for n, r in enumerate(picked, 1):
+        card = f"litrev/_probe/full/{r['doc']}.md"
+        head += [
+            f"### C{n:02d} ・ {r['doc']} ・ {r['sec']} ・ {r['page']}",
+            "",
+            r["claim"],
+            r["quote_line"],
+            f"- 卡片：`{card}`（可读原文上下文）",
+            "",
+        ]
+    raw = "\n".join(head).rstrip() + "\n"
+    st = stamp_text(raw)
+    return raw.replace("__STAMP__", st, 1), st
+
+
+def build_cases_map(recs, picked, st):
+    lines = [
+        "# C1 自足轴判例集映射（主控侧留档，不贴给任何人）",
+        "",
+        "> 由 `python tools/audit_prep.py cases` 生成，与 `CASES_SELF.md` 同源；条目清单来自 `CASES_SELF_IDS.txt`。",
+        f"> 判定表总条目 {len(recs)} · 本集 {len(picked)} 条（表内 DEPENDENT 10 + 双跑边界 10）。",
+        f"> 输入快照戳：`{st}`",
+        "> **本文件是答案键**：记录每条 C id 对应的原批次 id 与表内现判；判定者填表时读不到本文件。",
+        "> 人填完后跑 `python tools/audit_prep.py verify-cases`，输出自足轴一致率与方向。",
+        "> 下方 `<!-- picks -->` 是冻结清单：判定表事后被裁决修改，本文件不失效，`cases --check` 仍按清单复现。",
+        "",
+        picks_line([r["id"] for r in picked]),
+        "",
+        "## 对照表（C id → 表内现判）",
+        "",
+        "| C id | 原批次 id | 文献 | 节 | 表内支撑 | 表内自足 | 表内依据 | 表内缺什么 |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+    for n, r in enumerate(picked, 1):
+        lines.append(f"| C{n:02d} | {r['id']} | {r['doc']} | {r['sec']} | "
+                     f"{r['support']} | {r['self']} | {r['basis']} | {r['gap']} |")
+    lines += ["", f"> 共 {len(picked)} 条。", ""]
+    return "\n".join(lines)
+
+
+def cmd_cases(args):
+    recs, _ = load()
+    by_id = {r["id"]: r for r in recs}
+    drift = []
+    picked = None
+    if args.check:
+        picked, _meta, extra = frozen_picks(recs, CASES_MAP, None)
+        drift = extra.get("drift", []) if extra else []
+    if picked is None:
+        ids = read_case_ids()
+        missing = [i for i in ids if i not in by_id]
+        if missing:
+            sys.exit(f"[!] 清单里的 id 不在判定表中：{missing}")
+        picked = [by_id[i] for i in ids]
+    text, st = build_cases(recs, picked)
+    cmap = build_cases_map(recs, picked, st)
+    if args.check:
+        bad = []
+        if not CASES_MAP.exists():
+            bad.append("缺失 CASES_SELF_KEYS.md")
+        elif CASES_MAP.read_text(encoding="utf-8") != cmap:
+            bad.append("与冻结清单复算不一致：CASES_SELF_KEYS.md（条目或输入变了，需重做判例集）")
+        marker = "## 条目详情"
+        if not CASES.exists():
+            bad.append("缺失 CASES_SELF.md")
+        elif marker not in text:
+            bad.append("CASES_SELF.md 模板缺少「## 条目详情」标记（工具版本不匹配）")
+        else:
+            disk = CASES.read_text(encoding="utf-8")
+            disk_detail = disk[disk.index(marker):] if marker in disk else ""
+            if disk_detail != text[text.index(marker):]:
+                bad.append("CASES_SELF.md 条目详情与当前判定表复算不一致（判定表变了，需重做判例集）")
+        if bad:
+            print("✗ 自足轴判例集自检未通过：")
+            for b in bad:
+                print("  -", b)
+            return 1
+        dep = sum(1 for r in picked if r["self"] == "DEPENDENT")
+        print(f"✓ 自足轴判例集可复现：{len(picked)} 条（表内 DEP {dep}），戳 {st}。"
+              + "（CASES_SELF.md 表格为人填部分，不纳入比对）")
+        if drift:
+            print(f"  注：{len(drift)} 条在原判之后被裁决修改（{', '.join(drift)}），仍按清单复现。")
+        return 0
+    CASES.write_text(text, encoding="utf-8")
+    CASES_MAP.write_text(cmap, encoding="utf-8")
+    dep = sum(1 for r in picked if r["self"] == "DEPENDENT")
+    print(f"自足轴判例集 {len(picked)} 条（表内 DEPENDENT {dep} / SELF {len(picked)-dep}）")
+    print(f"待填表：{rel(CASES)}  > 快照 sha1: {st}")
+    print(f"答案键：{rel(CASES_MAP)}（禁止贴给任何人）")
+    print("下一步：人填 CASES_SELF.md → python tools/audit_prep.py verify-cases")
+    return 0
+
+
+def cmd_verify_cases(args):
+    if not CASES.exists() or not CASES_MAP.exists():
+        print("✗ 缺 CASES_SELF.md 或 CASES_SELF_KEYS.md（先跑 python tools/audit_prep.py cases）")
+        return 1
+    ctext = CASES.read_text(encoding="utf-8")
+    st = stamp_of(CASES)
+    filled, blank = {}, []
+    for line in ctext.splitlines():
+        m = re.match(r"^\|\s*(C\d\d)\s*\|", line)
+        if not m:
+            continue
+        c = cells(line)
+        if len(c) < 4:
+            continue
+        if c[1] not in SELFSUF:
+            blank.append(m.group(1))
+            continue
+        filled[m.group(1)] = {"self": c[1], "basis": c[2], "gap": c[3]}
+    kmap, krec = {}, {}
+    for line in CASES_MAP.read_text(encoding="utf-8").splitlines():
+        m = re.match(r"^\|\s*(C\d\d)\s*\|\s*([A-Z]+\d+-\d+)\s*\|", line)
+        if not m:
+            continue
+        c = cells(line)
+        if len(c) < 8:
+            continue
+        kmap[m.group(1)] = c[1]
+        krec[m.group(1)] = {"support": c[4], "self": c[5]}
+    if not kmap:
+        print("✗ CASES_SELF_KEYS.md 解析失败")
+        return 1
+    want = [f"C{n:02d}" for n in range(1, len(kmap) + 1)]
+    print(f"自足轴判例集回写：{rel(CASES)} · 戳 {st} · 填了 {len(filled)}/{len(kmap)} 条")
+    if blank:
+        print(f"  [i] 未填：{', '.join(blank)}")
+    if not filled:
+        print("✗ 一条都没填")
+        return 1
+    same = [g for g in want if g in filled and filled[g]["self"] == krec[g]["self"]]
+    table_strict = [g for g in want if g in filled
+                    and krec[g]["self"] == "DEPENDENT" and filled[g]["self"] == "SELF"]
+    table_loose = [g for g in want if g in filled
+                   and krec[g]["self"] == "SELF" and filled[g]["self"] == "DEPENDENT"]
+    print(f"  自足轴一致：{len(same)}/{len(filled)}（{len(same)/len(filled):.0%}）")
+    if table_strict:
+        print(f"  [!] 表判 DEPENDENT、人判 SELF {len(table_strict)} 条："
+              f"{', '.join(g + '(' + kmap[g] + ')' for g in table_strict)} → 表偏严")
+    if table_loose:
+        print(f"  [!] 表判 SELF、人判 DEPENDENT {len(table_loose)} 条："
+              f"{', '.join(g + '(' + kmap[g] + ')' for g in table_loose)} → 表偏松")
+    dep_want = [g for g in want if krec[g]["self"] == "DEPENDENT"]
+    dep_ok = [g for g in dep_want if g in filled and filled[g]["self"] == "DEPENDENT"]
+    dep_no = [g for g in dep_want if g in filled and filled[g]["self"] != "DEPENDENT"]
+    if dep_want:
+        print(f"  表内 DEPENDENT 阳性确认：{len(dep_ok)}/{len(dep_want)}"
+              + (f"；未确认：{'、'.join(g + '→' + kmap[g] for g in dep_no)}" if dep_no else ""))
+    print("  [i] 本集只裁自足轴，不裁支撑轴；差异不自动改表，按 RUNBOOK §五 登记 DISPUTED.md 后人工裁决。")
+    if blank:
+        return 1
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -750,6 +947,11 @@ def main():
     p = sub.add_parser("diff-dup", help="双跑后比对原判与双跑输出，输出漂移率（默认 R:D）")
     p.add_argument("--pair", default="R:D", help="原判前缀:双跑前缀，默认 R:D；frag 双跑用 B:E")
     p.set_defaults(func=cmd_diff_dup)
+    p = sub.add_parser("cases", help="生成自足轴判例集 CASES_SELF.md（人判，条目由 IDS 清单冻结）")
+    p.add_argument("--check", action="store_true", help="复算并比对现有文件，不写盘")
+    p.set_defaults(func=cmd_cases)
+    p = sub.add_parser("verify-cases", help="人填完 CASES_SELF.md 后比对表内现判，输出自足轴一致率")
+    p.set_defaults(func=cmd_verify_cases)
     args = ap.parse_args()
     return args.func(args)
 
