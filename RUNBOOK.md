@@ -91,19 +91,27 @@ python litrev/litrev.py stamp-out                # 4. 已有输出：能按 git 
 
 **不许**：把空结果当成功继续下一步；不许用主控代写补上（证据链会断）。
 
-## 五、抽检规程
+## 五、抽检规程（2026-11-10 修订：候选集改为当前 SUPPORTED）
 
-`SUPPORTED` 只是分诊结果，不是合格证（v1.1 契约 §七.2）。每轮审计后：
+`SUPPORTED` 只是分诊结果，不是合格证（v1.1 契约 §七.2）。**抽样对象是当前判为 `SUPPORTED` 的条目，不是全库卡片**——
+`litrev.py sample` 从 `_probe/full/*.md` 的全部 131 条里抽，会抽到本来就要人看的 PARTIAL/UNSUPPORTED，抽检失去意义。
+改由主控侧 `tools/audit_prep.py` 从 8 张判定表取候选集（裁判 `litrev.py` 一字不改）：
 
 ```bash
-python litrev/litrev.py sample litrev/_probe/full --rate 0.12 --seed 42 \
-  --name "SUPPORTED 抽检 S1" --out litrev/_probe/audit/SAMPLE_S1.md
-python tools/gen_subagents.py          # 新增批次 → 生成 auditor-sample-s1
+python tools/audit_prep.py sample             # 写 SAMPLE_S1.md + SAMPLE_S1_KEYS.md（答案键）
+python tools/audit_prep.py sample --check     # 复算比对；判定表或批次输入一变就报不一致
+python tools/gen_subagents.py --check         # S1 已在 BATCHES.json 登记，正常无需重启
+python tools/audit_prep.py review             # 非 SUPPORTED 人工复核清单（契约 §五.3）
 ```
 
-- 比例 10–15%，种子固定，**同一批数据重跑必须抽出同一组条目**（可复核）。
-- 抽检条目若出现"该判 PARTIAL 却给了 SUPPORTED" → **整批重审**，不逐条修补。
-- 抽检结论要写成 `audit/out_S1.md` + 一条汇总结论（命中率、偏松方向、是否整批重审）。
+- 比例 10–15%、种子固定（seed=42、rate=0.12）；**同一批数据重跑必须抽出同一组条目**（`--check` 验证）。
+- 输入文件必须闭卷：**不写候选集的判定码、不写原依据、不写答案键路径**。答案键 `SAMPLE_S1_KEYS.md` 只在主控侧留档，
+  `auditor-*` 的 read 白名单里没有它，派发提示词也不许引用它——否则等于把答案递给审计员。
+- 输入第 6 行是 `> 快照 sha1: <10 位>`，输出首行必须原样抄；戳由所有 `- 论断：`/`- 引文：` 行算出（与 `batch` 同算法）。
+- 派 `auditor-sample-s1` 写 `out_S1.md` 后，先跑 `python litrev/litrev.py audit-count --prefixes S --check`（表自洽），
+  再跑 `python tools/audit_prep.py verify-sample`（戳/表头/10 行/合计行/依据逐字命中/命中率；退 0 才算过）。
+- 抽检条目若出现"该判 PARTIAL 却给了 SUPPORTED" → **整批重审**（该条所属原批次），不逐条修补。
+- 抽检结论写进 `reports/`：命中率、偏松方向、是否整批重审。`out_S1.md` 不进 131 条汇总（`audit-count` 默认前缀 B,R）。
 
 ## 六、权限回归测试（每次改权限必跑）
 
@@ -148,3 +156,4 @@ python tools/gen_subagents.py          # 新增批次 → 生成 auditor-sample-
 | 日期 | 变更 |
 |---|---|
 | 2026-11-09 | 建立本规约；agents 改为模板生成（`AGENT_ROLES.md` + `gen_subagents.py`）；验收、空结果恢复、抽检、权限回归四条规程成文 |
+| 2026-11-10 | §五 抽检候选集改为「当前 SUPPORTED」（`tools/audit_prep.py`），新增答案键闭卷纪律、`--check` 复现校验与 `verify-sample` 机械验收；`litrev.py` 未改 |

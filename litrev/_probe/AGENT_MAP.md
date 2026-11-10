@@ -41,7 +41,7 @@
 | `rest_b3` | `auditor-rest-b3` | `litrev/_probe/audit/REST_B3.md` | `litrev/_probe/audit/out_R3.md` | 剩余 83 条复核 B3 |
 | `rest_b4` | `auditor-rest-b4` | `litrev/_probe/audit/REST_B4.md` | `litrev/_probe/audit/out_R4.md` | 剩余 83 条复核 B4 |
 | `rest_b5` | `auditor-rest-b5` | `litrev/_probe/audit/REST_B5.md` | `litrev/_probe/audit/out_R5.md` | 剩余 83 条复核 B5 |
-| `sample_s1` | `auditor-sample-s1` | `litrev/_probe/audit/SAMPLE_S1.md` | `litrev/_probe/audit/out_S1.md` | SUPPORTED 抽检 S1（seed=42, 12.2%） |
+| `sample_s1` | `auditor-sample-s1` | `litrev/_probe/audit/SAMPLE_S1.md` | `litrev/_probe/audit/out_S1.md` | 抽检 S1（seed=42、10/81=12.3%；候选集构成不披露给审计员） |
 
 ## 固定角色
 

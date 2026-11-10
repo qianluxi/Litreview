@@ -183,14 +183,17 @@ python litrev.py matrix 表.xlsx --sheet 证据矩阵_v2 --col 2
 
 ### 抽检（2026-11-09 加入，机械可复现）
 
-`SUPPORTED` 是分诊结果，不是合格证。每轮审计后用固定种子抽 10–15%：
+`SUPPORTED` 是分诊结果，不是合格证（契约 §七.2）。每轮审计后从**当前判为 SUPPORTED 的条目**里用固定种子抽 10–15%：
 
 ```bash
-python litrev.py sample ../_probe/full --rate 0.12 --seed 42 \
-  --name "SUPPORTED 抽检 S1" --out ../_probe/audit/SAMPLE_S1.md
+python tools/audit_prep.py sample            # 候选集 = 当前 8 张判定表里的 SUPPORTED
+python tools/audit_prep.py sample --check    # 复算比对，确认可复现
+python tools/audit_prep.py verify-sample     # 审计员回写 out_S1.md 后机械验收
 ```
 
-- 种子与比例都写进批次文件头，**同一批数据重跑必须抽出同一组条目**；
+- **不要再直接用 `litrev.py sample` 生成 S1**：那条命令从全库 131 条抽，会混入本来就要人看的 PARTIAL/UNSUPPORTED。
+  本工具只读判定表与批次输入，裁判 `litrev.py` 一字不改。
+- 种子与比例写进批次文件头，**同一批数据重跑必须抽出同一组条目**；答案键 `SAMPLE_S1_KEYS.md` 留在主控侧，不进派发提示词。
 - 抽检出现"该判 PARTIAL 却给 SUPPORTED"→ 整批重审，不逐条修补（逐条修会把系统性偏松掩盖成偶发）；
-- 新批次要在 `_probe/audit/BATCHES.json` 登记并跑 `tools/gen_subagents.py`，才会有对应的 `auditor-<批次>`（它只能读这一批、只能写这一批的输出）。
+- 新批次要在 `_probe/audit/BATCHES.json` 登记并跑 `tools/gen_subagents.py`，才会有对应的 `auditor-<批次>`（它只能读这一批、只能写这一批的输出）。完整规程见 `RUNBOOK.md` §五。
 

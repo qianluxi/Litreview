@@ -53,7 +53,7 @@
       "id": "sample_s1",
       "input": "litrev/_probe/audit/SAMPLE_S1.md",
       "output": "litrev/_probe/audit/out_S1.md",
-      "note": "SUPPORTED 抽检 S1（seed=42, 12.2%）"
+      "note": "抽检 S1（seed=42、10/81=12.3%；候选集构成不披露给审计员）"
     }
   ]
 }

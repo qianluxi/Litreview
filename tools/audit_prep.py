@@ -1,0 +1,411 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""审计层的主控侧准备工具：抽检批次、答案键、人工复核清单、抽检结果验收。
+
+为什么不直接用 `litrev.py sample`：
+  那条命令从 `_probe/full/*.md` 的**全部**论断-引文对里抽样，而契约 §七.2 要求的是
+  「SUPPORTED 条目按 10%–15% 抽检」。全库抽样会抽到本来就要人看的 PARTIAL/UNSUPPORTED，
+  抽检就失去意义。本工具以**当前 8 张判定表**为候选集，只抽 SUPPORTED，并把「抽的是哪条、
+  原来判什么」留档在答案键里，供事后机械比对（而不是让审计员自己回忆）。
+
+裁判 `litrev/litrev.py` 一字不改：本工具只读它的输入/输出文件，不参与判定。
+
+用法：
+  python tools/audit_prep.py sample                    # 生成 SAMPLE_S1.md + SAMPLE_S1_KEYS.md
+  python tools/audit_prep.py sample --check            # 复算并比对现有文件（不改盘）
+  python tools/audit_prep.py review                    # 生成 50 条非 SUPPORTED 人工复核清单
+  python tools/audit_prep.py verify-sample             # 审计员回写 out_S1.md 后，机械验收
+"""
+
+import argparse
+import hashlib
+import random
+import re
+import sys
+from pathlib import Path
+
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except (AttributeError, ValueError, OSError):
+    pass
+
+ROOT = Path(__file__).resolve().parent.parent
+AUDIT = ROOT / "litrev/_probe/audit"
+CONTRACT = ROOT / "litrev/_probe/AUDIT_CONTRACT.md"
+SAMPLE = AUDIT / "SAMPLE_S1.md"
+KEYS = AUDIT / "SAMPLE_S1_KEYS.md"
+REVIEW = AUDIT / "REVIEW_NONSUPPORTED.md"
+OUT_S1 = AUDIT / "out_S1.md"
+
+IN_NAME = re.compile(r"^FRAG_B(\d+)\.md$|^REST_B(\d+)\.md$")
+HEAD = re.compile(r"^###\s+(\S+)\s*・\s*(\S+)\s*・\s*(\S+)\s*・\s*(\S+)\s*$")
+ROW_ID = re.compile(r"^\|\s*([A-Z]+\d+-\d+)\s*\|")
+STAMP = re.compile(r"^> 快照 sha1: ([0-9a-f]{6,40})", re.M)
+CLAIM_LINE = re.compile(r"^- 论断：.+$", re.M)
+QUOTE_LINE = re.compile(r"^- 引文：.+$", re.M)
+SUPPORT = ("SUPPORTED", "PARTIAL", "UNSUPPORTED")
+SELFSUF = ("SELF", "DEPENDENT")
+
+
+def rel(path):
+    try:
+        return path.relative_to(ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
+def stamp_of(path):
+    m = STAMP.search(Path(path).read_text(encoding="utf-8"))
+    return m.group(1) if m else None
+
+
+def cells(line):
+    return [c.strip() for c in line.strip().strip("|").split("|")]
+
+
+def parse_inputs():
+    """批次输入 -> {id: {...}}，论断/引文两行原样保留（audit-stale 已证明它们等于卡片）。"""
+    items = {}
+    for p in sorted(AUDIT.glob("*.md")):
+        if not IN_NAME.match(p.name):
+            continue
+        text = p.read_text(encoding="utf-8")
+        st = stamp_of(p)
+        for blk in re.split(r"^### ", text, flags=re.M)[1:]:
+            lines = blk.splitlines()
+            m = HEAD.match("### " + lines[0].rstrip())
+            if not m:
+                continue
+            i, doc, sec, page = m.groups()
+            claim = next((l.rstrip() for l in lines if l.startswith("- 论断：")), "")
+            quote_line = next((l.rstrip() for l in lines if l.startswith("- 引文：")), "")
+            qm = re.match(r'^- 引文：["\u201c](.+?)["\u201d]\s*(.*)$', quote_line)
+            items[i] = {"id": i, "doc": doc, "sec": sec, "page": page,
+                        "claim": claim, "quote_line": quote_line,
+                        "quote": qm.group(1) if qm else "",
+                        "tail": qm.group(2) if qm else "",
+                        "batch": p.name, "in_stamp": st}
+    return items
+
+
+def parse_outputs():
+    """判定输出 -> {id: {...}}，含支撑/自足/依据/缺什么。"""
+    rows = {}
+    for p in sorted(AUDIT.glob("out_*.md")):
+        if not re.match(r"^out_[BR]\d+\.md$", p.name):
+            continue
+        text = p.read_text(encoding="utf-8")
+        st = stamp_of(p)
+        for line in text.splitlines():
+            m = ROW_ID.match(line)
+            if not m:
+                continue
+            c = cells(line)
+            if len(c) < 5:
+                continue
+            rows[m.group(1)] = {"support": c[1], "self": c[2],
+                                "basis": c[3], "gap": c[4],
+                                "out_file": p.name, "out_stamp": st}
+    return rows
+
+
+def load():
+    """把输入与判定拼成完整记录，并做三组一致性校验；返回 (records, 各输入戳)。"""
+    ins, outs = parse_inputs(), parse_outputs()
+    only_in = sorted(set(ins) - set(outs))
+    only_out = sorted(set(outs) - set(ins))
+    if only_in or only_out:
+        sys.exit(f"[!] 批次输入与判定表 id 不齐：只在输入 {only_in} / 只在输出 {only_out}")
+    bad = [i for i in ins if ins[i]["in_stamp"] != outs[i]["out_stamp"]]
+    if bad:
+        sys.exit(f"[!] 这些条目的输入戳与判定戳不一致（判定依据已过期，先跑 audit-stale/batch）：{bad}")
+    bad = [i for i in ins if outs[i]["support"] not in SUPPORT or outs[i]["self"] not in SELFSUF]
+    if bad:
+        sys.exit(f"[!] 判定码非法：{bad}")
+    recs = []
+    for i in sorted(ins):
+        r = dict(ins[i])
+        r.update(outs[i])
+        recs.append(r)
+    stamps = {}
+    for r in recs:
+        stamps[r["batch"]] = r["in_stamp"]
+    return recs, stamps
+
+
+def pick(recs, rate, seed):
+    pool = [r for r in recs if r["support"] == "SUPPORTED"]
+    k = max(1, min(len(pool), round(len(pool) * rate)))
+    idx = sorted(random.Random(seed).sample(range(len(pool)), k))
+    return pool, [pool[j] for j in idx], k
+
+
+def stamp_text(text):
+    """与 litrev.py batch 同算法：只对所有 `- 论断：`/`- 引文：` 行取 sha1 前 10 位。"""
+    payload = "".join(re.findall(r"^- (?:论断|引文)：.+$", text, re.M))
+    return hashlib.sha1(payload.encode("utf-8")).hexdigest()[:10]
+
+
+def build_sample(recs, picked, pool, k, rate, seed):
+    # 输入文件必须闭卷：不能出现「这些条目原来都判 SUPPORTED」，否则等于把答案递给审计员。
+    # 候选集构成只写在答案键里（主控侧留档，auditor-* 的 read 白名单读不到）。
+    head = [
+        "# 抽检批次：S1",
+        "",
+        f"> 由 `python tools/audit_prep.py sample` 生成，seed={seed}、rate={rate:.0%}，可复现。",
+        f"> 来源 8 个批次、共 {len(pool)} 条候选条目，抽 {k} 条（{k/len(pool):.1%}）；"
+        "候选集构成由主控留档，不在本文件披露。",
+        "> **闭卷**：只给下列五元组，不要回读原文、卡片、其它批次或答案键。",
+        "> 快照 sha1: __STAMP__",
+        "",
+        "## 合计",
+        "",
+        "| 项 | 数 |",
+        "|---|---|",
+        f"| 判定表总条目 | {len(recs)} |",
+        f"| 候选条目 | {len(pool)} |",
+        f"| 抽检条目 | {k} |",
+        f"| 抽检比例 | {k/len(pool):.1%} |",
+        "",
+        "## 待判条目",
+        "",
+    ]
+    body = []
+    for n, r in enumerate(picked, 1):
+        body += [
+            f"### S{n:02d} ・ {r['doc']} ・ {r['sec']} ・ {r['page']}",
+            "",
+            r["claim"],
+            r["quote_line"],
+            "",
+        ]
+    raw = "\n".join(head + body).rstrip() + "\n"
+    st = stamp_text(raw)
+    text = raw.replace("__STAMP__", st, 1)
+    return text, st
+
+
+def build_keys(recs, picked, pool, k, rate, seed, stamps, st):
+    lines = [
+        "# S1 答案键（主控侧留档）",
+        "",
+        "> 由 `python tools/audit_prep.py sample` 生成，与 `SAMPLE_S1.md` 同源。",
+        f"> 判定表总条目 {len(recs)} · 当前 SUPPORTED {len(pool)} · 抽 {k} 条（{k/len(pool):.1%}）· seed={seed} rate={rate:.0%}。",
+        f"> 输入快照戳：`{st}`",
+        "> **本文件是答案键：禁止贴给任何 `auditor-*`，也不要登记进 `BATCHES.json`。**",
+        "> 审计员的 read 白名单只有「契约 + 本批输入」，它读不到本文件；主控也不要在派发提示词里引用它。",
+        "",
+        "## 抽样算法（可复现）",
+        "",
+        f"`pool = [判定表里 support == SUPPORTED 的条目，按 id 升序]`；`k = round({len(pool)} * {rate}) = {k}`；"
+        f"`idx = sorted(random.Random({seed}).sample(range({len(pool)}), {k}))`；取 `pool[idx]`。",
+        "",
+        "## 源批次输入戳（抽样时的口径）",
+        "",
+        "| 批次输入 | 快照 sha1 |",
+        "|---|---|",
+    ]
+    for name in sorted(stamps):
+        lines.append(f"| `{name}` | `{stamps[name]}` |")
+    lines += ["", "## 对照表（抽检 id → 原判定）", "",
+              "| 抽检 id | 原批次 id | 文献 | 节 | 原支撑 | 原自足 | 原依据 | 原缺什么 |",
+              "|---|---|---|---|---|---|---|---|"]
+    for n, r in enumerate(picked, 1):
+        lines.append(f"| S{n:02d} | {r['id']} | {r['doc']} | {r['sec']} | "
+                     f"{r['support']} | {r['self']} | {r['basis']} | {r['gap']} |")
+    lines += ["", "> 全部候选条目在抽样时点的支撑码都是 `SUPPORTED`；若 `verify-sample` 发现抽检回写里出现降档，"
+              "按 RUNBOOK §五「整批重审」，不逐条修补。", ""]
+    return "\n".join(lines)
+
+
+def cmd_sample(args):
+    recs, stamps = load()
+    pool, picked, k = pick(recs, args.rate, args.seed)
+    text, st = build_sample(recs, picked, pool, k, args.rate, args.seed)
+    keys = build_keys(recs, picked, pool, k, args.rate, args.seed, stamps, st)
+    if args.check:
+        bad = []
+        for path, want in ((SAMPLE, text), (KEYS, keys)):
+            if not path.exists():
+                bad.append(f"缺失 {path.name}")
+            elif path.read_text(encoding="utf-8") != want:
+                bad.append(f"与当前判定表复算不一致：{path.name}（判定表或批次输入变了，需重做抽检）")
+        if bad:
+            print("✗ 抽检批次自检未通过：")
+            for b in bad:
+                print("  -", b)
+            return 1
+        print(f"✓ 抽检批次可复现：{k}/{len(pool)} 条（{k/len(pool):.1%}），"
+              f"戳 {st}，答案键一致，8 个源批次输入戳未变。")
+        return 0
+    SAMPLE.write_text(text, encoding="utf-8")
+    KEYS.write_text(keys, encoding="utf-8")
+    print(f"判定表 {len(recs)} 条 · SUPPORTED {len(pool)} 条 · 抽 {k} 条（{k/len(pool):.1%}，seed={args.seed}）")
+    print(f"输入：{rel(SAMPLE)}  > 快照 sha1: {st}")
+    print(f"答案键：{rel(KEYS)}（禁止贴给 auditor-*）")
+    print("下一步：python tools/gen_subagents.py --check → 在 OpenCode 里派一次 auditor-sample-s1")
+    return 0
+
+
+def cmd_review(args):
+    recs, stamps = load()
+    bad = [r for r in recs if r["support"] != "SUPPORTED"]
+    c = {k: sum(1 for r in bad if r["support"] == k) for k in SUPPORT}
+    lines = [
+        "# 非 SUPPORTED 人工复核清单",
+        "",
+        "> 由 `python tools/audit_prep.py review` 从当前 8 张判定表生成；契约 §五.3：任何非 SUPPORTED 必须人看。",
+        f"> 共 {len(bad)} 条：PARTIAL {c['PARTIAL']} / UNSUPPORTED {c['UNSUPPORTED']} / 判定表总条目 {len(recs)}。",
+        "> 本清单只做待办登记，`复核结论` 与 `处理` 两栏由人填写；判定表一改就重新生成，不要手改条目。",
+        "> 引文与论断来自批次输入（已由 `audit-stale` 证明等于卡片当前文字），不要凭记忆改写。",
+        "",
+        "## 按批次分布",
+        "",
+        "| 批次输入 | 待复核 |",
+        "|---|---|",
+    ]
+    for name in sorted(stamps):
+        lines.append(f"| `{name}` | {sum(1 for r in bad if r['batch'] == name)} |")
+    lines += ["", "## 逐条", ""]
+    for n, r in enumerate(bad, 1):
+        lines += [
+            f"### {n:02d} · {r['id']} · {r['doc']} · {r['sec']}",
+            "",
+            f"- 当前判定：{r['support']} / {r['self']}",
+            f"- 引文里的依据：{r['basis']}",
+            f"- 缺什么：{r['gap']}",
+            r["claim"],
+            r["quote_line"],
+            "- 复核结论（人填）：",
+            "- 处理（人填）：",
+            "",
+        ]
+    REVIEW.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
+    print(f"非 SUPPORTED {len(bad)} 条 → {rel(REVIEW)}"
+          f"（PARTIAL {c['PARTIAL']} / UNSUPPORTED {c['UNSUPPORTED']}）")
+    return 0
+
+
+def contract_header():
+    for line in CONTRACT.read_text(encoding="utf-8").splitlines():
+        if line.startswith("| id | 支撑 | 自足 |"):
+            return line
+    sys.exit("[!] 契约 §四 里找不到表头，检查 AUDIT_CONTRACT.md")
+
+
+def cmd_verify_sample(args):
+    recs, _ = load()
+    if not OUT_S1.exists():
+        sys.exit(f"[!] 没有 {OUT_S1.name}，先派 auditor-sample-s1")
+    if not KEYS.exists():
+        sys.exit("[!] 没有答案键，先跑 sample")
+    keys = KEYS.read_text(encoding="utf-8")
+    kmap, ksup = {}, {}
+    for line in keys.splitlines():
+        c = cells(line)
+        if len(c) >= 5 and re.match(r"^S\d\d$", c[0]) and re.match(r"^[A-Z]+\d+-\d+$", c[1]):
+            kmap[c[0]] = c[1]
+            ksup[c[0]] = c[4]
+    if not kmap:
+        sys.exit("[!] 答案键里没有对照表，先跑 sample")
+    st = stamp_of(SAMPLE)
+    if not st:
+        sys.exit("[!] SAMPLE_S1.md 没有快照戳，先跑 sample")
+    out = OUT_S1.read_text(encoding="utf-8")
+    olines = out.splitlines()
+    problems, notes = [], []
+
+    first = olines[0] if olines else ""
+    if first.strip() != f"> 快照 sha1: {st}":
+        problems.append(f"首行戳不对：应为 `> 快照 sha1: {st}`，实为 `{first}`")
+    else:
+        notes.append(f"首行戳一致：{st}")
+
+    hdr = contract_header()
+    if hdr not in olines:
+        problems.append("表头不是契约 §四原文（缺 `| id | 支撑 | 自足 | ... |`）")
+    else:
+        notes.append("表头与契约 §四逐字一致")
+
+    rows = []
+    for line in olines:
+        m = re.match(r"^\|\s*(S\d\d)\s*\|", line)
+        if not m:
+            continue
+        c = cells(line)
+        rows.append((m.group(1), c))
+    ids = [i for i, _ in rows]
+    want_ids = [f"S{n:02d}" for n in range(1, len(kmap) + 1)]
+    if ids != want_ids:
+        problems.append(f"条目数/顺序不对：应为 {want_ids}，实为 {ids}")
+    else:
+        notes.append(f"判定行 {len(rows)} 条，id 与顺序正确")
+    basis_checked = 0
+    for i, c in rows:
+        if len(c) < 5 or c[1] not in SUPPORT or c[2] not in SELFSUF:
+            problems.append(f"{i} 判定码非法：{c[1:3] if len(c) > 2 else c}")
+            continue
+        src = next((r for r in recs if r["id"] == kmap.get(i)), None)
+        if src:
+            basis_checked += 1
+            basis = c[3].strip().strip('"“”')
+            if basis and basis not in src["quote"]:
+                problems.append(f"{i} 的「依据」{c[3]} 不在引文里逐字出现")
+    if basis_checked:
+        notes.append(f"依据逐字命中检查：{basis_checked} 条已比对引文原文")
+
+    mm = re.search(r"合计：(\d+)\s*条.*?SUPPORTED\s*(\d+)\s*/\s*PARTIAL\s*(\d+)\s*/"
+                   r"\s*UNSUPPORTED\s*(\d+).*?DEPENDENT\s*(\d+)", out)
+    if not mm:
+        problems.append("缺合计行或格式不对")
+    else:
+        want = tuple(int(x) for x in mm.groups())
+        got = (len(rows),
+               sum(1 for _, c in rows if len(c) > 1 and c[1] == "SUPPORTED"),
+               sum(1 for _, c in rows if len(c) > 1 and c[1] == "PARTIAL"),
+               sum(1 for _, c in rows if len(c) > 1 and c[1] == "UNSUPPORTED"),
+               sum(1 for _, c in rows if len(c) > 2 and c[2] == "DEPENDENT"))
+        if want != got:
+            problems.append(f"合计行 {want} ≠ 明细 {got}")
+        else:
+            notes.append(f"合计行自洽：{want}")
+
+    down = [(i, c[1], ksup.get(i, "?")) for i, c in rows
+            if len(c) > 1 and i in ksup and c[1] != ksup[i]]
+    kept = len(rows) - len(down)
+    print(f"抽检回写：{rel(OUT_S1)} · 戳 {st} · {len(rows)} 条")
+    for n in notes:
+        print("  ✓", n)
+    print(f"  与答案键一致：{kept}/{len(rows)}（答案键里候选条目原判均为 SUPPORTED）"
+          + (f" · 降档 {', '.join(i + ':' + old + '→' + new for i, new, old in down)}" if down else ""))
+    if down:
+        print("  [!] 按 RUNBOOK §五：抽检出现「该判 PARTIAL 却给了 SUPPORTED」→ 整批重审，不逐条修补。")
+    if problems:
+        print("\n✗ 未通过：")
+        for p in problems:
+            print("  -", p)
+        return 1
+    if down:
+        return 1
+    print("\n✓ 抽检格式与命中率全部通过。")
+    return 0
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = ap.add_subparsers(dest="cmd", required=True)
+    p = sub.add_parser("sample", help="生成 SUPPORTED 抽检批次 + 答案键")
+    p.add_argument("--rate", type=float, default=0.12)
+    p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--check", action="store_true", help="复算并比对现有文件，不写盘")
+    p.set_defaults(func=cmd_sample)
+    p = sub.add_parser("review", help="生成非 SUPPORTED 人工复核清单")
+    p.set_defaults(func=cmd_review)
+    p = sub.add_parser("verify-sample", help="审计员回写 out_S1.md 后机械验收")
+    p.set_defaults(func=cmd_verify_sample)
+    args = ap.parse_args()
+    return args.func(args)
+
+
+if __name__ == "__main__":
+    sys.exit(main())
