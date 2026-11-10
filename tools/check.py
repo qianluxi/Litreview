@@ -23,7 +23,10 @@ PY = sys.executable
 
 
 def run(cmd):
-    return subprocess.run(cmd, cwd=str(ROOT), capture_output=True, text=True, encoding="utf-8")
+    # errors="replace"：子进程若有一路输出用了别的编码（例如 sys.exit(中文) 走 stderr），
+    # 严格解码会在读取线程抛 UnicodeDecodeError，把「为什么红」连带吞掉。宁可显示乱码也要留下 rc 与正文。
+    return subprocess.run(cmd, cwd=str(ROOT), capture_output=True, text=True,
+                          encoding="utf-8", errors="replace")
 
 
 def verify_all():
@@ -75,7 +78,11 @@ def main():
         else:
             r = run(spec)
             lines = [l for l in (r.stdout or "").splitlines() if l.strip()]
+            if not lines:  # 停工守卫走 sys.exit(中文) 写的是 stderr，stdout 空
+                lines = [l for l in (r.stderr or "").splitlines() if l.strip()]
             tail = lines[-1] if lines else ""
+            if len(tail) > 160:  # 守卫常把上百个 id 一行打出来，回归只给摘要
+                tail = tail[:160] + f" …（共 {len(tail)} 字符，详情直接跑该命令）"
             if r.returncode == 0:
                 print(f"  ✓ {name}: {tail}")
             else:

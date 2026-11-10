@@ -56,6 +56,11 @@ python tools/check.py
 
 也就是说：**`reseal` 成功之后，这 4 项应当同时转绿**。如果不转绿，说明有东西没对上，不要手工改戳。
 
+> 附（round-17b 修）：早先跑 `check.py` 时会额外看到三段 `UnicodeDecodeError: 'utf-8' codec can't decode byte 0xd5`
+> 的线程报错，那不是数据问题——`audit_prep.py` 只把 stdout 改成 utf-8，而三条停工守卫走 `sys.exit(中文)` 写的是 **stderr**，
+> 按 Windows 本地码页输出，`check.py` 再按 utf-8 解码就崩在读取线程上，真正的原因被吞成一句 `rc=1`。
+> 已修：`audit_prep.py` 补 `sys.stderr.reconfigure`，`check.py` 改 `errors="replace"`、失败时回落到 stderr 末行并截断（守卫会一次打出 131 个 id）。
+
 ## 四、派发提示词（逐字粘贴）
 
 ```

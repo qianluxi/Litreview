@@ -26,6 +26,10 @@ from pathlib import Path
 
 try:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    # stderr 也必须改：所有停工守卫都走 sys.exit(中文)，它写的是 stderr。
+    # 只改 stdout 时，守卫消息会按 Windows 本地码页（cp936）输出，而上层 check.py
+    # 用 utf-8 解码 → 读取线程 UnicodeDecodeError，真正的原因被吞掉，只剩 rc=1。
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 except (AttributeError, ValueError, OSError):
     pass
 
