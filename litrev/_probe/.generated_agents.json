@@ -1,6 +1,10 @@
 [
+ ".opencode/agents/auditor-frag-b1-dup.md",
  ".opencode/agents/auditor-frag-b1.md",
+ ".opencode/agents/auditor-frag-b2-dup.md",
  ".opencode/agents/auditor-frag-b2.md",
+ ".opencode/agents/auditor-frag-b3-dup.md",
+ ".opencode/agents/auditor-frag-b3-probe.md",
  ".opencode/agents/auditor-frag-b3.md",
  ".opencode/agents/auditor-rest-b1-dup.md",
  ".opencode/agents/auditor-rest-b1.md",

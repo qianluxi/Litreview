@@ -47,6 +47,10 @@
 | `rest_b3_dup` | `auditor-rest-b3-dup` | `litrev/_probe/audit/REST_B3.md` | `litrev/_probe/audit/out_D3.md` | 固定契约双跑 R3（同输入另存对照，不覆盖 out_R3.md；前缀 D 不进 131 口径） |
 | `rest_b4_dup` | `auditor-rest-b4-dup` | `litrev/_probe/audit/REST_B4.md` | `litrev/_probe/audit/out_D4.md` | 固定契约双跑 R4（同输入另存对照，不覆盖 out_R4.md；前缀 D 不进 131 口径） |
 | `rest_b5_dup` | `auditor-rest-b5-dup` | `litrev/_probe/audit/REST_B5.md` | `litrev/_probe/audit/out_D5.md` | 固定契约双跑 R5（同输入另存对照，不覆盖 out_R5.md；前缀 D 不进 131 口径） |
+| `frag_b3_probe` | `auditor-frag-b3-probe` | `litrev/_probe/audit/FRAG_B3P.md` | `litrev/_probe/audit/out_B3P.md` | B3-10 第三次独立判定（单条，与 S05 同输入；不覆盖 out_B3.md，前缀 B3P 不进 131 口径） |
+| `frag_b1_dup` | `auditor-frag-b1-dup` | `litrev/_probe/audit/FRAG_B1.md` | `litrev/_probe/audit/out_E1.md` | 固定契约双跑 B1（口径统一后补 131 条全量基线的 frag 部分；前缀 E 不进 131 口径） |
+| `frag_b2_dup` | `auditor-frag-b2-dup` | `litrev/_probe/audit/FRAG_B2.md` | `litrev/_probe/audit/out_E2.md` | 固定契约双跑 B2（补 131 条全量基线的 frag 部分；前缀 E 不进 131 口径） |
+| `frag_b3_dup` | `auditor-frag-b3-dup` | `litrev/_probe/audit/FRAG_B3.md` | `litrev/_probe/audit/out_E3.md` | 固定契约双跑 B3（补 131 条全量基线的 frag 部分；前缀 E 不进 131 口径） |
 
 ## 固定角色
 

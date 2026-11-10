@@ -591,16 +591,19 @@ def cmd_verify_golden(args):
 
 
 def cmd_diff_dup(args):
-    """比对 out_R*.md 与 out_D*.md（固定契约双跑），输出同输入重复判定的漂移率。"""
+    """比对原判与双跑（默认 out_R* vs out_D*；--pair 可换前缀，如 B:E 比 frag 双跑）。"""
+    pair = getattr(args, "pair", "R:D") or "R:D"
+    base_pref, _, dup_pref = pair.partition(":")
+    base_pref, dup_pref = (base_pref or "R"), (dup_pref or "D")
     rrows, drows = {}, {}
-    for p in sorted(AUDIT.glob("out_R[1-5].md")):
+    for p in sorted(AUDIT.glob(f"out_{base_pref}[1-9].md")):
         for line in p.read_text(encoding="utf-8").splitlines():
             m = ROW_ID.match(line)
             if m:
                 c = cells(line)
                 if len(c) >= 3:
                     rrows[m.group(1)] = (c[1], c[2])
-    for p in sorted(AUDIT.glob("out_D[1-5].md")):
+    for p in sorted(AUDIT.glob(f"out_{dup_pref}[1-9].md")):
         for line in p.read_text(encoding="utf-8").splitlines():
             m = ROW_ID.match(line)
             if m:
@@ -609,12 +612,12 @@ def cmd_diff_dup(args):
                     drows[m.group(1)] = (c[1], c[2])
     common = sorted(set(rrows) & set(drows))
     if not common:
-        print("✗ 没有可配对的 id（out_R* 与 out_D* 任一为空，双跑还没跑）")
+        print(f"✗ 没有可配对的 id（out_{base_pref}* 与 out_{dup_pref}* 任一为空，双跑还没跑）")
         return 1
     sup_diff = [(i, rrows[i][0], drows[i][0]) for i in common if rrows[i][0] != drows[i][0]]
     self_diff = [(i, rrows[i][1], drows[i][1]) for i in common if rrows[i][1] != drows[i][1]]
     any_diff = [i for i in common if rrows[i] != drows[i]]
-    print(f"双跑配对：{len(common)} 条（R1-5 原判 vs D1-5 重判）")
+    print(f"双跑配对：{len(common)} 条（{base_pref}* 原判 vs {dup_pref}* 重判）")
     print(f"  支撑轴漂移：{len(sup_diff)}/{len(common)}（{len(sup_diff)/len(common):.1%}）")
     print(f"  自足轴漂移：{len(self_diff)}/{len(common)}（{len(self_diff)/len(common):.1%}）")
     print(f"  任一轴漂移：{len(any_diff)}/{len(common)}（{len(any_diff)/len(common):.1%}）")
@@ -649,7 +652,8 @@ def main():
     p.set_defaults(func=cmd_golden)
     p = sub.add_parser("verify-golden", help="人填完 GOLDEN.md 后比对判定表，输出一致率")
     p.set_defaults(func=cmd_verify_golden)
-    p = sub.add_parser("diff-dup", help="双跑后比对 out_R* 与 out_D*，输出漂移率")
+    p = sub.add_parser("diff-dup", help="双跑后比对原判与双跑输出，输出漂移率（默认 R:D）")
+    p.add_argument("--pair", default="R:D", help="原判前缀:双跑前缀，默认 R:D；frag 双跑用 B:E")
     p.set_defaults(func=cmd_diff_dup)
     args = ap.parse_args()
     return args.func(args)
