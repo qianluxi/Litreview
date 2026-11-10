@@ -5,6 +5,21 @@
 > 本清单只做待办登记，`复核结论` 与 `处理` 两栏由人填写；判定表一改就重新生成，不要手改条目。
 > 引文与论断来自批次输入（已由 `audit-stale` 证明等于卡片当前文字），不要凭记忆改写。
 
+## 填法（只判支撑轴；自足轴已于 v1.2 §八 定案，不要在这里重判）
+
+每条只填两行，`复核结论` 用**固定词**（便于机械汇总）：
+
+| 填什么 | 含义 | `处理` 该写什么 |
+|---|---|---|
+| `维持` | 「缺什么」成立，判定码不改 | 一句话确认缺的是哪个成分（可直接抄缺什么） |
+| `改判：SUPPORTED` | 原判偏严，论断每个成分都能在引文里找到 | 指出原「缺什么」误判在哪 |
+| `改判：UNSUPPORTED` | 原判偏松，主体/对象与引文不是同一个东西 | 指出换掉了什么 |
+| `待定` | 现有材料判不了（要开原文/要补引文） | 写清卡在哪、需要什么 |
+
+判据只有一条：**论断的每个可检验成分（主体、动作、对象、范围、限定强度）能不能在引文里找到对应表述**；
+易错点照契约 §三（情态不得升级、范围不得放大、术语不得替换、否定/缺席需全库证据、论断补主语不算越界）。
+开卷：可读 `litrev/_probe/full/` 下对应卡片；不要读 `out_*.md` 之外的他人结论来对答案。
+
 ## 按批次分布
 
 | 批次输入 | 待复核 |
@@ -272,9 +287,9 @@
 
 ### 26 · B3-11 · Survey2025_FloorPlanRetrieval_MDPI · 系统形态
 
-- 当前判定：PARTIAL / DEPENDENT
+- 当前判定：PARTIAL / SELF
 - 引文里的依据："advanced fusion"
-- 缺什么：补"综述/review"原词
+- 缺什么：补“综述/review”原词
 - 论断：该文是综述，考察这些特征检索方法并提出面向未来研究的融合技术。
 - 引文："This paper thoroughly examines these feature retrieval methods and introduces advanced fusion techniques to support future research" (Ling et al., 2025, p.23)
 - 复核结论（人填）：
@@ -432,9 +447,9 @@
 
 ### 42 · R3-12 · Survey2025_FloorPlanRetrieval_MDPI · 案例或数据的表示形式
 
-- 当前判定：PARTIAL / SELF
+- 当前判定：PARTIAL / DEPENDENT
 - 引文里的依据："feature vectors"
-- 缺什么：删去“以…形式表示”，或补原文依据
+- 缺什么：删去“以…形式表示”，或补原文依据；自足：this approach 指前文方法，先行词在引文外
 - 论断：平面图以高层语义特征与特征向量的形式表示，并用特征向量计算图像相似度。
 - 引文："By identifying unique high-level semantic features and employing feature vectors to calculate image similarity, this approach enables effective retrieval of building floor plans." (Ling et al., 2025, p.3)
 - 复核结论（人填）：

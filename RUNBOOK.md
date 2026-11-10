@@ -212,6 +212,21 @@ python tools/audit_prep.py verify-cases    # 自足轴一致率 + 方向 + 表�
 契约 **v1.2 §八**（自足轴三族边界：篇章自指 → `SELF`、形式主语 → `SELF`、回指前文 → 看先行词、片段 → `DEPENDENT`）。
 两轴总量不变（`S80/P50/U1 · SELF118/D13`），落表后「按当前判定表复算」= 20/20。
 
+### 非 SUPPORTED 复核（契约 §五.3：任何非 SUPPORTED 必须人看）
+
+```bash
+python tools/audit_prep.py review             # 从 8 张表生成 REVIEW_NONSUPPORTED.md（现 51 条）
+python tools/audit_prep.py review --force     # 已填写时强制重生成（会覆盖结论，慎用；有护栏）
+# 人填：每条两行 —— 复核结论 + 处理
+python tools/audit_prep.py verify-review      # 机械汇总：填写率 / 维持 / 改判分布 / 改判缺理由
+```
+
+- `复核结论` 只用四个固定词：`维持` / `改判：SUPPORTED` / `改判：UNSUPPORTED` / `待定`，否则 `verify-review` 报「不在词表内」。
+- 只判**支撑轴**；自足轴已由 v1.2 §八 定案，复核时不重判。
+- `verify-review` 退 0 的三个条件：全部填、无 `待定`、每条结论都带「处理」说明；改判还必须写明原「缺什么」错在哪。
+- 出现「改判」不等于立刻改表：先登记 `DISPUTED.md`、人工裁决后再落表（D-01 / D-02 即此路径）；改表要同步该批次合计行。
+- 已裁决过的条目（如 `B3-10` = D-01）直接填 `维持`，`处理` 写「同 D-01」，不要重新开一轮。
+
 ## 六、权限回归测试（每次改权限必跑）
 
 改完 `.opencode/agents/` 里的 permission，逐条实测下列用例，**记录返回原文**（拒绝时错误信息里带完整 ruleset，这是证据）：
@@ -263,3 +278,4 @@ python tools/audit_prep.py verify-cases    # 自足轴一致率 + 方向 + 表�
 | 2026-11-10 | **D-01 CLOSED**：`B3-10` 支撑 `SUPPORTED→PARTIAL`、自足不动，汇总 `S81/P49/U1 → S80/P50/U1`。§五 参考集改为**冻结清单**（`<!-- picks -->`，`--check` 不再按当前池重算），修 `verify-sample` 的戳门禁（不同源直接退 1，不再算假一致率）；`SAMPLE_S1` 按新池 80 重抽（戳 `7d1a204d54`），旧样本留档于 `7077b6f` |
 | 2026-11-10 | 新一批抽检（戳 `7d1a204d54`）通过：`out_S1.md` 10/10 与抽样时点原判一致、依据逐字命中 10/10、子会话只读「契约+本批输入」。金标准自足轴一致 **25/25**（支撑 23/25）。新增 `cases`/`verify-cases` 与 `CASES_SELF_IDS.txt`（自足轴定向判例集 20 条），`tools/check.py` 扩到 **9 项** |
 | 2026-11-10 | 自足轴判例集 C1 收官（D-02 CLOSED）：20 条回写 16/20、方向 2:2，改判 `B2-05`/`B3-11`→`SELF`、`R3-12`/`R4-13`→`DEPENDENT`，契约升 **v1.2**（§八 三族边界，§二/§七.1 加修正声明）；两轴总量不变。`verify-cases` 加「按当前判定表复算」行；修 `ROW_KEY_RE` 只认 `[SG]` 导致判例集冻结还原失效的缺陷 |
+| 2026-11-10 | 非 SUPPORTED 复核流程可机械化：`review` 加填法与词表、加防覆盖护栏（`--force`）；新增 `verify-review`（填写率 / 维持 / 改判 / 改判缺理由，三条件退 0） |

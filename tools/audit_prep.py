@@ -336,6 +336,13 @@ def cmd_sample(args):
 
 
 def cmd_review(args):
+    # 防手滑：这份清单由人填写，重生成会抹掉已有结论
+    if REVIEW.exists() and not getattr(args, "force", False):
+        filled = [l for l in REVIEW.read_text(encoding="utf-8").splitlines()
+                  if l.startswith("- 复核结论（人填）") and l.split("：", 1)[-1].strip()]
+        if filled:
+            sys.exit(f"[!] {rel(REVIEW)} 已有 {len(filled)} 条复核结论，重生成会全部覆盖。"
+                     "确认丢弃请加 --force（已填内容可先 git diff 留档）")
     recs, stamps = load()
     bad = [r for r in recs if r["support"] != "SUPPORTED"]
     c = {k: sum(1 for r in bad if r["support"] == k) for k in SUPPORT}
@@ -346,6 +353,21 @@ def cmd_review(args):
         f"> 共 {len(bad)} 条：PARTIAL {c['PARTIAL']} / UNSUPPORTED {c['UNSUPPORTED']} / 判定表总条目 {len(recs)}。",
         "> 本清单只做待办登记，`复核结论` 与 `处理` 两栏由人填写；判定表一改就重新生成，不要手改条目。",
         "> 引文与论断来自批次输入（已由 `audit-stale` 证明等于卡片当前文字），不要凭记忆改写。",
+        "",
+        "## 填法（只判支撑轴；自足轴已于 v1.2 §八 定案，不要在这里重判）",
+        "",
+        "每条只填两行，`复核结论` 用**固定词**（便于机械汇总）：",
+        "",
+        "| 填什么 | 含义 | `处理` 该写什么 |",
+        "|---|---|---|",
+        "| `维持` | 「缺什么」成立，判定码不改 | 一句话确认缺的是哪个成分（可直接抄缺什么） |",
+        "| `改判：SUPPORTED` | 原判偏严，论断每个成分都能在引文里找到 | 指出原「缺什么」误判在哪 |",
+        "| `改判：UNSUPPORTED` | 原判偏松，主体/对象与引文不是同一个东西 | 指出换掉了什么 |",
+        "| `待定` | 现有材料判不了（要开原文/要补引文） | 写清卡在哪、需要什么 |",
+        "",
+        "判据只有一条：**论断的每个可检验成分（主体、动作、对象、范围、限定强度）能不能在引文里找到对应表述**；",
+        "易错点照契约 §三（情态不得升级、范围不得放大、术语不得替换、否定/缺席需全库证据、论断补主语不算越界）。",
+        "开卷：可读 `litrev/_probe/full/` 下对应卡片；不要读 `out_*.md` 之外的他人结论来对答案。",
         "",
         "## 按批次分布",
         "",
@@ -372,6 +394,79 @@ def cmd_review(args):
     print(f"非 SUPPORTED {len(bad)} 条 → {rel(REVIEW)}"
           f"（PARTIAL {c['PARTIAL']} / UNSUPPORTED {c['UNSUPPORTED']}）")
     return 0
+
+
+def cmd_verify_review(args):
+    """机械汇总 REVIEW_NONSUPPORTED.md 的复核结论：填写率、维持/改判分布、改判缺理由。"""
+    if not REVIEW.exists():
+        print("✗ 缺 REVIEW_NONSUPPORTED.md（先跑 python tools/audit_prep.py review）")
+        return 1
+    recs, _ = load()
+    live = {r["id"]: r for r in recs}
+    items, cid, verdict, note = [], None, "", ""
+    for line in REVIEW.read_text(encoding="utf-8").splitlines():
+        m = re.match(r"^###\s*\d+\s*·\s*([A-Z]+\d+-\d+)\s*·", line)
+        if m:
+            if cid:
+                items.append((cid, verdict, note))
+            cid, verdict, note = m.group(1), "", ""
+            continue
+        if not cid:
+            continue
+        if line.startswith("- 复核结论（人填）"):
+            verdict = line.split("：", 1)[-1].strip().strip("`").strip()
+        elif line.startswith("- 处理（人填）"):
+            note = line.split("：", 1)[-1].strip()
+    if cid:
+        items.append((cid, verdict, note))
+
+    def kind(v):
+        if not v:
+            return "未填"
+        if v.startswith("维持"):
+            return "维持"
+        if "UNSUPPORTED" in v:
+            return "改判 UNSUPPORTED"
+        if "SUPPORTED" in v:
+            return "改判 SUPPORTED"
+        if v.startswith("待定"):
+            return "待定"
+        return "未识别"
+
+    tally = {}
+    changed, no_reason, undone, unknown = [], [], [], []
+    for i, v, n in items:
+        k = kind(v)
+        tally[k] = tally.get(k, 0) + 1
+        if k.startswith("改判"):
+            changed.append((i, live[i]["support"] if i in live else "?", k.split()[-1], n))
+            if not n:
+                no_reason.append(i)
+        elif k in ("维持",) and not n:
+            no_reason.append(i)
+        elif k == "待定":
+            undone.append(i)
+        elif k == "未识别":
+            unknown.append((i, v))
+    print(f"非 SUPPORTED 复核：{rel(REVIEW)} · 条目 {len(items)} 条")
+    order = ["维持", "改判 SUPPORTED", "改判 UNSUPPORTED", "待定", "未识别", "未填"]
+    print("  " + "  ".join(f"{k} {tally.get(k, 0)}" for k in order if tally.get(k)))
+    if changed:
+        print("  改判明细：")
+        for i, old, new, n in changed:
+            print(f"    {i}  {old} → {new}" + (f"｜{n[:60]}" if n else "｜（缺处理说明）"))
+    if unknown:
+        print("  [!] 结论不在词表内：" + "、".join(f"{i}({v})" for i, v in unknown))
+    if no_reason:
+        print(f"  [!] 有结论但没写「处理」{len(no_reason)} 条：{'、'.join(no_reason)}")
+    if undone:
+        print(f"  [i] 待定 {len(undone)} 条：{'、'.join(undone)}（需补原文/补引文后回填）")
+    left = tally.get("未填", 0)
+    if left:
+        print(f"  [i] 还有 {left} 条未填")
+    bad = bool(unknown or no_reason or undone or left)
+    print(("✗ 复核未收口" if bad else "✓ 复核已收口：全部有结论、改判均带处理说明"))
+    return 1 if bad else 0
 
 
 def contract_header():
@@ -947,7 +1042,10 @@ def main():
     p.add_argument("--check", action="store_true", help="复算并比对现有文件，不写盘")
     p.set_defaults(func=cmd_sample)
     p = sub.add_parser("review", help="生成非 SUPPORTED 人工复核清单")
+    p.add_argument("--force", action="store_true", help="已填写时强制重生成（会覆盖复核结论）")
     p.set_defaults(func=cmd_review)
+    p = sub.add_parser("verify-review", help="汇总非 SUPPORTED 复核结论（填写率 / 维持 / 改判）")
+    p.set_defaults(func=cmd_verify_review)
     p = sub.add_parser("verify-sample", help="审计员回写 out_S1.md 后机械验收")
     p.set_defaults(func=cmd_verify_sample)
     p = sub.add_parser("golden", help="生成人工金标准 GOLDEN.md + 答案键 GOLDEN_MAP.md")
