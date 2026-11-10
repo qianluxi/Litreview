@@ -14,9 +14,9 @@
 | R4-10 | PARTIAL | SELF | "multi-reasoning" | 删“（多推理模型）”，或补原文对该缩写的定义 |
 | R4-11 | SUPPORTED | SELF | "hypothetical" | — |
 | R4-12 | SUPPORTED | SELF | "tree editing" | — |
-| R4-13 | SUPPORTED | SELF | "node features" | — |
+| R4-13 | SUPPORTED | DEPENDENT | "node features" | 自足：These input graphs 指前文构造的图，先行词在引文外 |
 | R4-14 | SUPPORTED | SELF | "drawing style" | — |
 | R4-15 | SUPPORTED | SELF | "with experts" | — |
 | R4-16 | PARTIAL | SELF | "large-scale" | 引文仅描述 RPLAN，需补“用于评价”的原文依据 |
 
-合计：16 条（SUPPORTED 12 / PARTIAL 4 / UNSUPPORTED 0；DEPENDENT 0）
+合计：16 条（SUPPORTED 12 / PARTIAL 4 / UNSUPPORTED 0；DEPENDENT 1）

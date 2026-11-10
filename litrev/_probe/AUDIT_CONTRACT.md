@@ -1,4 +1,4 @@
-# 论断-引文一致性审计契约（v1，闭卷）
+# 论断-引文一致性审计契约（v1.2，闭卷）
 
 本文件是审计层的唯一判定标准。`litrev.py verify` 守的是引文层（这句是不是原文、页对不对），本层守的是**论断层**（这条引文是否撑得起这个论断）。两层互不替代。
 
@@ -29,9 +29,11 @@
 | 码 | 定义 |
 |---|---|
 | `SELF` | 引文自带主语与指代，单看这一句就知道在说谁、说什么 |
-| `DEPENDENT` | 引文以 `it / this / these / such` 开头，或主语落在引号外，单看不知道指代什么 |
+| `DEPENDENT` | 引文以 `it / this / these / such` 开头，或主语落在引号外，单看不知道指代什么（**`this paper / this section` 这类篇章自指除外，见 §八**） |
 
 `DEPENDENT` 可以同时是 `SUPPORTED`：论断写对了，但这条引文在学术写作里不可直接引用。
+
+**三族边界见 §八**（v1.2）：`this paper/section` = 自指 → `SELF`；`this approach/these limitations` = 回指 → 看先行词在不在引文内。
 
 ## 三、五条判定规则（易错点，按此裁定）
 
@@ -87,4 +89,27 @@
 **B1–B3 的整批重审属于「重审」，产出的是新表，适用本节**；R1–R5 已出的 5 张表不追溯修改、仍按当时口径有效。
 
 1. **指示代词作限定词也算依赖**：`these drawings`、`this section`、`such approaches` 这类限定词，若指代对象未在引文内出现，单看引文不知道指谁，判 `DEPENDENT`。判据是「把引文单独贴到综述里，读者是否需要往回翻」。
+
+   > **v1.2 修正（见 §八，优先于本条）**：本句把 `this section` 也算作依赖，已被判例实测推翻——
+   > `this paper / this study / this section` 属**篇章自指**，指代对象就是本文本节，读者不需要往回翻，判 `SELF`。
+   > 本条仍适用于 `these drawings` / `this approach` / `such approaches` 这类**回指前文具体对象**的限定词。
 2. **`SUPPORTED` 只用于分诊，不是合格证**：`SUPPORTED` 条目仍需按 10%–15% 抽检；不得把「SUPPORTED 可自动放行」当作质量结论。
+
+## 八、v1.2 补充口径：自足轴三族边界（2026-11-10，判例实测）
+
+自足轴的口径漂移集中在句首结构上。20 条判例（`CASES_SELF.md`，回写见 `DISPUTED.md` D-02）实测：差异 4 条全部落在
+「自指」与「回指」的分界上，且原表对同一构造自身不一致（`this section introduces` 判 `DEP`，而 `This section presents` 判 `SELF`）。
+按下列四条执行：
+
+| 族 | 形态 | 判 | 判据 |
+|---|---|---|---|
+| A 自指 | `this paper / this study / this work / this article / this section / this chapter / the present study` + 谓语 | `SELF` | 指代对象就是本文本节，读者不必往回翻；这里的 `this` 是**篇章自指**，不是回指 |
+| B 形式主语 | `It is … that …` / `It should be noted that …`，真主语在 `that` 从句内 | `SELF` | 从句主语与谓语都在引号内 |
+| C 回指前文 | `this approach / this method / these limitations / these input graphs / such approaches` 等 + 谓语，先行词不在引文内 | `DEPENDENT` | 把引文单贴出去，读者必须往回翻才知道 `this/these` 指什么 |
+| D 片段 | 名词短语、介词短语、`when/while` 从句、分词开头，主谓落在引号外 | `DEPENDENT` | 主语缺失（§五.1 不变） |
+
+边界判据一句话：**`this/these` 后跟篇章名词（paper / study / section）= 自指 → `SELF`；后跟内容名词（approach / limitations / graphs）= 回指 → 看先行词在不在引文内。**
+
+> **影响面已实测，不是估计**：131 条里 A 族 12 条（原表 11 条已判 `SELF`，仅 `B3-11` 判 `DEP`）、B 族 1 条（已判 `SELF`）；
+> 按本节点状修正 `B2-05`、`B3-11`（→ `SELF`）与 `R3-12`、`R4-13`（→ `DEPENDENT`）共 4 条后，两轴总量不变
+> （`S80/P50/U1 · SELF118/D13`），**不构成「8 张已出表整批重审」的理由**；未落入 A/B/C/D 四族的条目一律不动。

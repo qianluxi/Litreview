@@ -16,6 +16,11 @@
   已被 2026-11-10 的重抽覆盖；需要查阅时按 commit `7077b6f` 取（`git show 7077b6f:litrev/_probe/audit/SAMPLE_S1.md`）。
 - 重抽后的 `SAMPLE_S1.md`（戳 `7d1a204d54`、候选池 80）等待 `auditor-sample-s1` 回写；在 `verify-sample` 退 0 之前，
   不得说「新一批抽检已通过」。
+- **D-02 已 `CLOSED`（2026-11-10）**：自足轴判例集 20 条的回写有 4 条与判定表不一致（2:2），按裁决改判
+  `B2-05`、`B3-11` → `SELF`，`R3-12`、`R4-13` → `DEPENDENT`，并落契约 v1.2 §八（自足轴三族边界）。
+  两轴总量不变（`S80/P50/U1 · SELF118/D13`），因此**旧汇总数字仍有效，不要重算**；变的只是 2 个批次内部的 DEP 计数。
+- `CASES_SELF_KEYS.md` 的冻结基线仍是改判**前**的 16/20，这是判例集的历史证据，不得改写；
+  `verify-cases` 今后会继续打印 16/20 并把这 4 条列进 drift，属**预期**。
 
 ---
 
@@ -161,3 +166,48 @@
   若要补「截断术语 / 多句引文第二句代词主语」的口径，须作为独立一轮并同步重做抽检基线。
 - 不改 `litrev/litrev.py`（裁判）、不改 `.opencode/agents/`（本轮无需重启）。
 - 不跑 `batch` / `stamp-out`：8 个批次输入未变，跑了只制造无意义改动。
+
+---
+
+## D-02 · 自足轴判例集 C1 的 4 条差异（B2-05 / B3-11 / R3-12 / R4-13）
+
+- 状态：**CLOSED**（2026-11-10，裁决人=项目所有者；按回写改判 4 条，已改 `out_B2/B3/R3/R4.md` 与各自合计行）
+- 来源：`CASES_SELF.md`（自足轴判例集 C1，20 条，冻结清单 `CASES_SELF_IDS.txt`，戳 `a4e66877dc`）
+- 性质：**判例裁定**，不是抽检差异——本集刻意选表内 `DEPENDENT` 10 条 + 双跑不一致 10 条，只为确认自足轴口径。
+
+### 回写结果（20/20 全填，依据逐字命中引文）
+
+| 指标 | 值 |
+|---|---|
+| 自足轴一致 | **16/20**（80%） |
+| 表判 `DEP`、回写 `SELF` | 2 条：`C03→B2-05`、`C07→B3-11`（表偏严） |
+| 表判 `SELF`、回写 `DEP` | 2 条：`C14→R3-12`、`C16→R4-13`（表偏松） |
+| 表内 `DEPENDENT` 阳性确认 | 8/10 |
+| 方向 | **2:2，不是单向偏差** |
+
+### 4 条差异与裁决
+
+| C | 原 id | 引文首句 | 表内 | 回写 | 裁决 | 理由 |
+|---|---|---|---|---|---|---|
+| C03 | `B2-05` | `this section introduces the construction, training, and inference methods…` | `DEP` | `SELF` | 改 `SELF` | `this section` 是篇章自指，不需往回翻（§八 A 族） |
+| C07 | `B3-11` | `This paper thoroughly examines these feature retrieval methods…` | `DEP` | `SELF` | 改 `SELF` | `This paper` 同上；与 `R5-15`（`This paper is…` 判 `SELF`）同构造，原表自相矛盾 |
+| C14 | `R3-12` | `…, this approach enables effective retrieval of building floor plans.` | `SELF` | `DEP` | 改 `DEP` | `this approach` 回指前文方法，先行词不在引文内（§八 C 族） |
+| C16 | `R4-13` | `These input graphs represented node features as…` | `SELF` | `DEP` | 改 `DEP` | `These input graphs` 回指前文构造的图，同上 |
+
+### 由此确定的口径（契约 v1.2 §八）
+
+`this/these` 后跟**篇章名词**（paper / study / work / section / chapter）= 自指 → `SELF`；
+后跟**内容名词**（approach / method / limitations / graphs）= 回指 → 看先行词在不在引文内；
+`It is … that …` 形式主语 → `SELF`；片段（名词/介词/从句/分词开头，主谓在引号外）→ `DEPENDENT`。
+
+### 为什么这不算「整批重审」
+
+- **影响面实测**：131 条里 A 族 12 条（11 条本已 `SELF`）、B 族 1 条（已 `SELF`），落盘只动 4 条。
+- **总量不变**：`SELF 118 / DEPENDENT 13` 与改判前完全相同（+2 −2），`S80/P50/U1` 不动 → 所有引用汇总数字的报告仍然有效。
+- **答案键不失效**：`SAMPLE_S1_KEYS` / `GOLDEN_MAP` / `CASES_SELF_KEYS` 的冻结清单按 id 复现，改判只进 drift 报告，不重抽。
+
+### 明确不做
+
+- 不重判其余 125 条：它们与本节点状修正无关；「自指 11/12 已判 `SELF`」本身说明原表大体一致。
+- 不改 `litrev/litrev.py`（裁判）；不改 `.opencode/agents/`（agent 只按路径读契约，v1.2 自动生效）。
+- 不回写 `CASES_SELF.md` 的判定列：它记录的是**回写时点**的判断，改判后仍保留原值，与 `DISPUTED.md` 指向同一条裁决。

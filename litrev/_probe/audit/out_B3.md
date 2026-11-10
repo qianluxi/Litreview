@@ -12,10 +12,10 @@
 | B3-08 | PARTIAL | DEPENDENT | "finding matches" | 补主语及"度量相关性""记忆项属性取值"依据 |
 | B3-09 | PARTIAL | DEPENDENT | "a limited" | 引文仅 when 从句，缺主句及"只…适用"依据 |
 | B3-10 | PARTIAL | SELF | "often ill-" | 引文在 `often ill-` 处截断，「病构性」（ill-structured）无完整词形依据，需补含该词的完整原句（D-01 裁决，见 `DISPUTED.md`） |
-| B3-11 | PARTIAL | DEPENDENT | "advanced fusion" | 补"综述/review"原词 |
+| B3-11 | PARTIAL | SELF | "advanced fusion" | 补“综述/review”原词 |
 | B3-12 | SUPPORTED | SELF | "characteristic" | — |
 | B3-13 | PARTIAL | DEPENDENT | "the same with" | 补"验证依据""工程实例"依据（原文为 practice engineering） |
 | B3-14 | SUPPORTED | SELF | "vectorized form" | — |
 | B3-15 | PARTIAL | SELF | "Ten-fold" | 引文断在 "standard"，补"标准差/评价指标"完整句 |
 | B3-16 | SUPPORTED | SELF | "explicitly" | — |
-合计：16 条（SUPPORTED 6 / PARTIAL 10 / UNSUPPORTED 0；DEPENDENT 4）
+合计：16 条（SUPPORTED 6 / PARTIAL 10 / UNSUPPORTED 0；DEPENDENT 3）

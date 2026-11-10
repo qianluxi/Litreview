@@ -148,7 +148,8 @@ def stamp_text(text):
 
 PICKS_RE = re.compile(r"^<!-- picks: (.*?) -->$", re.M)
 ROW_KEY_RE = re.compile(
-    r"^\|\s*[SG]\d\d\s*\|\s*([A-Z]+\d+-\d+)\s*\|[^|]*\|[^|]*\|\s*([A-Z]+)\s*\|\s*([A-Z]+)\s*\|"
+    # 首列是答案键的编号：金标准 G01 / 抽检 S01 / 判例集 C01 —— 一律收，别只认 G、S
+    r"^\|\s*[A-Z]\d\d\s*\|\s*([A-Z]+\d+-\d+)\s*\|[^|]*\|[^|]*\|\s*([A-Z]+)\s*\|\s*([A-Z]+)\s*\|"
     r"\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|")
 
 
@@ -920,6 +921,17 @@ def cmd_verify_cases(args):
     if dep_want:
         print(f"  表内 DEPENDENT 阳性确认：{len(dep_ok)}/{len(dep_want)}"
               + (f"；未确认：{'、'.join(g + '→' + kmap[g] for g in dep_no)}" if dep_no else ""))
+    # 冻结基线之后按「当前判定表」再复算一次：改判落表后，上面的数字会永久停在抽样时点，
+    # 不给出落地状态就会被误读成「表还没改」。
+    recs, _ = load()
+    live = {r["id"]: r["self"] for r in recs}
+    live_same = [g for g in want if g in filled and kmap[g] in live and filled[g]["self"] == live[kmap[g]]]
+    if len(live_same) != len(same):
+        tail = "全部与回写一致" if len(live_same) == len(filled) else \
+               f"{len(filled) - len(live_same)} 条与回写仍不一致"
+        print(f"  按当前判定表复算：{len(live_same)}/{len(filled)}（{tail}；上行为冻结基线，不受改判影响）")
+    else:
+        print(f"  按当前判定表复算：{len(live_same)}/{len(filled)}（与冻结基线相同，无改判落表）")
     print("  [i] 本集只裁自足轴，不裁支撑轴；差异不自动改表，按 RUNBOOK §五 登记 DISPUTED.md 后人工裁决。")
     if blank:
         return 1

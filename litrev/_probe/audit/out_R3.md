@@ -13,11 +13,11 @@
 | R3-09 | SUPPORTED | SELF | "content based" | — |
 | R3-10 | SUPPORTED | SELF | "0.247 in case" | — |
 | R3-11 | SUPPORTED | SELF | "written in Java" | — |
-| R3-12 | PARTIAL | SELF | "feature vectors" | 删去“以…形式表示”，或补原文依据 |
+| R3-12 | PARTIAL | DEPENDENT | "feature vectors" | 删去“以…形式表示”，或补原文依据；自足：this approach 指前文方法，先行词在引文外 |
 | R3-13 | PARTIAL | SELF | "separate design" | 将“生成”改为“分别设计”，或补原文依据 |
 | R3-14 | SUPPORTED | SELF | "potential beams" | — |
 | R3-15 | SUPPORTED | SELF | "based on GNNs" | — |
 | R3-16 | SUPPORTED | SELF | "compared to gtA" | — |
 | R3-17 | PARTIAL | SELF | "SSIG to rank" | 删去“代码将公开”，引文无此内容 |
 
-合计：17 条（SUPPORTED 11 / PARTIAL 6 / UNSUPPORTED 0；DEPENDENT 1）
+合计：17 条（SUPPORTED 11 / PARTIAL 6 / UNSUPPORTED 0；DEPENDENT 2）
