@@ -146,14 +146,84 @@ def stamp_text(text):
     return hashlib.sha1(payload.encode("utf-8")).hexdigest()[:10]
 
 
-def build_sample(recs, picked, pool, k, rate, seed):
+PICKS_RE = re.compile(r"^<!-- picks: (.*?) -->$", re.M)
+ROW_KEY_RE = re.compile(
+    r"^\|\s*[SG]\d\d\s*\|\s*([A-Z]+\d+-\d+)\s*\|[^|]*\|[^|]*\|\s*([A-Z]+)\s*\|\s*([A-Z]+)\s*\|"
+    r"\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|")
+
+
+def picks_line(ids, **meta):
+    """冻结清单：答案键里记抽样时点的条目 id（可带 pool/k/seed 等元信息）。
+
+    存在理由：抽检与金标准的候选池都是「当前判定表」，判定表一旦被裁决修改，池就移动、
+    抽样整体换人，已完成的金标准/抽检会被判成「失效」，逼人重填。冻结清单后，答案键只断言
+    「抽样时点抽了哪几条、当时怎么判的」，不再随判定表漂移；判定表改了由 verify-* 报差异。
+    """
+    parts = [f"{k}={v}" for k, v in meta.items()] + list(ids)
+    return "<!-- picks: " + ",".join(parts) + " -->"
+
+
+def picks_in(path):
+    """读回冻结清单 → (ids 或 None, meta)。"""
+    if not path.exists():
+        return None, {}
+    m = PICKS_RE.search(path.read_text(encoding="utf-8"))
+    if not m:
+        return None, {}
+    meta, ids = {}, []
+    for tok in m.group(1).split(","):
+        tok = tok.strip()
+        if not tok:
+            continue
+        if "=" in tok:
+            k, v = tok.split("=", 1)
+            meta[k.strip()] = v.strip()
+        else:
+            ids.append(tok)
+    return (ids or None), meta
+
+
+def recorded_rows(path):
+    """从已有答案键的对照表读回「抽样时点原判」：原批次 id → (支撑, 自足, 依据, 缺什么)。"""
+    out = {}
+    if not path.exists():
+        return out
+    for line in path.read_text(encoding="utf-8").splitlines():
+        m = ROW_KEY_RE.match(line)
+        if m:
+            out[m.group(1)] = (m.group(2), m.group(3), m.group(4), m.group(5))
+    return out
+
+
+def frozen_picks(recs, keys_path, seed):
+    """优先用答案键里的冻结清单还原 picked；没有则按当前判定表重抽。"""
+    snap, meta = picks_in(keys_path)
+    if not snap:
+        return None, None, {}
+    by_id = {r["id"]: r for r in recs}
+    frozen = recorded_rows(keys_path)
+    missing = [i for i in snap if i not in by_id]
+    if missing:
+        sys.exit(f"[!] 冻结清单里的 id 已不在判定表中：{missing}")
+    picked = []
+    for i in snap:
+        r = dict(by_id[i])
+        if i in frozen:
+            r["support"], r["self"], r["basis"], r["gap"] = frozen[i]
+        picked.append(r)
+    drift = [i for i in snap
+             if i in frozen and (by_id[i]["support"], by_id[i]["self"]) != frozen[i][:2]]
+    return picked, meta, {"drift": drift}
+
+
+def build_sample(recs, picked, pool_n, k, rate, seed, name="S1"):
     # 输入文件必须闭卷：不能出现「这些条目原来都判 SUPPORTED」，否则等于把答案递给审计员。
     # 候选集构成只写在答案键里（主控侧留档，auditor-* 的 read 白名单读不到）。
     head = [
-        "# 抽检批次：S1",
+        f"# 抽检批次：{name}",
         "",
         f"> 由 `python tools/audit_prep.py sample` 生成，seed={seed}、rate={rate:.0%}，可复现。",
-        f"> 来源 8 个批次、共 {len(pool)} 条候选条目，抽 {k} 条（{k/len(pool):.1%}）；"
+        f"> 来源 8 个批次、共 {pool_n} 条候选条目，抽 {k} 条（{k/pool_n:.1%}）；"
         "候选集构成由主控留档，不在本文件披露。",
         "> **闭卷**：只给下列五元组，不要回读原文、卡片、其它批次或答案键。",
         "> 快照 sha1: __STAMP__",
@@ -163,9 +233,9 @@ def build_sample(recs, picked, pool, k, rate, seed):
         "| 项 | 数 |",
         "|---|---|",
         f"| 判定表总条目 | {len(recs)} |",
-        f"| 候选条目 | {len(pool)} |",
+        f"| 候选条目 | {pool_n} |",
         f"| 抽检条目 | {k} |",
-        f"| 抽检比例 | {k/len(pool):.1%} |",
+        f"| 抽检比例 | {k/pool_n:.1%} |",
         "",
         "## 待判条目",
         "",
@@ -185,20 +255,21 @@ def build_sample(recs, picked, pool, k, rate, seed):
     return text, st
 
 
-def build_keys(recs, picked, pool, k, rate, seed, stamps, st):
+def build_keys(recs, picked, pool_n, k, rate, seed, stamps, st, name="S1"):
     lines = [
-        "# S1 答案键（主控侧留档）",
+        f"# {name} 答案键（主控侧留档）",
         "",
-        "> 由 `python tools/audit_prep.py sample` 生成，与 `SAMPLE_S1.md` 同源。",
-        f"> 判定表总条目 {len(recs)} · 当前 SUPPORTED {len(pool)} · 抽 {k} 条（{k/len(pool):.1%}）· seed={seed} rate={rate:.0%}。",
+        f"> 由 `python tools/audit_prep.py sample` 生成，与 `SAMPLE_{name}.md` 同源。",
+        f"> 判定表总条目 {len(recs)} · 抽样时点 SUPPORTED {pool_n} · 抽 {k} 条（{k/pool_n:.1%}）· seed={seed} rate={rate:.0%}。",
         f"> 输入快照戳：`{st}`",
         "> **本文件是答案键：禁止贴给任何 `auditor-*`，也不要登记进 `BATCHES.json`。**",
         "> 审计员的 read 白名单只有「契约 + 本批输入」，它读不到本文件；主控也不要在派发提示词里引用它。",
+        picks_line([r["id"] for r in picked], pool=pool_n, k=k, seed=seed, rate=f"{rate:g}"),
         "",
         "## 抽样算法（可复现）",
         "",
-        f"`pool = [判定表里 support == SUPPORTED 的条目，按 id 升序]`；`k = round({len(pool)} * {rate}) = {k}`；"
-        f"`idx = sorted(random.Random({seed}).sample(range({len(pool)}), {k}))`；取 `pool[idx]`。",
+        f"`pool = [判定表里 support == SUPPORTED 的条目，按 id 升序]`；`k = round({pool_n} * {rate}) = {k}`；"
+        f"`idx = sorted(random.Random({seed}).sample(range({pool_n}), {k}))`；取 `pool[idx]`。",
         "",
         "## 源批次输入戳（抽样时的口径）",
         "",
@@ -217,33 +288,46 @@ def build_keys(recs, picked, pool, k, rate, seed, stamps, st):
               "> 全部候选条目在抽样时点的支撑码都是 `SUPPORTED`；本文件记录的是**抽样时点的原判**，不是标准答案。",
               "> `verify-sample` 只报差异、不裁定谁对。若报差异，按 RUNBOOK §五：登记争议项、冻结 131 条汇总、",
               "> 先补证据（定向扩抽 / 固定契约双跑），由主控人工裁决后才决定是否整批重审；不自动重审、不逐条修补。",
-              "> 判定表一改，本答案键即失效（`sample --check` 会报不一致），重审前须先留档冻结。", ""]
+              "> 上方 `<!-- picks -->` 是**冻结清单**：判定表事后被裁决修改，本文件不失效，`sample --check` 仍按抽样时点原判复现；",
+              "> 若要抽新一批，先另存旧文件再重跑 `sample`，不要在旧文件上手改。", ""]
     return "\n".join(lines)
 
 
 def cmd_sample(args):
     recs, stamps = load()
-    pool, picked, k = pick(recs, args.rate, args.seed)
-    text, st = build_sample(recs, picked, pool, k, args.rate, args.seed)
-    keys = build_keys(recs, picked, pool, k, args.rate, args.seed, stamps, st)
+    picked = meta = drift = None
+    if args.check:
+        picked, meta, extra = frozen_picks(recs, KEYS, args.seed)
+        drift = extra.get("drift", []) if extra else []
+    if picked is None:
+        pool, picked, k = pick(recs, args.rate, args.seed)
+        pool_n = len(pool)
+    else:
+        pool_n = int((meta or {}).get("pool", len(picked)))
+        k = int((meta or {}).get("k", len(picked)))
+    text, st = build_sample(recs, picked, pool_n, k, args.rate, args.seed)
+    keys = build_keys(recs, picked, pool_n, k, args.rate, args.seed, stamps, st)
     if args.check:
         bad = []
         for path, want in ((SAMPLE, text), (KEYS, keys)):
             if not path.exists():
                 bad.append(f"缺失 {path.name}")
             elif path.read_text(encoding="utf-8") != want:
-                bad.append(f"与当前判定表复算不一致：{path.name}（判定表或批次输入变了，需重做抽检）")
+                bad.append(f"与冻结清单复算不一致：{path.name}（输入条目或批次输入变了，需重做抽检）")
         if bad:
             print("✗ 抽检批次自检未通过：")
             for b in bad:
                 print("  -", b)
             return 1
-        print(f"✓ 抽检批次可复现：{k}/{len(pool)} 条（{k/len(pool):.1%}），"
+        print(f"✓ 抽检批次可复现：{k}/{pool_n} 条（{k/pool_n:.1%}，抽样时点），"
               f"戳 {st}，答案键一致，8 个源批次输入戳未变。")
+        if drift:
+            print(f"  注：{len(drift)} 条在原判之后被裁决修改（{', '.join(drift)}），"
+                  "仍按抽样时点原判复现，差异由 verify-sample 报告。")
         return 0
     SAMPLE.write_text(text, encoding="utf-8")
     KEYS.write_text(keys, encoding="utf-8")
-    print(f"判定表 {len(recs)} 条 · SUPPORTED {len(pool)} 条 · 抽 {k} 条（{k/len(pool):.1%}，seed={args.seed}）")
+    print(f"判定表 {len(recs)} 条 · SUPPORTED {pool_n} 条 · 抽 {k} 条（{k/pool_n:.1%}，seed={args.seed}）")
     print(f"输入：{rel(SAMPLE)}  > 快照 sha1: {st}")
     print(f"答案键：{rel(KEYS)}（禁止贴给 auditor-*）")
     print("下一步：python tools/gen_subagents.py --check → 在 OpenCode 里派一次 auditor-sample-s1")
@@ -316,13 +400,16 @@ def cmd_verify_sample(args):
         sys.exit("[!] SAMPLE_S1.md 没有快照戳，先跑 sample")
     out = OUT_S1.read_text(encoding="utf-8")
     olines = out.splitlines()
-    problems, notes = [], []
-
     first = olines[0] if olines else ""
     if first.strip() != f"> 快照 sha1: {st}":
-        problems.append(f"首行戳不对：应为 `> 快照 sha1: {st}`，实为 `{first}`")
-    else:
-        notes.append(f"首行戳一致：{st}")
+        # 戳不同源就别往下算「一致率」：样本可能已重抽，拿旧回写比新答案键会得出假数字。
+        print(f"✗ 回写与本批输入不同源：")
+        print(f"  - {OUT_S1.name} 首行 `{first.strip()}`")
+        print(f"  - {SAMPLE.name} 应为 `> 快照 sha1: {st}`")
+        print("  → 样本已重抽或回写是旧的，先按当前输入重派一次 auditor-sample-s1，再验收。")
+        return 1
+    problems, notes = [], []
+    notes.append(f"首行戳一致：{st}")
 
     hdr = contract_header()
     if hdr not in olines:
@@ -469,7 +556,9 @@ def build_golden_map(recs, picked, st):
         f"> 输入快照戳：`{st}`",
         "> **本文件是答案键**：记录每条 G id 对应的原批次 id 与原判定。判定者填 `GOLDEN.md` 时读不到本文件。",
         "> 人填完后跑 `python tools/audit_prep.py verify-golden` 比对，输出一致率与方向分布。",
-        "> 判定表一改，本映射即失效（`golden --check` 会报不一致）。",
+        "> 下方 `<!-- picks -->` 是冻结清单：判定表事后被裁决修改，本文件不失效，`golden --check` 仍按抽样时点复现。",
+        "",
+        picks_line([r["id"] for r in picked]),
         "",
         "## 对照表（G id → 原判定）",
         "",
@@ -485,17 +574,23 @@ def build_golden_map(recs, picked, st):
 
 def cmd_golden(args):
     recs, _ = load()
-    picked = pick_golden(recs, args.seed)
+    drift = []
+    picked = None
+    if args.check:
+        picked, _meta, extra = frozen_picks(recs, GOLDEN_MAP, args.seed)
+        drift = extra.get("drift", []) if extra else []
+    if picked is None:
+        picked = pick_golden(recs, args.seed)
     text, st = build_golden(recs, picked)
     gmap = build_golden_map(recs, picked, st)
     n_by = {s: sum(1 for r in picked if r["support"] == s) for s in SUPPORT}
     if args.check:
         bad = []
-        # GOLDEN_MAP 全文比对（答案键，无人填，必须逐字一致）
+        # GOLDEN_MAP 全文比对（答案键，无人填，必须与冻结清单逐字一致）
         if not GOLDEN_MAP.exists():
             bad.append("缺失 GOLDEN_MAP.md")
         elif GOLDEN_MAP.read_text(encoding="utf-8") != gmap:
-            bad.append("与当前判定表复算不一致：GOLDEN_MAP.md（判定表变了，需重做金标准）")
+            bad.append("与冻结清单复算不一致：GOLDEN_MAP.md（抽样条目或批次输入变了，需重做金标准）")
         # GOLDEN.md 只比对条目详情部分（表格是人填的，填后必然与空模板不同，不比对）
         marker = "## 条目详情"
         if not GOLDEN.exists():

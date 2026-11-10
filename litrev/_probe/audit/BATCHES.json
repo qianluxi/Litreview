@@ -53,7 +53,7 @@
       "id": "sample_s1",
       "input": "litrev/_probe/audit/SAMPLE_S1.md",
       "output": "litrev/_probe/audit/out_S1.md",
-      "note": "抽检 S1（seed=42、10/81=12.3%；候选集构成不披露给审计员）"
+      "note": "抽检 S1（seed=42、10/80=12.5%，2026-11-10 按 D-01 裁决后的新候选池重抽；候选集构成不披露给审计员）"
     },
     {
       "id": "rest_b1_dup",

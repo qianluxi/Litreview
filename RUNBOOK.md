@@ -99,7 +99,7 @@ python litrev/litrev.py stamp-out                # 4. 已有输出：能按 git 
 
 ```bash
 python tools/audit_prep.py sample             # 写 SAMPLE_S1.md + SAMPLE_S1_KEYS.md（答案键）
-python tools/audit_prep.py sample --check     # 复算比对；判定表或批次输入一变就报不一致
+python tools/audit_prep.py sample --check     # 按冻结清单复现比对；输入条目或批次输入一变就报不一致
 python tools/gen_subagents.py --check         # S1 已在 BATCHES.json 登记，正常无需重启
 python tools/audit_prep.py review             # 非 SUPPORTED 人工复核清单（契约 §五.3）
 ```
@@ -124,13 +124,20 @@ python tools/audit_prep.py review             # 非 SUPPORTED 人工复核清单
 - **禁止两种自动动作**：不因一次差异就自动「整批重审」（10 条抽检里某批次常只占 1–2 条，样本撑不起「系统性偏松」）；
   更不许「逐条改一条」把差异抹掉（逐条修会把系统性偏松掩盖成偶发，且 `S80/P50/U1` 这类数字只对应逐条修补）。
   是否整批重审、重审哪个批次，必须由**主控人工裁决**并写进 `reports/` 后才能派发。
-- **答案键冻结**：判定表一旦变更，`SAMPLE_S1_KEYS.md` 即失效（`sample --check` 会报不一致）。
-  重审前先留档当前答案键与 `out_S1.md`，不要在重审后拿新表复算旧答案键。
-- **改判的级联代价（裁决前必算）**：候选池 = 当前 `SUPPORTED`，所以**任何一条改判都会移动池、换掉抽样**。
-  实测：`B3-10` 从 `SUPPORTED` 改 `PARTIAL` 后池 81→80，`seed=42` 重抽的 10 条与现有只有 4 条重合（`S05` 直接消失）。
-  后果链：`sample --check` 变红 → 需重生成输入与答案键 → 旧 `out_S1.md` 不再是磁盘上那 10 条 → `verify-sample` 变红 → 需再派一次
-  `auditor-sample-s1`。**裁决一条 ≠ 改一个单元格**，派发前先按这个链路估工。
-  根治办法（未实施）：把 `sample` 语义从「当前池」改为「池快照」（在答案键里记抽样时点的池），使已完成抽检对后续裁决免疫。
+- **答案键是历史记录，不是「当前判定表的镜像」**：`SAMPLE_*_KEYS.md` 记的是**抽样时点的原判**。
+  判定表事后被裁决修改时，答案键**不失效、不改写**（见上「参考集冻结」）；`verify-sample` 仍按抽样时点原判比对，
+  差异照报，由 `DISPUTED.md` 解释。反过来，**禁止拿新表复算旧答案键**去把差异抹平。
+  同一批数据若要重新抽，另存旧文件后重跑 `sample`，旧样本按 commit 留档。
+- **参考集冻结（2026-11-10 起）**：`SAMPLE_*_KEYS.md` 与 `GOLDEN_MAP.md` 里都有一行
+  `<!-- picks: ... -->`，记录**抽样时点的条目清单**（抽检带 `pool/k/seed/rate`）。`--check` 按这份清单复现，
+  **不再按当前判定表重算**。理由：候选池本身是「当前 SUPPORTED」，判定表一旦被裁决修改池就移动，
+  旧实现会把已完成的金标准/抽检判成「失效」，逼人重填 25 条金标准——这是设计缺陷，已修。
+  - 判定表事后改了 → `--check` 仍绿，并打印「N 条在原判之后被裁决修改」的提示；差异由 `verify-sample` / `verify-golden` 报。
+  - 要抽新一批 → 先另存旧文件再重跑 `sample`；**不要手改冻结清单**（改了会被 `--check` 抓出）。
+- **改判的级联代价（裁决前必算）**：抽检候选池 = 当前 `SUPPORTED`，改判一条即移动池。
+  实测：`B3-10` 改 `PARTIAL` 后池 81→80，`seed=42` 重抽的 10 条与旧样本只有 4 条重合（旧 `S05` 消失）。
+  处置：按新池重抽 `SAMPLE_S1` → 旧 `out_S1.md` 戳不同源 → `verify-sample` 直接报「不同源」并退 1（不再算假一致率）
+  → 需再派一次 `auditor-sample-s1`（该 agent 已存在，**不需要重启 OpenCode**）。**裁决一条 ≠ 改一个单元格**。
 - 争议条目登记在 `litrev/_probe/audit/DISPUTED.md`（人工维护，不进 `BATCHES.json`、不贴给任何子代理）；
   `REVIEW_NONSUPPORTED.md` 是 `review` 自动生成的非 SUPPORTED 清单，两者不要混写。
 - 抽检结论写进 `reports/`：命中率、方向、差异条目、是否补证据、裁决结果。`out_S1.md` 不进 131 条汇总（`audit-count` 默认前缀 B,R）。
@@ -149,7 +156,7 @@ python tools/audit_prep.py verify-golden      # 比对人判 vs 判定表，输�
 - `GOLDEN.md` 是给人填的表，**不进 `BATCHES.json`、不生成 agent、不被 `audit-count` 扫**（文件名不是 `out_*`）。
 - `GOLDEN_MAP.md` 是答案键（G id → 原批次/原判定），主控留档，**不贴给任何人**；判定者填表时读不到它。
 - `verify-golden` 的一致率是判定表可信度的**唯一估计**；差异不自动触发重审，按 §五「差异 ≠ 错误」登记 `DISPUTED.md` 后人工裁决。
-- `golden --check` 只比对 `GOLDEN_MAP.md`（答案键）+ `GOLDEN.md` 的条目详情部分；**人填的判定表不纳入比对**（填后必然不等于空模板）。判定表一变，`GOLDEN_MAP` 即失效。
+- `golden --check` 只比对 `GOLDEN_MAP.md`（答案键，含 `<!-- picks -->` 冻结清单）+ `GOLDEN.md` 的条目详情部分；**人填的判定表不纳入比对**（填后必然不等于空模板）。判定表事后被裁决修改时不再报失效——这正是 2026-11-10 修掉的缺陷（原实现会让一次改判逼人重填 25 条）。
 
 ### 固定契约双跑（测漂移率，2026-11-10 加入）
 
@@ -229,4 +236,5 @@ python tools/audit_prep.py diff-dup --pair B:E             # 前缀可配，默�
 | 2026-11-10 | §五 补「差异 ≠ 错误」与方向分治：抽检降档**不自动**触发整批重审；新增争议项登记、答案键冻结、补证据两条正规路径，`verify-sample` 提示语同步按方向输出；判定表、`litrev.py`、`AUDIT_CONTRACT.md` 与 agent 定义均未改 |
 | 2026-11-10 | §五 加金标准（`golden`/`verify-golden`）与固定契约双跑（`dup`/`diff-dup`）两条规程；新增 `tools/check.py` 一键回归（8 项结构性检查）；修 auditor 读回权限（read 加 `out_*` allow，需重启）；加 5 个 dup agent；删 round-03 遗留 `out_REWORK3`/`out_SAMPLE3` |
 | 2026-11-10 | 双跑 5 批完成（漂移率：支撑 8.4% / 自足 12.0% / 任一轴 20.5%；自足轴 10/10 单向 SELF→DEPENDENT）；金标准 25 条填完（一致率 92%，2 条偏松 G03/G18）；修 `golden --check`（已填 GOLDEN.md 不再误报）；D-01 仍 OPEN，建议第三次独立判定 |
-| 2026-11-10 | 双跑扩到 frag 三批（`--pair B:E`）：支撑 12.5% / 自足 4.2% / 任一 16.7%；**合并 131 条配对**任一轴 19.1%，自足轴 11:1 单向（`P≈0.3%`，系统性口径差）、支撑轴 9:4（`P≈13%`，不显著）。§五 增「改判的级联代价」（改判会移动抽检候选池、作废现有批次；实测重抽仅 4/10 重合）。D-01 证据到位（v1.1 下支撑 3:1），待裁决 |
+| 2026-11-10 | 双跑扩到 frag 三批（`--pair B:E`）：支撑 12.5% / 自足 4.2% / 任一 16.7%；**合并 131 条配对**任一轴 19.1%，自足轴 11:1 单向（`P≈0.3%`，系统性口径差）、支撑轴 9:4（`P≈13%`，不显著）。§五 增「改判的级联代价」。D-01 证据到位（v1.1 下支撑 3:1），待裁决 |
+| 2026-11-10 | **D-01 CLOSED**：`B3-10` 支撑 `SUPPORTED→PARTIAL`、自足不动，汇总 `S81/P49/U1 → S80/P50/U1`。§五 参考集改为**冻结清单**（`<!-- picks -->`，`--check` 不再按当前池重算），修 `verify-sample` 的戳门禁（不同源直接退 1，不再算假一致率）；`SAMPLE_S1` 按新池 80 重抽（戳 `7d1a204d54`），旧样本留档于 `7077b6f` |

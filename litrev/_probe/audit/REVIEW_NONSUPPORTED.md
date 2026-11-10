@@ -1,7 +1,7 @@
 # 非 SUPPORTED 人工复核清单
 
 > 由 `python tools/audit_prep.py review` 从当前 8 张判定表生成；契约 §五.3：任何非 SUPPORTED 必须人看。
-> 共 50 条：PARTIAL 49 / UNSUPPORTED 1 / 判定表总条目 131。
+> 共 51 条：PARTIAL 50 / UNSUPPORTED 1 / 判定表总条目 131。
 > 本清单只做待办登记，`复核结论` 与 `处理` 两栏由人填写；判定表一改就重新生成，不要手改条目。
 > 引文与论断来自批次输入（已由 `audit-stale` 证明等于卡片当前文字），不要凭记忆改写。
 
@@ -11,7 +11,7 @@
 |---|---|
 | `FRAG_B1.md` | 10 |
 | `FRAG_B2.md` | 8 |
-| `FRAG_B3.md` | 9 |
+| `FRAG_B3.md` | 10 |
 | `REST_B1.md` | 6 |
 | `REST_B2.md` | 4 |
 | `REST_B3.md` | 6 |
@@ -260,7 +260,17 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 25 · B3-11 · Survey2025_FloorPlanRetrieval_MDPI · 系统形态
+### 25 · B3-10 · SriramMaherFenves1985_KBES_StructuralDesign · 问题域
+
+- 当前判定：PARTIAL / SELF
+- 引文里的依据："often ill-"
+- 缺什么：引文在 `often ill-` 处截断，「病构性」（ill-structured）无完整词形依据，需补含该词的完整原句（D-01 裁决，见 `DISPUTED.md`）
+- 论断：问题域是结构设计，尤其是其中不适合纯算法求解、常呈病构性的设计问题。
+- 引文："structural design are not amenable to purely algorithmic solutions. These problems are often ill-" (Sriram et al., 1985, p.4)
+- 复核结论（人填）：
+- 处理（人填）：
+
+### 26 · B3-11 · Survey2025_FloorPlanRetrieval_MDPI · 系统形态
 
 - 当前判定：PARTIAL / DEPENDENT
 - 引文里的依据："advanced fusion"
@@ -270,7 +280,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 26 · B3-13 · Zhang2006_BP_CaseRetrieval_HighriseStructureForm · 评价方式
+### 27 · B3-13 · Zhang2006_BP_CaseRetrieval_HighriseStructureForm · 评价方式
 
 - 当前判定：PARTIAL / DEPENDENT
 - 引文里的依据："the same with"
@@ -280,7 +290,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 27 · B3-15 · Zhao2023_ShearWall_GNN · 评价方式
+### 28 · B3-15 · Zhao2023_ShearWall_GNN · 评价方式
 
 - 当前判定：PARTIAL / SELF
 - 引文里的依据："Ten-fold"
@@ -290,7 +300,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 28 · R1-01 · AamodtPlaza1994_CBR_Foundations · 一句话主张
+### 29 · R1-01 · AamodtPlaza1994_CBR_Foundations · 一句话主张
 
 - 当前判定：PARTIAL / SELF
 - 引文里的依据："a general framework is defined"
@@ -300,7 +310,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 29 · R1-02 · AamodtPlaza1994_CBR_Foundations · 评价方式
+### 30 · R1-02 · AamodtPlaza1994_CBR_Foundations · 评价方式
 
 - 当前判定：PARTIAL / SELF
 - 引文里的依据："20.000 non-conformances were handled"
@@ -310,7 +320,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 30 · R1-05 · Rodrigues2017_Clustering_FloorPlans · 问题域
+### 31 · R1-05 · Rodrigues2017_Clustering_FloorPlans · 问题域
 
 - 当前判定：PARTIAL / SELF
 - 引文里的依据："may be overwhelming"
@@ -320,7 +330,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 31 · R1-10 · SoibelmanPenaMora2000_MRAM_ConceptualStructuralDesign · 案例或数据的表示形式
+### 32 · R1-10 · SoibelmanPenaMora2000_MRAM_ConceptualStructuralDesign · 案例或数据的表示形式
 
 - 当前判定：PARTIAL / SELF
 - 引文里的依据："can be deﬁned as the case phenotype"
@@ -330,7 +340,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 32 · R1-14 · Xia2025_CoDesign_ShearWallBeam_GNN · 系统形态
+### 33 · R1-14 · Xia2025_CoDesign_ShearWallBeam_GNN · 系统形态
 
 - 当前判定：PARTIAL / SELF
 - 引文里的依据："rapid arrangement of floor slabs"
@@ -340,7 +350,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 33 · R1-16 · vanEngelenburg2023_SSIG_FloorPlan · 问题域
+### 34 · R1-16 · vanEngelenburg2023_SSIG_FloorPlan · 问题域
 
 - 当前判定：PARTIAL / SELF
 - 引文里的依据："a key factor in the architectural quality"
@@ -350,7 +360,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 34 · R2-01 · AamodtPlaza1994_CBR_Foundations · 问题域
+### 35 · R2-01 · AamodtPlaza1994_CBR_Foundations · 问题域
 
 - 当前判定：PARTIAL / SELF
 - 引文里的依据："no universal"
@@ -360,7 +370,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 35 · R2-02 · AamodtPlaza1994_CBR_Foundations · 明确写出的局限
+### 36 · R2-02 · AamodtPlaza1994_CBR_Foundations · 明确写出的局限
 
 - 当前判定：PARTIAL / DEPENDENT
 - 引文里的依据："may easily lead"
@@ -370,7 +380,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 36 · R2-06 · Rodrigues2017_Clustering_FloorPlans · 案例或数据的表示形式
+### 37 · R2-06 · Rodrigues2017_Clustering_FloorPlans · 案例或数据的表示形式
 
 - 当前判定：PARTIAL / SELF
 - 引文里的依据："same length"
@@ -380,7 +390,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 37 · R2-15 · Xia2025_CoDesign_ShearWallBeam_GNN · 评价方式
+### 38 · R2-15 · Xia2025_CoDesign_ShearWallBeam_GNN · 评价方式
 
 - 当前判定：PARTIAL / SELF
 - 引文里的依据："0.625 and 0.548"
@@ -390,7 +400,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 38 · R3-01 · AamodtPlaza1994_CBR_Foundations · 案例或数据的表示形式
+### 39 · R3-01 · AamodtPlaza1994_CBR_Foundations · 案例或数据的表示形式
 
 - 当前判定：PARTIAL / SELF
 - 引文里的依据："features common"
@@ -400,7 +410,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 39 · R3-04 · Maher1987_ExpertSystems_StructuralDesign · 系统形态
+### 40 · R3-04 · Maher1987_ExpertSystems_StructuralDesign · 系统形态
 
 - 当前判定：PARTIAL / SELF
 - 引文里的依据："implemented in"
@@ -410,7 +420,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 40 · R3-05 · Rodrigues2017_Clustering_FloorPlans · 系统形态
+### 41 · R3-05 · Rodrigues2017_Clustering_FloorPlans · 系统形态
 
 - 当前判定：PARTIAL / SELF
 - 引文里的依据："same settings"
@@ -420,7 +430,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 41 · R3-12 · Survey2025_FloorPlanRetrieval_MDPI · 案例或数据的表示形式
+### 42 · R3-12 · Survey2025_FloorPlanRetrieval_MDPI · 案例或数据的表示形式
 
 - 当前判定：PARTIAL / SELF
 - 引文里的依据："feature vectors"
@@ -430,7 +440,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 42 · R3-13 · Xia2025_CoDesign_ShearWallBeam_GNN · 问题域
+### 43 · R3-13 · Xia2025_CoDesign_ShearWallBeam_GNN · 问题域
 
 - 当前判定：PARTIAL / SELF
 - 引文里的依据："separate design"
@@ -440,7 +450,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 43 · R3-17 · vanEngelenburg2023_SSIG_FloorPlan · 系统形态
+### 44 · R3-17 · vanEngelenburg2023_SSIG_FloorPlan · 系统形态
 
 - 当前判定：PARTIAL / SELF
 - 引文里的依据："SSIG to rank"
@@ -450,7 +460,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 44 · R4-03 · Maher1987_ExpertSystems_StructuralDesign · 一句话主张
+### 45 · R4-03 · Maher1987_ExpertSystems_StructuralDesign · 一句话主张
 
 - 当前判定：PARTIAL / SELF
 - 引文里的依据："The second part"
@@ -460,7 +470,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 45 · R4-04 · Maher1987_ExpertSystems_StructuralDesign · 评价方式
+### 46 · R4-04 · Maher1987_ExpertSystems_StructuralDesign · 评价方式
 
 - 当前判定：PARTIAL / SELF
 - 引文里的依据："alternatives"
@@ -470,7 +480,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 46 · R4-10 · SoibelmanPenaMora2000_MRAM_ConceptualStructuralDesign · 一句话主张
+### 47 · R4-10 · SoibelmanPenaMora2000_MRAM_ConceptualStructuralDesign · 一句话主张
 
 - 当前判定：PARTIAL / SELF
 - 引文里的依据："multi-reasoning"
@@ -480,7 +490,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 47 · R4-16 · vanEngelenburg2023_SSIG_FloorPlan · 评价方式
+### 48 · R4-16 · vanEngelenburg2023_SSIG_FloorPlan · 评价方式
 
 - 当前判定：PARTIAL / SELF
 - 引文里的依据："large-scale"
@@ -490,7 +500,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 48 · R5-01 · AamodtPlaza1994_CBR_Foundations · 系统形态
+### 49 · R5-01 · AamodtPlaza1994_CBR_Foundations · 系统形态
 
 - 当前判定：PARTIAL / SELF
 - 引文里的依据："complementary"
@@ -500,7 +510,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 49 · R5-02 · Gu2024_ShearWall_Diffusion · 案例或数据的表示形式
+### 50 · R5-02 · Gu2024_ShearWall_Diffusion · 案例或数据的表示形式
 
 - 当前判定：PARTIAL / SELF
 - 引文里的依据："can be encoded"
@@ -510,7 +520,7 @@
 - 复核结论（人填）：
 - 处理（人填）：
 
-### 50 · R5-14 · Xia2025_CoDesign_ShearWallBeam_GNN · 相似性或检索机制
+### 51 · R5-14 · Xia2025_CoDesign_ShearWallBeam_GNN · 相似性或检索机制
 
 - 当前判定：PARTIAL / SELF
 - 引文里的依据："edge labels"

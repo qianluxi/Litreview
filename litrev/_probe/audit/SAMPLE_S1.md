@@ -1,18 +1,18 @@
 # 抽检批次：S1
 
 > 由 `python tools/audit_prep.py sample` 生成，seed=42、rate=12%，可复现。
-> 来源 8 个批次、共 81 条候选条目，抽 10 条（12.3%）；候选集构成由主控留档，不在本文件披露。
+> 来源 8 个批次、共 80 条候选条目，抽 10 条（12.5%）；候选集构成由主控留档，不在本文件披露。
 > **闭卷**：只给下列五元组，不要回读原文、卡片、其它批次或答案键。
-> 快照 sha1: 0ff8391a63
+> 快照 sha1: 7d1a204d54
 
 ## 合计
 
 | 项 | 数 |
 |---|---|
 | 判定表总条目 | 131 |
-| 候选条目 | 81 |
+| 候选条目 | 80 |
 | 抽检条目 | 10 |
-| 抽检比例 | 12.3% |
+| 抽检比例 | 12.5% |
 
 ## 待判条目
 
@@ -36,32 +36,32 @@
 - 论断：作者明确指出方法的弱点是只能找到实际存在的物理房间。
 - 引文："Furthermore, a weak point of our approach is that it is only able to ﬁnd the physical existent rooms." (Ahmed et al., 2013, p.9)
 
-### S05 ・ SriramMaherFenves1985_KBES_StructuralDesign ・ 问题域 ・ p.4
+### S05 ・ Zhang2006_BP_CaseRetrieval_HighriseStructureForm ・ 案例或数据的表示形式 ・ p.1
 
-- 论断：问题域是结构设计，尤其是其中不适合纯算法求解、常呈病构性的设计问题。
-- 引文："structural design are not amenable to purely algorithmic solutions. These problems are often ill-" (Sriram et al., 1985, p.4)
+- 论断：案例先按特征属性刻画、再转成目标案例。
+- 引文："First, CBR needs to distinguish the characteristic attributes of the significant cases to form selection and then transforms them into target cases." (Zhang, 2006, p.1)
 
-### S06 ・ Survey2025_FloorPlanRetrieval_MDPI ・ 一句话主张 ・ p.1
+### S06 ・ Survey2025_FloorPlanRetrieval_MDPI ・ 明确写出的局限 ・ p.20
 
-- 论断：该文全面梳理建筑平面图检索所依赖的语义、空间、形状、纹理四类特征（合称 3ST 特征）。
-- 引文："This paper presents a comprehensive exploration of four primary features essential for the retrieval of building floor plans: semantic features, spatial features, shape features, and texture features (collectively referred to as 3ST features)." (Ling et al., 2025, p.1)
+- 论断：作者指出样本数量有限的数据集可能不足以代表所有建筑类型与设计风格，从而限制研究结论的普适性。
+- 引文："Datasets with a limited number of samples may not adequately represent all possible building types and design styles, thereby constraining the generalizability of the research findings." (Ling et al., 2025, p.20)
 
-### S07 ・ Ahmed2013_Analysis_SketchRetrieval_FloorPlans ・ 案例或数据的表示形式 ・ p.6
+### S07 ・ Gu2024_ShearWall_Diffusion ・ 评价方式 ・ p.10
 
-- 论断：平面图被抽取出的语义以带顶点与边的图 G 表示。
-- 引文："The extracted semantics are represented as a graph G ¼ ðV; EÞ." (Ahmed et al., 2013, p.6)
+- 论断：该研究主要以交并比（IoU）指标进行评价。
+- 引文："The Intersection over Union (IoU) metric (Equation 11) was primarily employed in this study for evaluation." (Gu et al., 2024, p.10)
 
-### S08 ・ Roith2017_GraphBasedDesign_FederatedDB_VisEng ・ 明确写出的局限 ・ p.12
+### S08 ・ Sabri2017_SemanticPattern_FloorPlanRetrieval_ICPRAM ・ 一句话主张 ・ p.1
 
-- 论断：作者明确写出过滤器式 agent 的一项局限：输入集需要通过网络复制到 agent。
-- 引文："Another limitation of filters is that the input set needs to be copied over the network into the agent." (Roith et al., 2017, p.12)
+- 论断：作者主张其新颖性在于把 CBR、精确图匹配与不精确图匹配组合在同一个系统中，用于建筑平面图检索。
+- 引文："The novelty of our approach is that it combines CBR, exact, and inexact graph matching in one system in the domain of retrieval of architectural ﬂoor plans." (Sabri et al., 2017, p.1)
 
-### S09 ・ delasHeras2014_RunlengthHistogram_FloorPlans ・ 评价方式 ・ p.8
+### S09 ・ AamodtPlaza1994_CBR_Foundations ・ 相似性或检索机制 ・ p.12
 
-- 论断：评价时将系统结果与三套 ground truth 模型对比并报告平均精度均值，对照 gtA、gtB、gtAB 的 mAP 分别为 0.67、0.63 和 0.66。
-- 引文："In retrieval terms, the mean average precision (mAP) obtained also varies depending on the ground truth model. Thus, the mAP scores are 0.67 when compared to gtA, 0.63 to gtB, and 0.66 to gtAB." (de las Heras et al., 2014, p.8)
+- 论断：PATDEX 使用一个依赖领域但全局的相似性度量，基于表层匹配来评估相似性。
+- 引文："A domain-dependent, but global similarity metric is used to assess similarity based on surface match." (Aamodt and Plaza, 1994, p.12)
 
-### S10 ・ Rodrigues2017_Clustering_FloorPlans ・ 一句话主张 ・ p.13
+### S10 ・ Rodrigues2017_Clustering_FloorPlans ・ 明确写出的局限 ・ p.13
 
-- 论断：作者主张四种描述子的感知分析中，Tangent Distance（TD）能更好地刻画平面图形状且离群更少。
-- 引文："The perceptual analysis carried out on the four descriptors shows that Tangent Distance (TD) captures better ﬂoor plan shapes and presents fewer outliers." (Rodrigues et al., 2017, p.13)
+- 论断：作者明确写出 TD 描述子的一个局限：同一形状类型的设计可能因对外墙每次转折处线段尺寸的敏感度而被判为不同。
+- 引文："Another issue was found with this descriptor. In some cases, when designs have the same shape type, it may consider distinct due to the sensitivity over the size of the segments in every turn of the exterior wall (see groups F and G in Fig. 9 as an example)." (Rodrigues et al., 2017, p.13)
