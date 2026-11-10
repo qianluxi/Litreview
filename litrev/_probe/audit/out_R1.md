@@ -15,7 +15,7 @@
 | R1-11 | SUPPORTED | SELF | "uses backward chaining" | — |
 | R1-12 | SUPPORTED | SELF | "four primary features essential for the retrieval" | — |
 | R1-13 | SUPPORTED | SELF | "may not adequately represent" | — |
-| R1-14 | PARTIAL | SELF | "rapid arrangement of floor slabs" | 引文用的是“rapid arrangement”，没有提到“原型”；请删去“原型”和“自动”这类说法，或补充依据 |
+| R1-14 | PARTIAL | SELF | "rapid arrangement of floor slabs" | 引文用的是“rapid arrangement”，没有提到“原型”；请删去“原型”，或补充依据（“自动”不删：引文有 automated structural modeling and mechanical analysis） |
 | R1-15 | SUPPORTED | SELF | "A histogram of runs is calculated" | — |
 | R1-16 | PARTIAL | SELF | "a key factor in the architectural quality" | 引文没有提到“面向建筑设计中的平面图”；请删去这一说法，或补充依据 |
 
