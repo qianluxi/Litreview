@@ -20,6 +20,13 @@ import re
 import sys
 from pathlib import Path
 
+# Windows PowerShell 默认 GBK 控制台会让 print("✓ ...") 抛 UnicodeEncodeError，
+# 而且崩在「比对已经成功之后」，容易被误读成 agent 定义不同步。统一切成 UTF-8。
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except (AttributeError, ValueError, OSError):
+    pass
+
 ROOT = Path(__file__).resolve().parent.parent
 ROLES_FILE = ROOT / "litrev/_probe/AGENT_ROLES.md"
 TEXTS_DIR = ROOT / "litrev/_probe/texts"
