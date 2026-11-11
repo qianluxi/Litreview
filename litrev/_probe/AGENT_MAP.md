@@ -12,8 +12,11 @@
 | `Borner1993_StructuralSimilarity_CBR` | —（卡片已存在） | `qx-borner1993-structuralsimilarity-cbr` |
 | `delasHeras2014_RunlengthHistogram_FloorPlans` | —（卡片已存在） | `qx-delasheras2014-runlengthhistogram-floorplans` |
 | `Gu2024_ShearWall_Diffusion` | —（卡片已存在） | `qx-gu2024-shearwall-diffusion` |
+| `Jiang2024_LLM_InteractiveDesign_Rhino7` | `ex-jiang2024-llm-interactivedesign-rhino7` | `qx-jiang2024-llm-interactivedesign-rhino7` |
 | `Liao1998_SimilarityMeasures_CBR` | —（卡片已存在） | `qx-liao1998-similaritymeasures-cbr` |
 | `Lin2022_BERT_DisasterTweet` | —（卡片已存在） | `qx-lin2022-bert-disastertweet` |
+| `Lin2024_Standards_Interpretation` | `ex-lin2024-standards-interpretation` | `qx-lin2024-standards-interpretation` |
+| `Lu2024_Clause_PrimitiveFunctions` | `ex-lu2024-clause-primitivefunctions` | `qx-lu2024-clause-primitivefunctions` |
 | `Maher1987_ExpertSystems_StructuralDesign` | —（卡片已存在） | `qx-maher1987-expertsystems-structuraldesign` |
 | `MaherGomez1996_CBR_StructuralDesign` | —（卡片已存在） | `qx-mahergomez1996-cbr-structuraldesign` |
 | `MaherGomez1997_CBR_in_Design` | —（卡片已存在） | `qx-mahergomez1997-cbr-in-design` |
