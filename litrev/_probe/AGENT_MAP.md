@@ -12,11 +12,11 @@
 | `Borner1993_StructuralSimilarity_CBR` | —（卡片已存在） | `qx-borner1993-structuralsimilarity-cbr` |
 | `delasHeras2014_RunlengthHistogram_FloorPlans` | —（卡片已存在） | `qx-delasheras2014-runlengthhistogram-floorplans` |
 | `Gu2024_ShearWall_Diffusion` | —（卡片已存在） | `qx-gu2024-shearwall-diffusion` |
-| `Jiang2024_LLM_InteractiveDesign_Rhino7` | `ex-jiang2024-llm-interactivedesign-rhino7` | `qx-jiang2024-llm-interactivedesign-rhino7` |
+| `Jiang2024_LLM_InteractiveDesign_Rhino7` | —（卡片已存在） | `qx-jiang2024-llm-interactivedesign-rhino7` |
 | `Liao1998_SimilarityMeasures_CBR` | —（卡片已存在） | `qx-liao1998-similaritymeasures-cbr` |
 | `Lin2022_BERT_DisasterTweet` | —（卡片已存在） | `qx-lin2022-bert-disastertweet` |
-| `Lin2024_Standards_Interpretation` | `ex-lin2024-standards-interpretation` | `qx-lin2024-standards-interpretation` |
-| `Lu2024_Clause_PrimitiveFunctions` | `ex-lu2024-clause-primitivefunctions` | `qx-lu2024-clause-primitivefunctions` |
+| `Lin2024_Standards_Interpretation` | —（卡片已存在） | `qx-lin2024-standards-interpretation` |
+| `Lu2024_Clause_PrimitiveFunctions` | —（卡片已存在） | `qx-lu2024-clause-primitivefunctions` |
 | `Maher1987_ExpertSystems_StructuralDesign` | —（卡片已存在） | `qx-maher1987-expertsystems-structuraldesign` |
 | `MaherGomez1996_CBR_StructuralDesign` | —（卡片已存在） | `qx-mahergomez1996-cbr-structuraldesign` |
 | `MaherGomez1997_CBR_in_Design` | —（卡片已存在） | `qx-mahergomez1997-cbr-in-design` |
@@ -65,6 +65,7 @@
 | `probe_r6_04` | `auditor-probe-r6-04` | `litrev/_probe/audit/PROBE_R6-04.md` | `litrev/_probe/audit/out_P_6.md` | D-03 第三次独立判定（R6-04 单条，闭卷盲判）：前两次人开卷 PARTIAL / 机器闭卷 SUPPORTED 为 1:1；不改判定表，只补齐多数票 |
 | `sample_s2` | `auditor-sample-s2` | `litrev/_probe/audit/SAMPLE_S2.md` | `litrev/_probe/audit/out_S2.md` | 抽检补抽第二批 12 条（seed=71，排除 S1 已抽 10 条）：从 128 条 SUPPORTED 池抽 9.4%，测自洽/漂移；out_S2 不进 audit-count 默认口径（前缀 B,R） |
 | `rest_b7` | `auditor-rest-b7` | `litrev/_probe/audit/REST_B7.md` | `litrev/_probe/audit/out_R7.md` | 冷启动第二篇 Lin2022 七节审计（7 条，7 节无「未涉及」）；首篇中文文献，判定表 138→145；验证中文引文可被 verify 逐字核验、契约在中文语境下可执行 |
+| `rest_b8` | `auditor-rest-b8` | `litrev/_probe/audit/REST_B8.md` | `litrev/_probe/audit/out_R8.md` | 冷启动第 3-5 篇（Jiang2024 / Lin2024 / Lu2024）七节审计，21 条，判定表 145→166；派发词已按 D-05 §四 修正「缺什么」列规格（非 SUPPORTED 或自足=DEPENDENT 都要填） |
 
 ## 固定角色
 
