@@ -24,7 +24,7 @@
 
 ## 6. 评价方式
 - 论断：每个模型在训练时执行十折交叉验证，并以验证集结果的平均值与标准差作为评价指标。
-- 引文："Ten-fold cross-validation is performed for each model during training. Subsequently, the validation-set average and standard" (Zhao et al., 2023, p.10)
+- 引文："Ten-fold cross-validation is performed for each model during training. Subsequently, the validation-set average and standard deviation of IoUpixel obtained from the ten-fold training sessions are used as specific evaluation indicators to evaluate the different graph representation methods and GNN models." (Zhao et al., 2023, p.10)
 
 ## 7. 明确写出的局限
 - 论断：作者指出，由于剪力墙样本有限，过拟合更容易避免。

@@ -3,7 +3,7 @@
 > 判定标准：`litrev/_probe/AUDIT_CONTRACT.md`（含第五节口径修订）。
 > 全部条目已通过 `verify`：逐字存在、页码为 PDF 物理页。**不要判真伪与页码**，只判论断层。
 > 不要读任何 PDF 或 `full/*.md`。只依据下面给出的论断与引文判定。
-> 快照 sha1: eb1664aad8
+> 快照 sha1: 3231c9e097
 
 输出：只输出表格 + 一行合计，行序与本文件条目顺序一致。
 
@@ -103,5 +103,5 @@
 ### R4-16 ・ vanEngelenburg2023_SSIG_FloorPlan ・ 评价方式 ・ p.5
 
 - 论断：评价使用 RPLAN 这一大规模平面图数据集，其含逾 80k 套带语义分割区域的亚洲单户公寓。
-- 引文："RPLAN is a large-scale dataset containing ﬂoor plan images with semantically segmented areas, consisting of >80k single-unit apartments across Asia." (van Engelenburg et al., 2023, p.5)
+- 引文："In this paper, RPLAN [26] is used for analysis and eval- uation. RPLAN is a large-scale dataset containing ﬂoor plan images with semantically segmented areas, consisting of >80k single-unit apartments across Asia." (van Engelenburg et al., 2023, p.5)
 - 源文件：第 27 行

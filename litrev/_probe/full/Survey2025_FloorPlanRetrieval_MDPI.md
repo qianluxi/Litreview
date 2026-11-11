@@ -19,8 +19,8 @@
 - 引文："Floor plan retrieval is then executed using tree editing distance as a metric for query similarity." (Ling et al., 2025, p.14)
 
 ## 5. 系统形态
-- 论断：该文是综述，考察这些特征检索方法并提出面向未来研究的融合技术。
-- 引文："This paper thoroughly examines these feature retrieval methods and introduces advanced fusion techniques to support future research" (Ling et al., 2025, p.23)
+- 论断：该文旨在全面考察建筑平面图特征检索技术的关键方面，涵盖语义、空间、纹理与形状特征，并强调其意义与潜在应用。
+- 引文："This paper aims to comprehensively investigate key aspects of building plan feature retrieval technology, including semantic, spatial, texture, and shape characteristics, while emphasizing their significance and potential applications." (Ling et al., 2025, p.3)
 
 ## 6. 评价方式
 - 论断：常用评价指标包括 accuracy、F1 score、mAP 与 Matthews 相关系数 MCC。

@@ -120,6 +120,12 @@
       "input": "litrev/_probe/audit/FIX_B2.md",
       "output": "litrev/_probe/audit/out_FIX_2.md",
       "note": "第二轮定点重判 31 条（A 情态加强 8 + B 术语属性添加 23）；不覆盖 out_*.md，输出名带下划线以避开 out_[A-Z]+<数字> 口径，不进 131 条汇总"
+    },
+    {
+      "id": "fix_b3",
+      "input": "litrev/_probe/audit/FIX_B3.md",
+      "output": "litrev/_probe/audit/out_FIX_3.md",
+      "note": "第三轮定点重判 13 条（C 引文截断 11 + E 方向不符 B1-06 + B1-08 改法错）：全部换成含主谓的完整引文，5 条论断同步最小改写；输出名带下划线，不进 131 条汇总"
     }
   ]
 }

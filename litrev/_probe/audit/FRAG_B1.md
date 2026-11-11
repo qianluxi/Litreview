@@ -3,7 +3,7 @@
 > 判定标准：`litrev/_probe/AUDIT_CONTRACT.md`（含第五节口径修订）。
 > 全部条目已通过 `verify`：逐字存在、页码为 PDF 物理页。**不要判真伪与页码**，只判论断层。
 > 不要读任何 PDF 或 `full/*.md`。只依据下面给出的论断与引文判定。
-> 快照 sha1: 18fb4ad3bc
+> 快照 sha1: 81c78be532
 
 输出：只输出表格 + 一行合计，行序与本文件条目顺序一致。
 
@@ -40,11 +40,11 @@
 - 引文："Learning e g the storage of new cases new rules and the application of techniques like Knuth Bendix completion to guarantee completeness of struc tural knowledge or learning of modi cation rule conditions or weights are not addressed in this implementation" (Borner, 1993, p.10)
 - 形式特征：未以句末标点结尾（源文件第 31 行）
 
-### B1-06 ・ Liao1998_SimilarityMeasures_CBR ・ 问题域 ・ p.13
+### B1-06 ・ Liao1998_SimilarityMeasures_CBR ・ 问题域 ・ p.2
 
-- 论断：该文的问题域是 CBR 案例检索中的相似度度量（通用方法），并以失效分析为示例应用领域。
-- 引文："analysis (Esaklul, 1990) is used to illustrate that applications with a mixture" (Liao et al., 1998, p.13)
-- 形式特征：首字母小写+未以句末标点结尾（源文件第 11 行）
+- 论断：该文以 CBR 案例检索中的相似度度量为主题，并以失效分析为示例应用领域。
+- 引文："This article focuses on the similarity measuring methods for CBR and comprises two parts. The rst part reviews the existing methods for measuring similarity in the literature based on more than 100 CBR project studies and some general similarity measures seen in other applications. In the second part, a hybrid similarity measure is proposed for comparing cases with a mixture of crisp and fuzzy features. Its application to the domain of failure analysis is illustrated." (Liao et al., 1998, p.2)
+- 形式特征：完整句（源文件第 11 行）
 
 ### B1-07 ・ Liao1998_SimilarityMeasures_CBR ・ 系统形态 ・ p.13
 
@@ -54,9 +54,9 @@
 
 ### B1-08 ・ MaherGomez1996_CBR_StructuralDesign ・ 问题域 ・ p.1
 
-- 论断：问题域是结构设计项目，关注的是这类项目上的信息。
-- 引文："information on structural design projects" (Maher and Gomez, 1996, p.1)
-- 形式特征：首字母小写+未以句末标点结尾（源文件第 11 行）
+- 论断：作者从结构设计项目的资料中定位案例来源，资料来自悉尼一家工程咨询公司。
+- 引文："We began our CBR projects by locating a source of information on structural design projects-a well-known engineering consulting firmthat has worked on many medium- to high-rise buildings in Sydney." (Maher and Gomez, 1996, p.1)
+- 形式特征：完整句（源文件第 11 行）
 
 ### B1-09 ・ MaherGomez1996_CBR_StructuralDesign ・ 系统形态 ・ p.2
 
@@ -78,9 +78,9 @@
 
 ### B1-12 ・ Zhang2006_BP_CaseRetrieval_HighriseStructureForm ・ 一句话主张 ・ p.1
 
-- 论断：作者主张所提出的智能案例检索方法能够克服现有案例检索方法的若干不足。
-- 引文："this intelligent CRM can overcome such shortcomings as poor learning ability, low searching efficiency and intelligent level, etc., providing comparatively more scientific method for the CRM of high-rise structure IFO." (Zhang, 2006, p.1)
-- 形式特征：首字母小写（源文件第 7 行）
+- 论断：作者主张该智能案例检索方法能克服学习能力差、检索效率低、智能水平不足等缺陷，并为高层结构 IFO 的案例检索提供更科学的方法。
+- 引文："The result shows. this intelligent CRM can overcome such shortcomings as poor learning ability, low searching efficiency and intelligent level, etc., providing comparatively more scientific method for the CRM of high-rise structure IFO." (Zhang, 2006, p.1)
+- 形式特征：完整句（源文件第 7 行）
 
 ### B1-13 ・ Zhang2006_BP_CaseRetrieval_HighriseStructureForm ・ 相似性或检索机制 ・ p.2
 

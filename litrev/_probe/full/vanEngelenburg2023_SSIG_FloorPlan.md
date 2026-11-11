@@ -24,7 +24,7 @@
 
 ## 6. 评价方式
 - 论断：评价使用 RPLAN 这一大规模平面图数据集，其含逾 80k 套带语义分割区域的亚洲单户公寓。
-- 引文："RPLAN is a large-scale dataset containing ﬂoor plan images with semantically segmented areas, consisting of >80k single-unit apartments across Asia." (van Engelenburg et al., 2023, p.5)
+- 引文："In this paper, RPLAN [26] is used for analysis and eval- uation. RPLAN is a large-scale dataset containing ﬂoor plan images with semantically segmented areas, consisting of >80k single-unit apartments across Asia." (van Engelenburg et al., 2023, p.5)
 
 ## 7. 明确写出的局限
 - 论断：作者明确写出本文只考察 IoU 与 GED，未考虑其他常见的图像与图相似度度量。

@@ -3,7 +3,7 @@
 > 判定标准：`litrev/_probe/AUDIT_CONTRACT.md`（含第五节口径修订）。
 > 全部条目已通过 `verify`：逐字存在、页码为 PDF 物理页。**不要判真伪与页码**，只判论断层。
 > 不要读任何 PDF 或 `full/*.md`。只依据下面给出的论断与引文判定。
-> 快照 sha1: 404680fbc0
+> 快照 sha1: 05632596fd
 
 输出：只输出表格 + 一行合计，行序与本文件条目顺序一致。
 
@@ -73,8 +73,8 @@
 ### B2-11 ・ SriramMaherFenves1985_KBES_StructuralDesign ・ 明确写出的局限 ・ p.19
 
 - 论断：作者指出实用实现需要专家系统开发工具，尤其在人机界面与解释能力方面。
-- 引文："expert system development tools, notably in the areas of user interfaces, explanation capabilities" (Sriram et al., 1985, p.19)
-- 形式特征：首字母小写+未以句末标点结尾（源文件第 30 行）
+- 引文："However, their full-scale practical implementation will require higher- level expert system development tools, notably in the areas of user interfaces, explanation capabilities and knowledge-acquisition capabilities." (Sriram et al., 1985, p.19)
+- 形式特征：完整句（源文件第 30 行）
 
 ### B2-12 ・ Zhang2006_BP_CaseRetrieval_HighriseStructureForm ・ 问题域 ・ p.1
 

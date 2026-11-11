@@ -4,8 +4,8 @@
 
 | # | 行 | 判定 | 标注 | 实际 | 引文 | 说明 |
 |---|---|---|---|---|---|---|
-| 1 | 7 | PASS | Liao et al. p.2 | Liao1998_SimilarityMeasures_CBR.pdf p.2 | applications. In the second part, a hybrid similarity measure is proposed for co |  |
-| 2 | 11 | PASS | Liao et al. p.13 | Liao1998_SimilarityMeasures_CBR.pdf p.13 | analysis (Esaklul, 1990) is used to illustrate that applications with a mixture |  |
+| 1 | 7 | PASS | Liao et al. p.3 | Liao1998_SimilarityMeasures_CBR.pdf p.3 | In part 2, a hybrid similarity measure is proposed to compare cases having a mix |  |
+| 2 | 11 | PASS | Liao et al. p.2 | Liao1998_SimilarityMeasures_CBR.pdf p.2 | This article focuses on the similarity measuring methods for CBR and comprises t |  |
 | 3 | 15 | PASS | Liao et al. p.14 | Liao1998_SimilarityMeasures_CBR.pdf p.14 | The attributes used to represent failure cases could be associated with |  |
 | 4 | 19 | PASS | Liao et al. p.17 | Liao1998_SimilarityMeasures_CBR.pdf p.17 | The area ratio method calculates the similarity between two fuzzy |  |
 | 5 | 23 | PASS | Liao et al. p.13 | Liao1998_SimilarityMeasures_CBR.pdf p.13 | than 20 years. A CBR system is being developed to store failure analysis |  |

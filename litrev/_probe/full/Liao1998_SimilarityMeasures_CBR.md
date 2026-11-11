@@ -4,11 +4,11 @@
 
 ## 1. 一句话主张
 - 论断：该文在第二部分提出一种混合相似度度量，用于案例之间的比较。
-- 引文："applications. In the second part, a hybrid similarity measure is proposed for comparing" (Liao et al., 1998, p.2)
+- 引文："In part 2, a hybrid similarity measure is proposed to compare cases having a mixture of crisp and fuzzy features." (Liao et al., 1998, p.3)
 
 ## 2. 问题域
-- 论断：该文的问题域是 CBR 案例检索中的相似度度量（通用方法），并以失效分析为示例应用领域。
-- 引文："analysis (Esaklul, 1990) is used to illustrate that applications with a mixture" (Liao et al., 1998, p.13)
+- 论断：该文以 CBR 案例检索中的相似度度量为主题，并以失效分析为示例应用领域。
+- 引文："This article focuses on the similarity measuring methods for CBR and comprises two parts. The rst part reviews the existing methods for measuring similarity in the literature based on more than 100 CBR project studies and some general similarity measures seen in other applications. In the second part, a hybrid similarity measure is proposed for comparing cases with a mixture of crisp and fuzzy features. Its application to the domain of failure analysis is illustrated." (Liao et al., 1998, p.2)
 
 ## 3. 案例或数据的表示形式
 - 论断：失效案例用属性来表示。

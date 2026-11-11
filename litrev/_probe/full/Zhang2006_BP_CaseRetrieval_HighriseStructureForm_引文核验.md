@@ -4,7 +4,7 @@
 
 | # | 行 | 判定 | 标注 | 实际 | 引文 | 说明 |
 |---|---|---|---|---|---|---|
-| 1 | 7 | PASS | Zhang p.1 | Zhang2006_BP_CaseRetrieval_HighriseStructureForm.pdf p.1 | this intelligent CRM can overcome such shortcomings as poor learning ability, lo |  |
+| 1 | 7 | PASS | Zhang p.1 | Zhang2006_BP_CaseRetrieval_HighriseStructureForm.pdf p.1 | The result shows. this intelligent CRM can overcome such shortcomings as poor le |  |
 | 2 | 11 | PASS | Zhang p.1 | Zhang2006_BP_CaseRetrieval_HighriseStructureForm.pdf p.1 | High-rise structural form selection optimization is an important strategic probl |  |
 | 3 | 15 | PASS | Zhang p.1 | Zhang2006_BP_CaseRetrieval_HighriseStructureForm.pdf p.1 | First, CBR needs to distinguish the characteristic attributes of the significant |  |
 | 4 | 19 | PASS | Zhang p.2 | Zhang2006_BP_CaseRetrieval_HighriseStructureForm.pdf p.2 | To solve this problem and to be able to take into consideration everything impor |  |

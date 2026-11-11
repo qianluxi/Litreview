@@ -3,8 +3,8 @@
 - 抽取范围：全文 p.1–p.5
 
 ## 1. 一句话主张
-- 论断：作者主张所提出的智能案例检索方法能够克服现有案例检索方法的若干不足。
-- 引文："this intelligent CRM can overcome such shortcomings as poor learning ability, low searching efficiency and intelligent level, etc., providing comparatively more scientific method for the CRM of high-rise structure IFO." (Zhang, 2006, p.1)
+- 论断：作者主张该智能案例检索方法能克服学习能力差、检索效率低、智能水平不足等缺陷，并为高层结构 IFO 的案例检索提供更科学的方法。
+- 引文："The result shows. this intelligent CRM can overcome such shortcomings as poor learning ability, low searching efficiency and intelligent level, etc., providing comparatively more scientific method for the CRM of high-rise structure IFO." (Zhang, 2006, p.1)
 
 ## 2. 问题域
 - 论断：研究问题为高层建筑结构形式选型优化。

@@ -8,7 +8,7 @@
 
 ## 2. 问题域
 - 论断：问题域是结构设计，尤其是其中不适合纯算法求解、常呈病构性的设计问题。
-- 引文："structural design are not amenable to purely algorithmic solutions. These problems are often ill-" (Sriram et al., 1985, p.4)
+- 引文："However, a number of problems encountered in structural design are not amenable to purely algorithmic solutions. These problems are often ill- structured, and an experienced engineer deals with them using his judgment and experience." (Sriram et al., 1985, p.4)
 
 ## 3. 案例或数据的表示形式
 - 论断：系统的过程性知识以产生式规则和 LISP 函数表示。
@@ -27,4 +27,4 @@
 
 ## 7. 明确写出的局限
 - 论断：作者指出实用实现需要专家系统开发工具，尤其在人机界面与解释能力方面。
-- 引文："expert system development tools, notably in the areas of user interfaces, explanation capabilities" (Sriram et al., 1985, p.19)
+- 引文："However, their full-scale practical implementation will require higher- level expert system development tools, notably in the areas of user interfaces, explanation capabilities and knowledge-acquisition capabilities." (Sriram et al., 1985, p.19)
