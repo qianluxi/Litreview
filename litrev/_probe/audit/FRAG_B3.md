@@ -3,7 +3,7 @@
 > 判定标准：`litrev/_probe/AUDIT_CONTRACT.md`（含第五节口径修订）。
 > 全部条目已通过 `verify`：逐字存在、页码为 PDF 物理页。**不要判真伪与页码**，只判论断层。
 > 不要读任何 PDF 或 `full/*.md`。只依据下面给出的论断与引文判定。
-> 快照 sha1: 18c979470b
+> 快照 sha1: e58bc1a19f
 
 输出：只输出表格 + 一行合计，行序与本文件条目顺序一致。
 
@@ -30,7 +30,7 @@
 
 ### B3-04 ・ Borner1993_StructuralSimilarity_CBR ・ 评价方式 ・ p.10
 
-- 论断：评价方式是报告初期实验结果对上述主张的支持，未给出数据集规模或指标数值。
+- 论断：评价方式是报告初期实验结果对上述主张的支持。
 - 引文："The initial experimental results support the claims that the proposed ap proach o ers improved adaptation facilities in synthesis tasks together with a greater overall explanation performance" (Borner, 1993, p.10)
 - 形式特征：未以句末标点结尾（源文件第 27 行）
 

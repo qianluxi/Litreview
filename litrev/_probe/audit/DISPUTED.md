@@ -294,7 +294,10 @@
 ### 补证据路径：第三次独立判定（单条 probe）
 
 - 造一份 `PROBE_R6-04.md`（只放本条论断/引文 + 契约指针，戳单独打），派 `auditor-probe-r6-04` 闭卷判一次，
-  输出 `out_P6.md`，**不覆盖 `out_R6.md`**、不进 138 条汇总（命名避开 `out_[A-Z]+\d+` 的陷阱见 RUNBOOK）。
+  输出 **`out_P_6.md`**，**不覆盖 `out_R6.md`**、不进 138 条汇总。
+  命名有坑：`audit-count` 的正则是 `^out_[A-Z]+\d+\.md$`，**写 `out_P6.md` 会被命中**（`P`+`6`）从而污染 138 口径，
+  必须带下划线写 `out_P_6.md`（2026-11-11 已用三条正则逐一实测：`IN_NAME` 只认 `FRAG_B*`/`REST_B*`、
+  `parse_outputs` 只认 `out_[BR]\d+`、`audit-count` 认 `out_[A-Z]+\d+`）。
 - 需要重启 OpenCode 一次（新 agent 只在启动时进注册表）。
 - 若第 3 次与第 1 次一致（`SUPPORTED` 2:1）→ 本条 `CLOSED`，**不改表**，把「②④ 可接受」写进契约 v1.3 待议；抽取端维持现状。
 - 若与第 2 次一致（`PARTIAL` 2:1）→ 本条 `CLOSED`，另起 `FIX_B6`（1 条）定点改判 + `reseal`，口径 `S136/P2/U0`；

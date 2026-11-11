@@ -23,7 +23,7 @@
 - 引文："SynTerm and SynGraph supply the system with solutions for special design problems" (Borner, 1993, p.9)
 
 ## 6. 评价方式
-- 论断：评价方式是报告初期实验结果对上述主张的支持，未给出数据集规模或指标数值。
+- 论断：评价方式是报告初期实验结果对上述主张的支持。
 - 引文："The initial experimental results support the claims that the proposed ap proach o ers improved adaptation facilities in synthesis tasks together with a greater overall explanation performance" (Borner, 1993, p.10)
 
 ## 7. 明确写出的局限

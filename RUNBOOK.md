@@ -246,8 +246,9 @@ python tools/audit_prep.py review             # 非 SUPPORTED 人工复核清单
   ② **人开卷裁决 vs 机器闭卷审计不一致**（2026-11-11 `D-03` 首次出现）——测的是**抽取端规则 9 的真实通过率**。
   第 ② 类**不许拿主控身份当多数票**：一律采信人判等于把「`measurement`→计算」这类常见译法也算越界，
   一律采信机器就永远看不到越界。两种都按「2 次 1:1 不足以裁 → 第三次独立判定（单条 probe）」走，D-01 先例。
-  实操要点：probe 输出文件避开 `out_[A-Z]+\d+`（写 `out_P6.md` 而不是 `out_P06.md`），**不覆盖原 `out_<批次>.md`**、
-  不进 `audit-count` 汇总；新 agent 要重启 OpenCode。
+  实操要点：probe 输出文件必须**带下划线**写 `out_P_6.md`——`audit-count` 的正则是 `^out_[A-Z]+\d+\.md$`，
+  所以 `out_P6.md` 会被当成一个批次算进汇总（`P`+`6`），而 `out_P_6.md` 不会。同理 `out_FIX_5.md` 进不进、`out_FIX5.md` 进。
+  另：**不覆盖原 `out_<批次>.md`**、不进 `audit-count` 汇总；新 agent 要重启 OpenCode。
 - 抽检结论写进 `reports/`：命中率、方向、差异条目、是否补证据、裁决结果。`out_S1.md` 不进 131 条汇总（`audit-count` 默认前缀 B,R）。
 
 ### 金标准（判得对的参照系，2026-11-10 加入）
