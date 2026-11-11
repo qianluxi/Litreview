@@ -8,7 +8,7 @@
 |---|---|---|
 | `AamodtPlaza1994_CBR_Foundations` | —（卡片已存在） | `qx-aamodtplaza1994-cbr-foundations` |
 | `Ahmed2013_Analysis_SketchRetrieval_FloorPlans` | —（卡片已存在） | `qx-ahmed2013-analysis-sketchretrieval-floorplans` |
-| `Ayzenshtadt2016_ThinkingWithContainers_ICAART` | `ex-ayzenshtadt2016-thinkingwithcontainers-icaart` | `qx-ayzenshtadt2016-thinkingwithcontainers-icaart` |
+| `Ayzenshtadt2016_ThinkingWithContainers_ICAART` | —（卡片已存在） | `qx-ayzenshtadt2016-thinkingwithcontainers-icaart` |
 | `Borner1993_StructuralSimilarity_CBR` | —（卡片已存在） | `qx-borner1993-structuralsimilarity-cbr` |
 | `delasHeras2014_RunlengthHistogram_FloorPlans` | —（卡片已存在） | `qx-delasheras2014-runlengthhistogram-floorplans` |
 | `Gu2024_ShearWall_Diffusion` | —（卡片已存在） | `qx-gu2024-shearwall-diffusion` |
@@ -55,6 +55,7 @@
 | `fix_b2` | `auditor-fix-b2` | `litrev/_probe/audit/FIX_B2.md` | `litrev/_probe/audit/out_FIX_2.md` | 第二轮定点重判 31 条（A 情态加强 8 + B 术语属性添加 23）；不覆盖 out_*.md，输出名带下划线以避开 out_[A-Z]+<数字> 口径，不进 131 条汇总 |
 | `fix_b3` | `auditor-fix-b3` | `litrev/_probe/audit/FIX_B3.md` | `litrev/_probe/audit/out_FIX_3.md` | 第三轮定点重判 13 条（C 引文截断 11 + E 方向不符 B1-06 + B1-08 改法错）：全部换成含主谓的完整引文，5 条论断同步最小改写；输出名带下划线，不进 131 条汇总 |
 | `fix_b4` | `auditor-fix-b4` | `litrev/_probe/audit/FIX_B4.md` | `litrev/_probe/audit/out_FIX_4.md` | 第四轮定点重判 2 条（B3-01 情态升级、B3-05 对象限定被删）：引文一字未动，只改论断；输出名带下划线，不进 131 条汇总 |
+| `rest_b6` | `auditor-rest-b6` | `litrev/_probe/audit/REST_B6.md` | `litrev/_probe/audit/out_R6.md` | 第 2 步新文献端到端：Ayzenshtadt2016 七节首次审计（7 条）；REST_B6 按新卡片生成，out_R6.md 首次把一篇新文献收进判定表（131→138） |
 
 ## 固定角色
 

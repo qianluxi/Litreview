@@ -188,6 +188,19 @@ def picks_in(path):
     return (ids or None), meta
 
 
+def frozen_total(recs, keys_path):
+    """抽样时点的判定表条目数：清单里冻了 total 就用它，否则用当前规模（首次抽样时）。
+
+    存在理由：`build_*` 头部那行「判定表总条目」是抽样时点的展示元信息，不是判定依据。
+    判定表后来新增文献（REST_B6 让 131→138）不该让已冻结的抽检/金标准/判例集被判
+    「与复算不一致」——那等于逼人重填人开的卷。与 picks 清单同源：元信息也冻结在清单层。
+    """
+    snap, meta = picks_in(keys_path)
+    if snap and "total" in meta:
+        return int(meta["total"])
+    return len(recs)
+
+
 def recorded_rows(path):
     """从已有答案键的对照表读回「抽样时点原判」：原批次 id → (支撑, 自足, 依据, 缺什么)。"""
     out = {}
@@ -237,7 +250,7 @@ def build_sample(recs, picked, pool_n, k, rate, seed, name="S1"):
         "",
         "| 项 | 数 |",
         "|---|---|",
-        f"| 判定表总条目 | {len(recs)} |",
+        f"| 判定表总条目 | {frozen_total(recs, KEYS)} |",
         f"| 候选条目 | {pool_n} |",
         f"| 抽检条目 | {k} |",
         f"| 抽检比例 | {k/pool_n:.1%} |",
@@ -261,15 +274,17 @@ def build_sample(recs, picked, pool_n, k, rate, seed, name="S1"):
 
 
 def build_keys(recs, picked, pool_n, k, rate, seed, stamps, st, name="S1"):
+    total = frozen_total(recs, KEYS)
     lines = [
         f"# {name} 答案键（主控侧留档）",
         "",
         f"> 由 `python tools/audit_prep.py sample` 生成，与 `SAMPLE_{name}.md` 同源。",
-        f"> 判定表总条目 {len(recs)} · 抽样时点 SUPPORTED {pool_n} · 抽 {k} 条（{k/pool_n:.1%}）· seed={seed} rate={rate:.0%}。",
+        f"> 判定表总条目 {total} · 抽样时点 SUPPORTED {pool_n} · 抽 {k} 条（{k/pool_n:.1%}）· seed={seed} rate={rate:.0%}。",
         f"> 输入快照戳：`{st}`",
         "> **本文件是答案键：禁止贴给任何 `auditor-*`，也不要登记进 `BATCHES.json`。**",
         "> 审计员的 read 白名单只有「契约 + 本批输入」，它读不到本文件；主控也不要在派发提示词里引用它。",
-        picks_line([r["id"] for r in picked], pool=pool_n, k=k, seed=seed, rate=f"{rate:g}"),
+        picks_line([r["id"] for r in picked], pool=pool_n, k=k, seed=seed,
+                   rate=f"{rate:g}", total=total),
         "",
         "## 抽样算法（可复现）",
         "",
@@ -742,17 +757,18 @@ def build_golden(recs, picked, arch=None, heads=None):
 
 
 def build_golden_map(recs, picked, st, arch=None):
+    total = frozen_total(recs, GOLDEN_MAP)
     lines = [
         "# G1 金标准映射（主控侧留档，不贴给任何人）",
         "",
         "> 由 `python tools/audit_prep.py golden` 生成，与 `GOLDEN.md` 同源。",
-        f"> 判定表总条目 {len(recs)} · 分层抽 {len(picked)} 条 · seed=43。",
+        f"> 判定表总条目 {total} · 分层抽 {len(picked)} 条 · seed=43。",
         f"> 输入快照戳：`{st}`",
         "> **本文件是答案键**：记录每条 G id 对应的原批次 id 与原判定。判定者填 `GOLDEN.md` 时读不到本文件。",
         "> 人填完后跑 `python tools/audit_prep.py verify-golden` 比对，输出一致率与方向分布。",
         "> 下方 `<!-- picks -->` 是冻结清单：判定表事后被裁决修改，本文件不失效，`golden --check` 仍按抽样时点复现。",
         "",
-        picks_line([r["id"] for r in picked]),
+        picks_line([r["id"] for r in picked], total=total),
         "",
         "## 对照表（G id → 原判定）",
         "",
@@ -1085,17 +1101,18 @@ def cases_archive():
 
 
 def build_cases_map(recs, picked, st, arch=None):
+    total = frozen_total(recs, CASES_MAP)
     lines = [
         "# C1 自足轴判例集映射（主控侧留档，不贴给任何人）",
         "",
         "> 由 `python tools/audit_prep.py cases` 生成，与 `CASES_SELF.md` 同源；条目清单来自 `CASES_SELF_IDS.txt`。",
-        f"> 判定表总条目 {len(recs)} · 本集 {len(picked)} 条（表内 DEPENDENT 10 + 双跑边界 10）。",
+        f"> 判定表总条目 {total} · 本集 {len(picked)} 条（表内 DEPENDENT 10 + 双跑边界 10）。",
         f"> 输入快照戳：`{st}`",
         "> **本文件是答案键**：记录每条 C id 对应的原批次 id 与表内现判；判定者填表时读不到本文件。",
         "> 人填完后跑 `python tools/audit_prep.py verify-cases`，输出自足轴一致率与方向。",
         "> 下方 `<!-- picks -->` 是冻结清单：判定表事后被裁决修改，本文件不失效，`cases --check` 仍按清单复现。",
         "",
-        picks_line([r["id"] for r in picked]),
+        picks_line([r["id"] for r in picked], total=total),
         "",
         "## 对照表（C id → 表内现判）",
         "",

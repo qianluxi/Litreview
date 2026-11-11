@@ -132,6 +132,12 @@
       "input": "litrev/_probe/audit/FIX_B4.md",
       "output": "litrev/_probe/audit/out_FIX_4.md",
       "note": "第四轮定点重判 2 条（B3-01 情态升级、B3-05 对象限定被删）：引文一字未动，只改论断；输出名带下划线，不进 131 条汇总"
+    },
+    {
+      "id": "rest_b6",
+      "input": "litrev/_probe/audit/REST_B6.md",
+      "output": "litrev/_probe/audit/out_R6.md",
+      "note": "第 2 步新文献端到端：Ayzenshtadt2016 七节首次审计（7 条）；REST_B6 按新卡片生成，out_R6.md 首次把一篇新文献收进判定表（131→138）"
     }
   ]
 }
