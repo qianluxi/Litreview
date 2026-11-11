@@ -337,6 +337,41 @@ python tools/audit_prep.py verify-cases    # 自足轴一致率 + 方向 + 表�
 契约 **v1.2 §八**（自足轴三族边界：篇章自指 → `SELF`、形式主语 → `SELF`、回指前文 → 看先行词、片段 → `DEPENDENT`）。
 两轴总量不变（`S80/P50/U1 · SELF118/D13`），落表后「按当前判定表复算」= 20/20。
 
+### 补抽（新增一批，2026-11-11 round-28 加入）
+
+分母见底的解法**不是重抽**（会毁掉清单同源性、逼人重填），而是**另起一批**：
+
+```bash
+# 判例集补抽：读 CASES_SELF_<NAME>_IDS.txt，写 CASES_SELF_<NAME>.md + CASES_SELF_<NAME>_KEYS.md
+python tools/audit_prep.py cases --name C2
+python tools/audit_prep.py cases --name C2 --check      # 按清单复现
+python tools/audit_prep.py verify-cases --name C2       # 人填完后比对
+
+# 抽检补抽：排除上一批已抽中的 id，直接指定条数
+python tools/audit_prep.py sample --name S2 --k 12 --seed 71 --exclude SAMPLE_S1_KEYS.md
+python tools/audit_prep.py sample --name S2 --check
+python tools/audit_prep.py verify-sample --name S2      # 派 auditor-sample-s<NAME> 回写后验收
+```
+
+- 默认名（`S1` / `C1`）**沿用历史文件名**：不带 `--name` 时行为与之前逐字相同（改工具后 `check.py` 仍 11/11 绿是硬要求）。
+- 抽检批次要进 `BATCHES.json`（`sample_s2 | SAMPLE_S2.md -> out_S2.md`），生成器才会产出 `auditor-sample-s2`
+  → **需要重启 OpenCode**。`out_S2.md` 不进 `audit-count` 默认口径（前缀 `B,R`）。
+- **两个坑（都实测过）**：
+  1. `--check` 必须按**生成时点**的 `seed` / `rate` 复现，不能吃命令行默认值。曾用默认 `seed=42` 复算 `seed=71` 的批次，
+     头部 `seed=` 对不上 → 误报「与冻结清单不一致」。已在 `cmd_sample` 里改成从 `<!-- picks: seed=… -->` 取回。
+  2. **清单行序会泄露分组**：若「阳性全查」排在前面、且逐行写着「表内 DEPENDENT」，等于把答案递给判定者。
+     `CASES_SELF_C2_IDS.txt` 已用 `random.Random(47).sample(range(n), n)` 打散（**不要套 `sorted()`**，那等于还原原序），
+     逐行理由中性化，分组只记在主控侧答案键里。
+
+**C2 口径（14 条，2026-11-11）**：先做了**读数纠正**——「表内 DEPENDENT 阳性只确认 3 条」是误记，
+那是**金标准单份**的 DEP 数。按三份合并重算：表内 13 条 `DEPENDENT` 已被金标准 3 条（`B1-12/B3-13/R5-06`）
+与 C1 有效样本 8 条（`B1-16/B2-11/B3-09/R2-02/R2-17/R3-08/R3-12/R4-13`）确认 **11 条**，只剩 **2 条**（`B1-09`/`B2-10`）没被人判过。
+所以 C2 **不重复 C1 的「13 条全查」**，改为：A 未确认阳性 **全查 2 条** + B 从未进过任何参考集（G1∪C1∪S1）的 `SELF`
+按 `seed=47` 抽 **12 条**做阴性对照（池 85）——补的是「假阴性率完全没测」这个真空白，工作量从 25 条降到 14 条。
+
+**S2 口径（12 条，2026-11-11）**：从排除 S1 后的 128 条 `SUPPORTED` 池抽 12 条（9.4%，`seed=71`），
+测自洽/漂移。与 G1/C1 有 4 条重叠（`B1-07/B1-16/B3-13/R3-10`）**是特意保留的**：同一批里可直接比机器与人的判定。
+
 ### 非 SUPPORTED 复核（契约 §五.3：任何非 SUPPORTED 必须人看）
 
 ```bash
@@ -413,6 +448,10 @@ python tools/audit_prep.py verify-review      # 机械汇总：填写率 / 维�
    自足 10/12、**表内 DEPENDENT 阳性确认仅 2/3**）、抽检 10/10。15 条的一致率只能当粗估，3 条阳性样本几乎没有统计意义。
    **补抽 + 人开卷重判是硬需求**，且必须是「新增一批」而不是重抽现有冻结清单（`--check` 按 `<!-- picks -->` 复现，重抽会毁掉同源性）。
    差异一律登记 `DISPUTED.md` → 冻结汇总 → 补证据 → 人工裁决，禁止整批重审或逐条凑数。
+   **补抽第一批已就位（2026-11-11 round-28，`--name` 机制见 §五「补抽」）**：`S2` 12 条（待派 `auditor-sample-s2`）、
+   `C2` 14 条（2 未确认阳性 + 12 阴性对照，**待人开卷填**）。金标准本轮**不补**——表内 `P0/U0`，新一批只能抽 `SUPPORTED`，
+   只能测过松率，且人判出的 `PARTIAL` 会立刻变成需 v1.3 裁决的新分歧，优先级低于自足轴缺口。
+   **口径纠正（同日）**：「阳性仅 3」是金标准单份的数字；三份合并后表内 13 条 `DEPENDENT` 已确认 **11 条**，只剩 2 条未验。
 11. **`B3-04` 口径已定（选 A）并落地（2026-11-11，round-27 收口）**：原论断「……未给出数据集规模或指标数值」是证明否定，
    需穷尽全库才能证，一条引文永远证不完，天然只能 `PARTIAL`。两案 A（删半句）/ B（承认天然 `PARTIAL` 留账），
    用户选 **A**：卡片 §6 删「，未给出数据集规模或指标数值」，**引文一字未动**（`Borner1993` 是 Type3 字体，连字缺失不能补字母）。
@@ -460,3 +499,4 @@ python tools/audit_prep.py verify-review      # 机械汇总：填写率 / 维�
 | 2026-11-11 | **FIX_B4 收口（`reports/round-22-fixb4-reseal.md`）**：2 条论断改稿后定点重判 → `reseal` 重封 `B3`，口径 `S128/P3/U0 → S130/P1/U0`（非 SUPPORTED 2.3%→0.8%），`check.py` 11/11 绿；四轮里首次精确命中上限。表头定案落到批次模板，本轮零返工。新增 §三附之二「依据列是定位锚点、不是覆盖度证明」条款（`B3-05` 填 `similarity` 暴露的规则天花板：穷举显示 ≤15 字符下无片段能覆盖论断全部核心成分），§七 补第 10/11 条残余风险（参考集分母 15/12/10 见底、`B3-04` 证明否定口径待定） |
 | 2026-11-11 | **新文献端到端收官（`reports/round-25-rest-b6.md`）**：`Ayzenshtadt2016` 抽取 → `REST_B6`（戳 `7cb35452e0`）→ `out_R6`，判定表**首次真正扩容 131 → 138**。修 `audit_prep` 的判定表扩容隐患：`build_*` 用 `len(recs)` 写「判定表总条目」，131→138 会让三份冻结答案键复算失配、逼人重填人开卷表 → 加 `frozen_total()` 从 `<!-- picks: total=131,… -->` 读抽样时点规模（人填表零改动、戳不变）。新文献红项时序从预测变实证：抽取后红 2 → 登记批次后红 4 → 戳同源后 11/11 绿。登记 `D-03`（人开卷 vs 机器闭卷首次实战） |
 | 2026-11-11 | **`B3-04` 选 A 落地 + `D-03` 收口（`reports/round-27-b3-04-d03.md`）**：卡片 §6 删证明否定半句（引文未动）→ `FRAG_B3` `18c979470b→e58bc1a19f` → `FIX_B5`（`3106b1c52a`）→ `out_FIX_5` → `reseal` → 口径 **`S138/P0/U0`**、非 SUPPORTED `0/138`、`check.py` **11/11 绿**。`D-03` 第三次单条 probe（`out_P_6.md`，戳 `03897de76d`）判 `SUPPORTED`，命中事前登记的 `2:1 → CLOSED` 分支：**表不动、不新起 `FIX_B6`**，问题转 v1.3 待议。同时确认第三次票**不是独立票**（同仪器 + 同一 `every attribute` 锚点，无一字触及争议成分）→ §七 第 13 条。新增判据「框架词是否由模板规定」→ §七 第 12 条 |
+| 2026-11-11 | **补抽第一批（`reports/round-28-refill.md`）**：`audit_prep.py` 加 `--name`（参考集另起一批，默认名行为不变）与 `--k`/`--exclude`（补抽不重叠）；`check.py` 11→**13 项**（新增 `sample S2` / `cases C2` 自检）。`C2` 14 条 = 2 条未确认 DEP 全查 + 12 条从未进参考集的 SELF（seed=47，阴性对照，池 85）；`S2` 12 条（seed=71，排除 S1，池 128），`BATCHES.json` 注册 `sample_s2` 并生成 `auditor-sample-s2`（**需重启**）。**读数纠正**：「阳性仅 3」实为金标准单份数字，三份合并后 13 条 DEP 已确认 11 条。两个坑：`--check` 必须按清单冻结的 seed/rate 复现（默认 42 会误报）；清单行序要打散，否则位置泄露分组 |

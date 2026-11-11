@@ -41,6 +41,51 @@ KEYS = AUDIT / "SAMPLE_S1_KEYS.md"
 REVIEW = AUDIT / "REVIEW_NONSUPPORTED.md"
 OUT_S1 = AUDIT / "out_S1.md"
 
+# ---- 参考集批次切换（2026-11-11 加入）----
+# 理由：参考集分母见底后要「新增一批」，而项目规则禁止重抽已冻结的清单，
+# 所以只能另起文件。默认名（S1/C1）沿用历史文件名 ⇒ 不带 --name 时行为与之前逐字相同。
+BATCH_NAME = "S1"
+CASE_TAG = "C1"
+
+
+def apply_batch(kind, name):
+    """把参考集路径切到指定批次。只在 cmd_* 入口调用一次。"""
+    global SAMPLE, KEYS, OUT_S1, CASE_TAG, CASES, CASES_MAP, CASES_IDS, BATCH_NAME
+    if not name:
+        return
+    n = name.strip().upper()
+    BATCH_NAME = n
+    if kind == "sample":
+        if n != "S1":
+            SAMPLE = AUDIT / f"SAMPLE_{n}.md"
+            KEYS = AUDIT / f"SAMPLE_{n}_KEYS.md"
+            OUT_S1 = AUDIT / f"out_{n}.md"
+    elif kind == "cases":
+        CASE_TAG = n
+        if n != "C1":
+            CASES = AUDIT / f"CASES_SELF_{n}.md"
+            CASES_MAP = AUDIT / f"CASES_SELF_{n}_KEYS.md"
+            CASES_IDS = AUDIT / f"CASES_SELF_{n}_IDS.txt"
+
+
+def read_exclude(spec):
+    """`--exclude a.md,b.md`：从既有参考集读 id，补抽不与上一批重叠（可加性）。"""
+    ids = set()
+    for part in (spec or "").split(","):
+        part = part.strip()
+        if not part:
+            continue
+        p = Path(part) if Path(part).is_absolute() else AUDIT / part
+        if not p.exists():
+            sys.exit(f"[!] --exclude 指定的文件不存在：{part}")
+        snap, _ = picks_in(p)
+        if snap:
+            ids.update(snap)
+        else:
+            ids.update(re.findall(r"^###\s+([A-Z]+\d+-\d+)\s*・",
+                                  p.read_text(encoding="utf-8"), re.M))
+    return ids
+
 IN_NAME = re.compile(r"^FRAG_B(\d+)\.md$|^REST_B(\d+)\.md$")
 HEAD = re.compile(r"^###\s+(\S+)\s*・\s*(\S+)\s*・\s*(\S+)\s*・\s*(\S+)\s*$")
 ROW_ID = re.compile(r"^\|\s*([A-Z]+\d+-\d+)\s*\|")
@@ -137,9 +182,17 @@ def load():
     return recs, stamps
 
 
-def pick(recs, rate, seed):
-    pool = [r for r in recs if r["support"] == "SUPPORTED"]
-    k = max(1, min(len(pool), round(len(pool) * rate)))
+def pick(recs, rate, seed, exclude=(), k=None):
+    """从当前 SUPPORTED 池抽样。
+
+    exclude：补抽时排除上一批已抽中的 id（可加性，不重复消耗同一批条目）。
+    k：直接指定条数（补抽更可控），优先于 rate。
+    """
+    pool = [r for r in recs if r["support"] == "SUPPORTED" and r["id"] not in set(exclude)]
+    if k is None:
+        k = max(1, min(len(pool), round(len(pool) * rate)))
+    else:
+        k = max(1, min(len(pool), int(k)))
     idx = sorted(random.Random(seed).sample(range(len(pool)), k))
     return pool, [pool[j] for j in idx], k
 
@@ -331,22 +384,31 @@ def key_stamps(path):
 
 
 def cmd_sample(args):
+    apply_batch("sample", getattr(args, "name", None))
     recs, stamps = load()
     picked = meta = drift = None
     hist_stamps = {}
+    rate = getattr(args, "rate", 0.12)
+    seed = getattr(args, "seed", 42)
     if args.check:
-        picked, meta, extra = frozen_picks(recs, KEYS, args.seed)
+        picked, meta, extra = frozen_picks(recs, KEYS, seed)
         drift = extra.get("drift", []) if extra else []
         hist_stamps = key_stamps(KEYS)      # 抽样时点的批次戳，不随后来重封漂移
     if picked is None:
-        pool, picked, k = pick(recs, args.rate, args.seed)
+        pool, picked, k = pick(recs, rate, seed,
+                               exclude=read_exclude(getattr(args, "exclude", None)),
+                               k=getattr(args, "k", None))
         pool_n = len(pool)
+        if pool_n:
+            rate = k / pool_n               # 用 --k 时回算比例，文件里的说明才与事实一致
     else:
         pool_n = int((meta or {}).get("pool", len(picked)))
         k = int((meta or {}).get("k", len(picked)))
-    text, st = build_sample(recs, picked, pool_n, k, args.rate, args.seed)
-    keys = build_keys(recs, picked, pool_n, k, args.rate, args.seed,
-                      hist_stamps or stamps, st)
+        rate = float((meta or {}).get("rate", rate))   # 自检：按生成时点的比例复现
+        seed = int((meta or {}).get("seed", seed))     # 自检：seed 也必须按生成时点复现
+    text, st = build_sample(recs, picked, pool_n, k, rate, seed, name=BATCH_NAME)
+    keys = build_keys(recs, picked, pool_n, k, rate, seed,
+                      hist_stamps or stamps, st, name=BATCH_NAME)
     if args.check:
         bad = []
         for path, want in ((SAMPLE, text), (KEYS, keys)):
@@ -375,7 +437,8 @@ def cmd_sample(args):
     print(f"判定表 {len(recs)} 条 · SUPPORTED {pool_n} 条 · 抽 {k} 条（{k/pool_n:.1%}，seed={args.seed}）")
     print(f"输入：{rel(SAMPLE)}  > 快照 sha1: {st}")
     print(f"答案键：{rel(KEYS)}（禁止贴给 auditor-*）")
-    print("下一步：python tools/gen_subagents.py --check → 在 OpenCode 里派一次 auditor-sample-s1")
+    print("下一步：python tools/gen_subagents.py --check → 在 OpenCode 里派一次 "
+          f"auditor-sample-{BATCH_NAME.lower()}")
     return 0
 
 
@@ -535,9 +598,10 @@ def contract_header():
 
 
 def cmd_verify_sample(args):
+    apply_batch("sample", getattr(args, "name", None))
     recs, _ = load()
     if not OUT_S1.exists():
-        sys.exit(f"[!] 没有 {OUT_S1.name}，先派 auditor-sample-s1")
+        sys.exit(f"[!] 没有 {OUT_S1.name}，先派 auditor-sample-{BATCH_NAME.lower()}")
     if not KEYS.exists():
         sys.exit("[!] 没有答案键，先跑 sample")
     keys = KEYS.read_text(encoding="utf-8")
@@ -1028,12 +1092,12 @@ def read_case_ids():
 
 def build_cases(recs, picked, st_hint=None, arch=None, heads=None):
     head = [
-        f"# 自足轴判例集 C1（{len(picked)} 条，开卷裁定）",
+        f"# 自足轴判例集 {CASE_TAG}（{len(picked)} 条，开卷裁定）",
         "",
-        f"> 由 `python tools/audit_prep.py cases` 生成；条目清单见 `CASES_SELF_IDS.txt`（冻结，抽完不再重抽）。",
+        f"> 由 `python tools/audit_prep.py cases` 生成；条目清单见 `{CASES_IDS.name}`（冻结，抽完不再重抽）。",
         "> **这是给人填的表**：不进 `BATCHES.json`、不生成 agent、`auditor-*` 的 read 白名单不含本文件。",
         "> 只判**自足轴**：论断脱离引文与上下文能不能独立读懂。可读卡片原文（开卷），但不要读 `out_*.md`、",
-        "> `SAMPLE_S1_KEYS.md`、`GOLDEN.md`、`CASES_SELF_KEYS.md`。",
+        f"> `SAMPLE_S1_KEYS.md`、`GOLDEN.md`、`{CASES_MAP.name}`。",
         "> 填法：每行填 自足（`SELF` / `DEPENDENT`）、引文里的依据（≤15 字，必须是引文原词）、",
         "> 缺什么（`DEPENDENT` 必须写明缺的是哪个指代/专有名词；`SELF` 填 `—`）。",
         "> 快照 sha1: __STAMP__",
@@ -1102,11 +1166,15 @@ def cases_archive():
 
 def build_cases_map(recs, picked, st, arch=None):
     total = frozen_total(recs, CASES_MAP)
+    dep_n = sum(1 for r in picked if r["self"] == "DEPENDENT")
+    # C1 的说明文字已冻结在人判材料里，逐字保留；新批次按实际构成写。
+    scope = ("表内 DEPENDENT 10 + 双跑边界 10" if CASE_TAG == "C1"
+             else f"表内 DEPENDENT {dep_n} + 阴性对照 {len(picked) - dep_n}")
     lines = [
-        "# C1 自足轴判例集映射（主控侧留档，不贴给任何人）",
+        f"# {CASE_TAG} 自足轴判例集映射（主控侧留档，不贴给任何人）",
         "",
-        "> 由 `python tools/audit_prep.py cases` 生成，与 `CASES_SELF.md` 同源；条目清单来自 `CASES_SELF_IDS.txt`。",
-        f"> 判定表总条目 {total} · 本集 {len(picked)} 条（表内 DEPENDENT 10 + 双跑边界 10）。",
+        f"> 由 `python tools/audit_prep.py cases` 生成，与 `{CASES.name}` 同源；条目清单来自 `{CASES_IDS.name}`。",
+        f"> 判定表总条目 {total} · 本集 {len(picked)} 条（{scope}）。",
         f"> 输入快照戳：`{st}`",
         "> **本文件是答案键**：记录每条 C id 对应的原批次 id 与表内现判；判定者填表时读不到本文件。",
         "> 人填完后跑 `python tools/audit_prep.py verify-cases`，输出自足轴一致率与方向。",
@@ -1139,6 +1207,7 @@ def build_cases_map(recs, picked, st, arch=None):
 
 
 def cmd_cases(args):
+    apply_batch("cases", getattr(args, "name", None))
     recs, _ = load()
     by_id = {r["id"]: r for r in recs}
     drift = []
@@ -1196,7 +1265,8 @@ def cmd_cases(args):
     print(f"自足轴判例集 {len(picked)} 条（表内 DEPENDENT {dep} / SELF {len(picked)-dep}）")
     print(f"待填表：{rel(CASES)}  > 快照 sha1: {st}")
     print(f"答案键：{rel(CASES_MAP)}（禁止贴给任何人）")
-    print("下一步：人填 CASES_SELF.md → python tools/audit_prep.py verify-cases")
+    print(f"下一步：人填 {CASES.name} → python tools/audit_prep.py verify-cases"
+          + ("" if CASE_TAG == "C1" else f" --name {CASE_TAG}"))
     return 0
 
 
@@ -1231,6 +1301,7 @@ def cmd_cases_migrate(args):
 
 
 def cmd_verify_cases(args):
+    apply_batch("cases", getattr(args, "name", None))
     if not CASES.exists() or not CASES_MAP.exists():
         print("✗ 缺 CASES_SELF.md 或 CASES_SELF_KEYS.md（先跑 python tools/audit_prep.py cases）")
         return 1
@@ -1325,6 +1396,9 @@ def main():
     p = sub.add_parser("sample", help="生成 SUPPORTED 抽检批次 + 答案键")
     p.add_argument("--rate", type=float, default=0.12)
     p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--name", help="批次名（默认 S1；补抽用 S2 等，写到 SAMPLE_<NAME>.md）")
+    p.add_argument("--k", type=int, help="直接指定抽几条（补抽用，优先于 --rate）")
+    p.add_argument("--exclude", help="排除既有答案键里的 id（逗号分隔，保证补抽不重叠）")
     p.add_argument("--check", action="store_true", help="复算并比对现有文件，不写盘")
     p.set_defaults(func=cmd_sample)
     p = sub.add_parser("review", help="生成非 SUPPORTED 人工复核清单")
@@ -1333,6 +1407,7 @@ def main():
     p = sub.add_parser("verify-review", help="汇总非 SUPPORTED 复核结论（填写率 / 维持 / 改判）")
     p.set_defaults(func=cmd_verify_review)
     p = sub.add_parser("verify-sample", help="审计员回写 out_S1.md 后机械验收")
+    p.add_argument("--name", help="批次名（默认 S1）")
     p.set_defaults(func=cmd_verify_sample)
     p = sub.add_parser("golden", help="生成人工金标准 GOLDEN.md + 答案键 GOLDEN_MAP.md")
     p.add_argument("--seed", type=int, default=43)
@@ -1347,11 +1422,13 @@ def main():
     p.add_argument("--pair", default="R:D", help="原判前缀:双跑前缀，默认 R:D；frag 双跑用 B:E")
     p.set_defaults(func=cmd_diff_dup)
     p = sub.add_parser("cases", help="生成自足轴判例集 CASES_SELF.md（人判，条目由 IDS 清单冻结）")
+    p.add_argument("--name", help="批次名（默认 C1；补抽用 C2 等，读 CASES_SELF_<NAME>_IDS.txt）")
     p.add_argument("--check", action="store_true", help="复算并比对现有文件，不写盘")
     p.set_defaults(func=cmd_cases)
     p = sub.add_parser("cases-migrate", help="给旧版 CASES_SELF_KEYS.md 补写原文存档节（不动 CASES_SELF.md）")
     p.set_defaults(func=cmd_cases_migrate)
     p = sub.add_parser("verify-cases", help="人填完 CASES_SELF.md 后比对表内现判，输出自足轴一致率")
+    p.add_argument("--name", help="批次名（默认 C1）")
     p.set_defaults(func=cmd_verify_cases)
     args = ap.parse_args()
     return args.func(args)

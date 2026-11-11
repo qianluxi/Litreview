@@ -61,6 +61,8 @@ CHECKS = [
     ("audit_prep sample --check", [PY, "tools/audit_prep.py", "sample", "--check"]),
     ("audit_prep golden --check", [PY, "tools/audit_prep.py", "golden", "--check"]),
     ("audit_prep cases --check", [PY, "tools/audit_prep.py", "cases", "--check"]),
+    ("audit_prep sample S2 --check", [PY, "tools/audit_prep.py", "sample", "--name", "S2", "--check"]),
+    ("audit_prep cases C2 --check", [PY, "tools/audit_prep.py", "cases", "--name", "C2", "--check"]),
 ]
 
 

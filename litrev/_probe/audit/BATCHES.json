@@ -150,6 +150,12 @@
       "input": "litrev/_probe/audit/PROBE_R6-04.md",
       "output": "litrev/_probe/audit/out_P_6.md",
       "note": "D-03 第三次独立判定（R6-04 单条，闭卷盲判）：前两次人开卷 PARTIAL / 机器闭卷 SUPPORTED 为 1:1；不改判定表，只补齐多数票"
+    },
+    {
+      "id": "sample_s2",
+      "input": "litrev/_probe/audit/SAMPLE_S2.md",
+      "output": "litrev/_probe/audit/out_S2.md",
+      "note": "抽检补抽第二批 12 条（seed=71，排除 S1 已抽 10 条）：从 128 条 SUPPORTED 池抽 9.4%，测自洽/漂移；out_S2 不进 audit-count 默认口径（前缀 B,R）"
     }
   ]
 }
