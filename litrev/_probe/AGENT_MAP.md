@@ -10,9 +10,9 @@
 | `Ahmed2013_Analysis_SketchRetrieval_FloorPlans` | —（卡片已存在） | `qx-ahmed2013-analysis-sketchretrieval-floorplans` |
 | `Ayzenshtadt2016_ThinkingWithContainers_ICAART` | —（卡片已存在） | `qx-ayzenshtadt2016-thinkingwithcontainers-icaart` |
 | `Borner1993_StructuralSimilarity_CBR` | —（卡片已存在） | `qx-borner1993-structuralsimilarity-cbr` |
-| `Cao2025_SeismicSite_Reclamation` | `ex-cao2025-seismicsite-reclamation` | `qx-cao2025-seismicsite-reclamation` |
+| `Cao2025_SeismicSite_Reclamation` | —（卡片已存在） | `qx-cao2025-seismicsite-reclamation` |
 | `delasHeras2014_RunlengthHistogram_FloorPlans` | —（卡片已存在） | `qx-delasheras2014-runlengthhistogram-floorplans` |
-| `Gong2019_Hydrodynamics_SemiClosedBay` | `ex-gong2019-hydrodynamics-semiclosedbay` | `qx-gong2019-hydrodynamics-semiclosedbay` |
+| `Gong2019_Hydrodynamics_SemiClosedBay` | —（卡片已存在） | `qx-gong2019-hydrodynamics-semiclosedbay` |
 | `Gu2024_ShearWall_Diffusion` | —（卡片已存在） | `qx-gu2024-shearwall-diffusion` |
 | `Jiang2024_LLM_InteractiveDesign_Rhino7` | —（卡片已存在） | `qx-jiang2024-llm-interactivedesign-rhino7` |
 | `Liao1998_SimilarityMeasures_CBR` | —（卡片已存在） | `qx-liao1998-similaritymeasures-cbr` |
@@ -34,7 +34,7 @@
 | `Xia2025_CoDesign_ShearWallBeam_GNN` | —（卡片已存在） | `qx-xia2025-codesign-shearwallbeam-gnn` |
 | `Zhang2006_BP_CaseRetrieval_HighriseStructureForm` | —（卡片已存在） | `qx-zhang2006-bp-caseretrieval-highrisestructureform` |
 | `Zhao2023_ShearWall_GNN` | —（卡片已存在） | `qx-zhao2023-shearwall-gnn` |
-| `Zhou2023_SettlementPrediction_ANN` | `ex-zhou2023-settlementprediction-ann` | `qx-zhou2023-settlementprediction-ann` |
+| `Zhou2023_SettlementPrediction_ANN` | —（卡片已存在） | `qx-zhou2023-settlementprediction-ann` |
 
 ## 审计批次（批次级隔离：只能读本批输入、只能写本批输出）
 
@@ -69,6 +69,7 @@
 | `sample_s2` | `auditor-sample-s2` | `litrev/_probe/audit/SAMPLE_S2.md` | `litrev/_probe/audit/out_S2.md` | 抽检补抽第二批 12 条（seed=71，排除 S1 已抽 10 条）：从 128 条 SUPPORTED 池抽 9.4%，测自洽/漂移；out_S2 不进 audit-count 默认口径（前缀 B,R） |
 | `rest_b7` | `auditor-rest-b7` | `litrev/_probe/audit/REST_B7.md` | `litrev/_probe/audit/out_R7.md` | 冷启动第二篇 Lin2022 七节审计（7 条，7 节无「未涉及」）；首篇中文文献，判定表 138→145；验证中文引文可被 verify 逐字核验、契约在中文语境下可执行 |
 | `rest_b8` | `auditor-rest-b8` | `litrev/_probe/audit/REST_B8.md` | `litrev/_probe/audit/out_R8.md` | 冷启动第 3-5 篇（Jiang2024 / Lin2024 / Lu2024）七节审计，21 条，判定表 145→166；派发词已按 D-05 §四 修正「缺什么」列规格（非 SUPPORTED 或自足=DEPENDENT 都要填） |
+| `rest_b9` | `auditor-rest-b9` | `litrev/_probe/audit/REST_B9.md` | `litrev/_probe/audit/out_R9.md` | 生产批次 P1（首批陌生领域）：Cao2025 地震场地效应 / Gong2019 半封闭海湾水动力 / Zhou2023 围填海沉降预测，18 条（3 节原文未涉及），判定表 166→184 |
 
 ## 固定角色
 
