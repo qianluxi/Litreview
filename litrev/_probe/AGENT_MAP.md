@@ -12,17 +12,21 @@
 | `Borner1993_StructuralSimilarity_CBR` | —（卡片已存在） | `qx-borner1993-structuralsimilarity-cbr` |
 | `Cao2025_SeismicSite_Reclamation` | —（卡片已存在） | `qx-cao2025-seismicsite-reclamation` |
 | `delasHeras2014_RunlengthHistogram_FloorPlans` | —（卡片已存在） | `qx-delasheras2014-runlengthhistogram-floorplans` |
+| `Elgaali2024_ANN_SoilProperties` | `ex-elgaali2024-ann-soilproperties` | `qx-elgaali2024-ann-soilproperties` |
 | `Gong2019_Hydrodynamics_SemiClosedBay` | —（卡片已存在） | `qx-gong2019-hydrodynamics-semiclosedbay` |
 | `Gu2024_ShearWall_Diffusion` | —（卡片已存在） | `qx-gu2024-shearwall-diffusion` |
 | `Jiang2024_LLM_InteractiveDesign_Rhino7` | —（卡片已存在） | `qx-jiang2024-llm-interactivedesign-rhino7` |
 | `Liao1998_SimilarityMeasures_CBR` | —（卡片已存在） | `qx-liao1998-similaritymeasures-cbr` |
 | `Lin2022_BERT_DisasterTweet` | —（卡片已存在） | `qx-lin2022-bert-disastertweet` |
 | `Lin2024_Standards_Interpretation` | —（卡片已存在） | `qx-lin2024-standards-interpretation` |
+| `Lu2023_Settlement_Prediction_Reclamation` | `ex-lu2023-settlement-prediction-reclamation` | `qx-lu2023-settlement-prediction-reclamation` |
 | `Lu2024_Clause_PrimitiveFunctions` | —（卡片已存在） | `qx-lu2024-clause-primitivefunctions` |
 | `Maher1987_ExpertSystems_StructuralDesign` | —（卡片已存在） | `qx-maher1987-expertsystems-structuraldesign` |
 | `MaherGomez1996_CBR_StructuralDesign` | —（卡片已存在） | `qx-mahergomez1996-cbr-structuraldesign` |
 | `MaherGomez1997_CBR_in_Design` | —（卡片已存在） | `qx-mahergomez1997-cbr-in-design` |
 | `Napps2021_BIM_VariantRetrieval_CBR` | —（卡片已存在） | `qx-napps2021-bim-variantretrieval-cbr` |
+| `Park2025_InSAR_Subsidence_Reclamation` | `ex-park2025-insar-subsidence-reclamation` | `qx-park2025-insar-subsidence-reclamation` |
+| `Qu2011_CoastalTopography_SheyangEstuary` | `ex-qu2011-coastaltopography-sheyangestuary` | `qx-qu2011-coastaltopography-sheyangestuary` |
 | `Rodrigues2017_Clustering_FloorPlans` | —（卡片已存在） | `qx-rodrigues2017-clustering-floorplans` |
 | `Roith2017_GraphBasedDesign_FederatedDB_VisEng` | —（卡片已存在） | `qx-roith2017-graphbaseddesign-federateddb-viseng` |
 | `Sabri2017_SemanticPattern_FloorPlanRetrieval_ICPRAM` | —（卡片已存在） | `qx-sabri2017-semanticpattern-floorplanretrieval-icpram` |
@@ -35,6 +39,7 @@
 | `Zhang2006_BP_CaseRetrieval_HighriseStructureForm` | —（卡片已存在） | `qx-zhang2006-bp-caseretrieval-highrisestructureform` |
 | `Zhao2023_ShearWall_GNN` | —（卡片已存在） | `qx-zhao2023-shearwall-gnn` |
 | `Zhou2023_SettlementPrediction_ANN` | —（卡片已存在） | `qx-zhou2023-settlementprediction-ann` |
+| `Zhu2022_Hydrodynamics_Zhoushan_Reclamation` | `ex-zhu2022-hydrodynamics-zhoushan-reclamation` | `qx-zhu2022-hydrodynamics-zhoushan-reclamation` |
 
 ## 审计批次（批次级隔离：只能读本批输入、只能写本批输出）
 
