@@ -37,7 +37,7 @@ permission:
 ### 输入与输出
 
 - 输入：`litrev/_probe/audit/FRAG_B2.md`（只给这一批，闭卷——不要读原文、不要读别的批次）
-- 输出：写 `litrev/_probe/audit/out_B2.md`，格式照契约 §四（表格 + 末尾合计行），一字不改地照抄表头。
+- 输出：写 `litrev/_probe/audit/out_B2.md`，格式照契约 §四（表格 + 末尾合计行）；**表头逐字照抄本次输入文件 `litrev/_probe/audit/FRAG_B2.md` 里给的那一行**，不要用契约 §四 的示例表头去替换它（契约 §四 有同一条规则）。
 - **必须在 `litrev/_probe/audit/out_B2.md` 第一行原样抄上输入文件里的 `> 快照 sha1: ...`**。这一行是判定与输入文字的绑定凭证：没有它，或抄错一个字符，你这份判定在 `litrev.py audit-stale` 里就是"来源不明"，整批要重做。
 - 写完在回复里只回一行：`已写入 litrev/_probe/audit/out_B2.md：N 条（SUPPORTED x / PARTIAL y / UNSUPPORTED z；DEPENDENT w）`。
 

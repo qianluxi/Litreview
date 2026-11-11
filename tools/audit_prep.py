@@ -654,6 +654,26 @@ def pick_golden(recs, seed=43):
 GOLDEN_ARCHIVE_MARK = "## 原文存档（抽样时点，返工后按此复现）"
 
 
+def detail_heads(path, prefix):
+    """从人填参考集的「条目详情」节抓抽样时点的标题行（含 doc / sec / page）。
+
+    存档节只冻结了论断与引文两行，标题里的页码却跟着当前判定表走。换引文返工时页码会变
+    （实测 FIX_B3：金标准 G01 p.13→p.2、判例集 C07 p.23→p.3），`--check` 于是把
+    「同一份人判材料」误报成不一致。元信息必须和正文一样按判定时点复现。
+    标题行不参与 `stamp_text`（只算 - 论断 / - 引文 行），所以复现它不会动任何戳。
+    """
+    text = path.read_text(encoding="utf-8") if path.exists() else ""
+    marker = "## 条目详情"
+    if marker not in text:
+        return {}
+    out = {}
+    for line in text[text.index(marker):].splitlines():
+        m = re.match(rf"^### ({prefix}\d\d) ・ .+$", line)
+        if m:
+            out[m.group(1)] = line
+    return out
+
+
 def golden_archive(recs=None):
     """读金标准的「抽样时点原文」-> {gid: (claim行, 引文行)}。
 
@@ -681,7 +701,7 @@ def golden_archive(recs=None):
     return arch
 
 
-def build_golden(recs, picked, arch=None):
+def build_golden(recs, picked, arch=None, heads=None):
     head = [
         "# 人工金标准 G1（25 条，开卷裁定）",
         "",
@@ -706,8 +726,9 @@ def build_golden(recs, picked, arch=None):
         if arch and gid in arch:               # 判后返工：详情仍按抽样时点复现
             claim, quote = arch[gid]
         card = f"litrev/_probe/full/{r['doc']}.md"
+        title = (heads or {}).get(gid) or f"### {gid} ・ {r['doc']} ・ {r['sec']} ・ {r['page']}"
         head += [
-            f"### {gid} ・ {r['doc']} ・ {r['sec']} ・ {r['page']}",
+            title,
             "",
             claim,
             quote,
@@ -766,7 +787,8 @@ def cmd_golden(args):
     if picked is None:
         picked = pick_golden(recs, args.seed)
     arch = golden_archive() if args.check else None   # 自检按存档复现，重抽用当前原文
-    text, st = build_golden(recs, picked, arch)
+    heads = detail_heads(GOLDEN, "G") if args.check else None
+    text, st = build_golden(recs, picked, arch, heads)
     gmap = build_golden_map(recs, picked, st, arch)
     n_by = {s: sum(1 for r in picked if r["support"] == s) for s in SUPPORT}
     if args.check:
@@ -988,7 +1010,7 @@ def read_case_ids():
     return ids
 
 
-def build_cases(recs, picked, st_hint=None, arch=None):
+def build_cases(recs, picked, st_hint=None, arch=None, heads=None):
     head = [
         f"# 自足轴判例集 C1（{len(picked)} 条，开卷裁定）",
         "",
@@ -1014,8 +1036,9 @@ def build_cases(recs, picked, st_hint=None, arch=None):
         if arch and gid in arch:               # 判后返工：详情仍按抽样时点复现
             claim, quote = arch[gid]
         card = f"litrev/_probe/full/{r['doc']}.md"
+        title = (heads or {}).get(gid) or f"### {gid} ・ {r['doc']} ・ {r['sec']} ・ {r['page']}"
         head += [
-            f"### {gid} ・ {r['doc']} ・ {r['sec']} ・ {r['page']}",
+            title,
             "",
             claim,
             quote,
@@ -1113,7 +1136,8 @@ def cmd_cases(args):
         if missing:
             sys.exit(f"[!] 清单里的 id 不在判定表中：{missing}")
         picked = [by_id[i] for i in ids]
-    text, st = build_cases(recs, picked, arch=arch)
+    heads = detail_heads(CASES, "C") if args.check else None
+    text, st = build_cases(recs, picked, arch=arch, heads=heads)
     cmap = build_cases_map(recs, picked, st, arch=arch)
     if args.check:
         bad = []

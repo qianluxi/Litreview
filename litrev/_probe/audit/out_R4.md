@@ -1,4 +1,5 @@
-> 快照 sha1: eb1664aad8（由 litrev.py reseal 重封：2 条经 FIX_B2.md 定点重判，其余条目输入逐字未变；原判定提交 4f8ce71）
+> 快照 sha1: 3231c9e097（由 litrev.py reseal 重封：1 条经 FIX_B3.md 定点重判，其余条目输入逐字未变；原判定提交 69b676a）
+
 
 
 
@@ -19,7 +20,7 @@
 | R4-13 | SUPPORTED | DEPENDENT | "node features" | 自足：These input graphs 指前文构造的图，先行词在引文外 |
 | R4-14 | SUPPORTED | SELF | "drawing style" | — |
 | R4-15 | SUPPORTED | SELF | "with experts" | — |
-| R4-16 | PARTIAL | SELF | "large-scale" | 引文仅描述 RPLAN，需补“用于评价”的原文依据 |
+| R4-16 | SUPPORTED | SELF | "is used for" | — |
 
-合计：16 条（SUPPORTED 15 / PARTIAL 1 / UNSUPPORTED 0；DEPENDENT 1）
+合计：16 条（SUPPORTED 16 / PARTIAL 0 / UNSUPPORTED 0；DEPENDENT 1）
 
