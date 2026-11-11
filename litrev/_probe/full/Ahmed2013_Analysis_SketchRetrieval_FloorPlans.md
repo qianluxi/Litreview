@@ -15,7 +15,7 @@
 - 引文："The extracted semantics are represented as a graph G ¼ ðV; EÞ." (Ahmed et al., 2013, p.6)
 
 ## 4. 相似性或检索机制
-- 论断：作者认为子图匹配方法在检索算法上是有前景的路线。
+- 论断：作者认为子图匹配方法在检索算法上似乎是有前景的路线。
 - 引文："As for the retrieval algorithm, subgraph matching approaches seem to be promising." (Ahmed et al., 2013, p.3)
 
 ## 5. 系统形态

@@ -3,7 +3,7 @@
 - 抽取范围：全文 p.1–23（正文见 p.2–22；p.1 为期刊封面页，p.23 为参考文献续页）
 
 ## 1. 一句话主张
-- 论断：该文在第二部分提出一种混合相似度度量，用于案例之间的比较。
+- 论断：该文在第二部分提出一种混合相似度度量。
 - 引文："In part 2, a hybrid similarity measure is proposed to compare cases having a mixture of crisp and fuzzy features." (Liao et al., 1998, p.3)
 
 ## 2. 问题域

@@ -3,7 +3,7 @@
 > 判定标准：`litrev/_probe/AUDIT_CONTRACT.md`（含第五节口径修订）。
 > 全部条目已通过 `verify`：逐字存在、页码为 PDF 物理页。**不要判真伪与页码**，只判论断层。
 > 不要读任何 PDF 或 `full/*.md`。只依据下面给出的论断与引文判定。
-> 快照 sha1: b64ad5a18a
+> 快照 sha1: 18c979470b
 
 输出：只输出表格 + 一行合计，行序与本文件条目顺序一致。
 
@@ -12,7 +12,7 @@
 
 ### B3-01 ・ Ahmed2013_Analysis_SketchRetrieval_FloorPlans ・ 相似性或检索机制 ・ p.3
 
-- 论断：作者认为子图匹配方法在检索算法上是有前景的路线。
+- 论断：作者认为子图匹配方法在检索算法上似乎是有前景的路线。
 - 引文："As for the retrieval algorithm, subgraph matching approaches seem to be promising." (Ahmed et al., 2013, p.3)
 - 形式特征：完整句（源文件第 19 行）
 
@@ -36,7 +36,7 @@
 
 ### B3-05 ・ Liao1998_SimilarityMeasures_CBR ・ 一句话主张 ・ p.3
 
-- 论断：该文在第二部分提出一种混合相似度度量，用于案例之间的比较。
+- 论断：该文在第二部分提出一种混合相似度度量。
 - 引文："In part 2, a hybrid similarity measure is proposed to compare cases having a mixture of crisp and fuzzy features." (Liao et al., 1998, p.3)
 - 形式特征：完整句（源文件第 7 行）
 
