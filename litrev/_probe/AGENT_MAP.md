@@ -8,7 +8,7 @@
 |---|---|---|
 | `AamodtPlaza1994_CBR_Foundations` | —（卡片已存在） | `qx-aamodtplaza1994-cbr-foundations` |
 | `Ahmed2013_Analysis_SketchRetrieval_FloorPlans` | —（卡片已存在） | `qx-ahmed2013-analysis-sketchretrieval-floorplans` |
-| `Ayzenshtadt2016_ThinkingWithContainers_ICAART` | —（卡片已存在） | `qx-ayzenshtadt2016-thinkingwithcontainers-icaart` |
+| `Ayzenshtadt2016_ThinkingWithContainers_ICAART` | `ex-ayzenshtadt2016-thinkingwithcontainers-icaart` | `qx-ayzenshtadt2016-thinkingwithcontainers-icaart` |
 | `Borner1993_StructuralSimilarity_CBR` | —（卡片已存在） | `qx-borner1993-structuralsimilarity-cbr` |
 | `delasHeras2014_RunlengthHistogram_FloorPlans` | —（卡片已存在） | `qx-delasheras2014-runlengthhistogram-floorplans` |
 | `Gu2024_ShearWall_Diffusion` | —（卡片已存在） | `qx-gu2024-shearwall-diffusion` |
