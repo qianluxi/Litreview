@@ -1,14 +1,15 @@
-> 快照 sha1: b64ad5a18a（由 litrev.py reseal 重封：8 条经 FIX_B3.md 定点重判，其余条目输入逐字未变；原判定提交 69b676a）
+> 快照 sha1: 18c979470b（由 litrev.py reseal 重封：2 条经 FIX_B4.md 定点重判，其余条目输入逐字未变；原判定提交 813d506）
+
 
 
 
 | id | 支撑 | 自足 | 引文里的依据（≤15 字，必须是引文原词） | 缺什么 / 需补的一句 |
 |----|------|------|--------------------------------------|--------------------|
-| B3-01 | PARTIAL | SELF | "seem to be" | 缺原文的或然限定 "seem to be"，论断写成"是有前景的路线"属情态升级；应改为"似乎/可能是有前景的路线" |
+| B3-01 | SUPPORTED | SELF | "seem to be" | — |
 | B3-02 | SUPPORTED | SELF | "only able to" | — |
 | B3-03 | SUPPORTED | SELF | "nine further" | — |
 | B3-04 | PARTIAL | SELF | "results support" | 缺"未给出数据集规模/指标数值"的缺席证据（需全库检索） |
-| B3-05 | PARTIAL | SELF | "is proposed to" | 缺"含 crisp 与 fuzzy 混合特征"这一对象限定，范围被放大到所有案例；应补成"用于含 crisp 与 fuzzy 混合特征的案例之间的比较" |
+| B3-05 | SUPPORTED | SELF | "similarity" | — |
 | B3-06 | SUPPORTED | SELF | "area ratio" | — |
 | B3-07 | SUPPORTED | SELF | "four “cases”" | — |
 | B3-08 | SUPPORTED | SELF | "finding matches" | — |
@@ -20,5 +21,5 @@
 | B3-14 | SUPPORTED | SELF | "vectorized form" | — |
 | B3-15 | SUPPORTED | SELF | "for each model" | — |
 | B3-16 | SUPPORTED | SELF | "explicitly" | — |
-合计：16 条（SUPPORTED 13 / PARTIAL 3 / UNSUPPORTED 0；DEPENDENT 2）
+合计：16 条（SUPPORTED 15 / PARTIAL 1 / UNSUPPORTED 0；DEPENDENT 2）
 
