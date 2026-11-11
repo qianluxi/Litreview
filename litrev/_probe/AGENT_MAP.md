@@ -12,21 +12,21 @@
 | `Borner1993_StructuralSimilarity_CBR` | —（卡片已存在） | `qx-borner1993-structuralsimilarity-cbr` |
 | `Cao2025_SeismicSite_Reclamation` | —（卡片已存在） | `qx-cao2025-seismicsite-reclamation` |
 | `delasHeras2014_RunlengthHistogram_FloorPlans` | —（卡片已存在） | `qx-delasheras2014-runlengthhistogram-floorplans` |
-| `Elgaali2024_ANN_SoilProperties` | `ex-elgaali2024-ann-soilproperties` | `qx-elgaali2024-ann-soilproperties` |
+| `Elgaali2024_ANN_SoilProperties` | —（卡片已存在） | `qx-elgaali2024-ann-soilproperties` |
 | `Gong2019_Hydrodynamics_SemiClosedBay` | —（卡片已存在） | `qx-gong2019-hydrodynamics-semiclosedbay` |
 | `Gu2024_ShearWall_Diffusion` | —（卡片已存在） | `qx-gu2024-shearwall-diffusion` |
 | `Jiang2024_LLM_InteractiveDesign_Rhino7` | —（卡片已存在） | `qx-jiang2024-llm-interactivedesign-rhino7` |
 | `Liao1998_SimilarityMeasures_CBR` | —（卡片已存在） | `qx-liao1998-similaritymeasures-cbr` |
 | `Lin2022_BERT_DisasterTweet` | —（卡片已存在） | `qx-lin2022-bert-disastertweet` |
 | `Lin2024_Standards_Interpretation` | —（卡片已存在） | `qx-lin2024-standards-interpretation` |
-| `Lu2023_Settlement_Prediction_Reclamation` | `ex-lu2023-settlement-prediction-reclamation` | `qx-lu2023-settlement-prediction-reclamation` |
+| `Lu2023_Settlement_Prediction_Reclamation` | —（卡片已存在） | `qx-lu2023-settlement-prediction-reclamation` |
 | `Lu2024_Clause_PrimitiveFunctions` | —（卡片已存在） | `qx-lu2024-clause-primitivefunctions` |
 | `Maher1987_ExpertSystems_StructuralDesign` | —（卡片已存在） | `qx-maher1987-expertsystems-structuraldesign` |
 | `MaherGomez1996_CBR_StructuralDesign` | —（卡片已存在） | `qx-mahergomez1996-cbr-structuraldesign` |
 | `MaherGomez1997_CBR_in_Design` | —（卡片已存在） | `qx-mahergomez1997-cbr-in-design` |
 | `Napps2021_BIM_VariantRetrieval_CBR` | —（卡片已存在） | `qx-napps2021-bim-variantretrieval-cbr` |
-| `Park2025_InSAR_Subsidence_Reclamation` | `ex-park2025-insar-subsidence-reclamation` | `qx-park2025-insar-subsidence-reclamation` |
-| `Qu2011_CoastalTopography_SheyangEstuary` | `ex-qu2011-coastaltopography-sheyangestuary` | `qx-qu2011-coastaltopography-sheyangestuary` |
+| `Park2025_InSAR_Subsidence_Reclamation` | —（卡片已存在） | `qx-park2025-insar-subsidence-reclamation` |
+| `Qu2011_CoastalTopography_SheyangEstuary` | —（卡片已存在） | `qx-qu2011-coastaltopography-sheyangestuary` |
 | `Rodrigues2017_Clustering_FloorPlans` | —（卡片已存在） | `qx-rodrigues2017-clustering-floorplans` |
 | `Roith2017_GraphBasedDesign_FederatedDB_VisEng` | —（卡片已存在） | `qx-roith2017-graphbaseddesign-federateddb-viseng` |
 | `Sabri2017_SemanticPattern_FloorPlanRetrieval_ICPRAM` | —（卡片已存在） | `qx-sabri2017-semanticpattern-floorplanretrieval-icpram` |
@@ -39,7 +39,7 @@
 | `Zhang2006_BP_CaseRetrieval_HighriseStructureForm` | —（卡片已存在） | `qx-zhang2006-bp-caseretrieval-highrisestructureform` |
 | `Zhao2023_ShearWall_GNN` | —（卡片已存在） | `qx-zhao2023-shearwall-gnn` |
 | `Zhou2023_SettlementPrediction_ANN` | —（卡片已存在） | `qx-zhou2023-settlementprediction-ann` |
-| `Zhu2022_Hydrodynamics_Zhoushan_Reclamation` | `ex-zhu2022-hydrodynamics-zhoushan-reclamation` | `qx-zhu2022-hydrodynamics-zhoushan-reclamation` |
+| `Zhu2022_Hydrodynamics_Zhoushan_Reclamation` | —（卡片已存在） | `qx-zhu2022-hydrodynamics-zhoushan-reclamation` |
 
 ## 审计批次（批次级隔离：只能读本批输入、只能写本批输出）
 
@@ -75,6 +75,7 @@
 | `rest_b7` | `auditor-rest-b7` | `litrev/_probe/audit/REST_B7.md` | `litrev/_probe/audit/out_R7.md` | 冷启动第二篇 Lin2022 七节审计（7 条，7 节无「未涉及」）；首篇中文文献，判定表 138→145；验证中文引文可被 verify 逐字核验、契约在中文语境下可执行 |
 | `rest_b8` | `auditor-rest-b8` | `litrev/_probe/audit/REST_B8.md` | `litrev/_probe/audit/out_R8.md` | 冷启动第 3-5 篇（Jiang2024 / Lin2024 / Lu2024）七节审计，21 条，判定表 145→166；派发词已按 D-05 §四 修正「缺什么」列规格（非 SUPPORTED 或自足=DEPENDENT 都要填） |
 | `rest_b9` | `auditor-rest-b9` | `litrev/_probe/audit/REST_B9.md` | `litrev/_probe/audit/out_R9.md` | 生产批次 P1（首批陌生领域）：Cao2025 地震场地效应 / Gong2019 半封闭海湾水动力 / Zhou2023 围填海沉降预测，18 条（3 节原文未涉及），判定表 166→184 |
+| `rest_b10` | `auditor-rest-b10` | `litrev/_probe/audit/REST_B10.md` | `litrev/_probe/audit/out_R10.md` | 生产批次 P2（英文围填海，同领域跨语言对照）：Park2025 InSAR 沉降 / Elgaali2024 ANN 土性 / Zhu2022 舟山水动力 / Qu2011 射阳河口岸滩 / Lu2023 吹填沉降，30 条（5 节原文未涉及），判定表 184→214 |
 
 ## 固定角色
 

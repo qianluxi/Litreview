@@ -180,6 +180,12 @@
       "input": "litrev/_probe/audit/REST_B9.md",
       "output": "litrev/_probe/audit/out_R9.md",
       "note": "生产批次 P1（首批陌生领域）：Cao2025 地震场地效应 / Gong2019 半封闭海湾水动力 / Zhou2023 围填海沉降预测，18 条（3 节原文未涉及），判定表 166→184"
+    },
+    {
+      "id": "rest_b10",
+      "input": "litrev/_probe/audit/REST_B10.md",
+      "output": "litrev/_probe/audit/out_R10.md",
+      "note": "生产批次 P2（英文围填海，同领域跨语言对照）：Park2025 InSAR 沉降 / Elgaali2024 ANN 土性 / Zhu2022 舟山水动力 / Qu2011 射阳河口岸滩 / Lu2023 吹填沉降，30 条（5 节原文未涉及），判定表 184→214"
     }
   ]
 }
