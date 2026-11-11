@@ -3,7 +3,7 @@
 > 判定标准：`litrev/_probe/AUDIT_CONTRACT.md`（含第五节口径修订）。
 > 全部条目已通过 `verify`：逐字存在、页码为 PDF 物理页。**不要判真伪与页码**，只判论断层。
 > 不要读任何 PDF 或 `full/*.md`。只依据下面给出的论断与引文判定。
-> 快照 sha1: 05632596fd
+> 快照 sha1: 1310e0ea75
 
 输出：只输出表格 + 一行合计，行序与本文件条目顺序一致。
 
@@ -52,10 +52,10 @@
 - 引文："Two cases X(case1) and Y(case2) of failure analysis are used ; n1, n2, n3, and" (Liao et al., 1998, p.19)
 - 形式特征：未以句末标点结尾（源文件第 27 行）
 
-### B2-08 ・ MaherGomez1996_CBR_StructuralDesign ・ 案例或数据的表示形式 ・ p.6
+### B2-08 ・ MaherGomez1996_CBR_StructuralDesign ・ 案例或数据的表示形式 ・ p.10
 
 - 论断：案例以属性-值对（attribute-value pair）来描述。
-- 引文："The differences between CaseCAD’s and CADsyn’s case representations lie in the attribute-value pairs and the decomposition into subcases." (Maher and Gomez, 1996, p.6)
+- 引文："The similarities are the use of attribute-value pairs for representing a case or subcase and the use of models to support CBR." (Maher and Gomez, 1996, p.10)
 - 形式特征：完整句（源文件第 15 行）
 
 ### B2-09 ・ MaherGomez1996_CBR_StructuralDesign ・ 评价方式 ・ p.2

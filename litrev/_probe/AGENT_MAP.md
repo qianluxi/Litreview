@@ -57,6 +57,7 @@
 | `fix_b4` | `auditor-fix-b4` | `litrev/_probe/audit/FIX_B4.md` | `litrev/_probe/audit/out_FIX_4.md` | 第四轮定点重判 2 条（B3-01 情态升级、B3-05 对象限定被删）：引文一字未动，只改论断；输出名带下划线，不进 131 条汇总 |
 | `rest_b6` | `auditor-rest-b6` | `litrev/_probe/audit/REST_B6.md` | `litrev/_probe/audit/out_R6.md` | 第 2 步新文献端到端：Ayzenshtadt2016 七节首次审计（7 条）；REST_B6 按新卡片生成，out_R6.md 首次把一篇新文献收进判定表（131→138） |
 | `fix_b5` | `auditor-fix-b5` | `litrev/_probe/audit/FIX_B5.md` | `litrev/_probe/audit/out_FIX_5.md` | 第五轮定点重判 1 条（B3-04）：论断删掉「未给出数据集规模或指标数值」这个证明否定半句，引文一字未动；输出名带下划线，不进 138 条汇总 |
+| `fix_b6` | `auditor-fix-b6` | `litrev/_probe/audit/FIX_B6.md` | `litrev/_probe/audit/out_FIX_6.md` | 第六轮定点重判 1 条（B2-08）：论断一字未动，引文换成同篇 p.10 的直接表述（原 p.6 那句讲的是「两系统差异」，不是「案例如何描述」）；输出名带下划线，不进 138 条汇总 |
 | `probe_r6_04` | `auditor-probe-r6-04` | `litrev/_probe/audit/PROBE_R6-04.md` | `litrev/_probe/audit/out_P_6.md` | D-03 第三次独立判定（R6-04 单条，闭卷盲判）：前两次人开卷 PARTIAL / 机器闭卷 SUPPORTED 为 1:1；不改判定表，只补齐多数票 |
 | `sample_s2` | `auditor-sample-s2` | `litrev/_probe/audit/SAMPLE_S2.md` | `litrev/_probe/audit/out_S2.md` | 抽检补抽第二批 12 条（seed=71，排除 S1 已抽 10 条）：从 128 条 SUPPORTED 池抽 9.4%，测自洽/漂移；out_S2 不进 audit-count 默认口径（前缀 B,R） |
 
