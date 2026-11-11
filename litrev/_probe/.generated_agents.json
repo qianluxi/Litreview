@@ -29,11 +29,16 @@
  ".opencode/agents/auditor-sample-s1.md",
  ".opencode/agents/auditor-sample-s2.md",
  ".opencode/agents/checker.md",
+ ".opencode/agents/ex-cao2025-seismicsite-reclamation.md",
+ ".opencode/agents/ex-gong2019-hydrodynamics-semiclosedbay.md",
+ ".opencode/agents/ex-zhou2023-settlementprediction-ann.md",
  ".opencode/agents/qx-aamodtplaza1994-cbr-foundations.md",
  ".opencode/agents/qx-ahmed2013-analysis-sketchretrieval-floorplans.md",
  ".opencode/agents/qx-ayzenshtadt2016-thinkingwithcontainers-icaart.md",
  ".opencode/agents/qx-borner1993-structuralsimilarity-cbr.md",
+ ".opencode/agents/qx-cao2025-seismicsite-reclamation.md",
  ".opencode/agents/qx-delasheras2014-runlengthhistogram-floorplans.md",
+ ".opencode/agents/qx-gong2019-hydrodynamics-semiclosedbay.md",
  ".opencode/agents/qx-gu2024-shearwall-diffusion.md",
  ".opencode/agents/qx-jiang2024-llm-interactivedesign-rhino7.md",
  ".opencode/agents/qx-liao1998-similaritymeasures-cbr.md",
@@ -55,5 +60,6 @@
  ".opencode/agents/qx-xia2025-codesign-shearwallbeam-gnn.md",
  ".opencode/agents/qx-zhang2006-bp-caseretrieval-highrisestructureform.md",
  ".opencode/agents/qx-zhao2023-shearwall-gnn.md",
+ ".opencode/agents/qx-zhou2023-settlementprediction-ann.md",
  "litrev/_probe/AGENT_MAP.md"
 ]

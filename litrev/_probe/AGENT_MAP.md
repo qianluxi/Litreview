@@ -10,7 +10,9 @@
 | `Ahmed2013_Analysis_SketchRetrieval_FloorPlans` | —（卡片已存在） | `qx-ahmed2013-analysis-sketchretrieval-floorplans` |
 | `Ayzenshtadt2016_ThinkingWithContainers_ICAART` | —（卡片已存在） | `qx-ayzenshtadt2016-thinkingwithcontainers-icaart` |
 | `Borner1993_StructuralSimilarity_CBR` | —（卡片已存在） | `qx-borner1993-structuralsimilarity-cbr` |
+| `Cao2025_SeismicSite_Reclamation` | `ex-cao2025-seismicsite-reclamation` | `qx-cao2025-seismicsite-reclamation` |
 | `delasHeras2014_RunlengthHistogram_FloorPlans` | —（卡片已存在） | `qx-delasheras2014-runlengthhistogram-floorplans` |
+| `Gong2019_Hydrodynamics_SemiClosedBay` | `ex-gong2019-hydrodynamics-semiclosedbay` | `qx-gong2019-hydrodynamics-semiclosedbay` |
 | `Gu2024_ShearWall_Diffusion` | —（卡片已存在） | `qx-gu2024-shearwall-diffusion` |
 | `Jiang2024_LLM_InteractiveDesign_Rhino7` | —（卡片已存在） | `qx-jiang2024-llm-interactivedesign-rhino7` |
 | `Liao1998_SimilarityMeasures_CBR` | —（卡片已存在） | `qx-liao1998-similaritymeasures-cbr` |
@@ -32,6 +34,7 @@
 | `Xia2025_CoDesign_ShearWallBeam_GNN` | —（卡片已存在） | `qx-xia2025-codesign-shearwallbeam-gnn` |
 | `Zhang2006_BP_CaseRetrieval_HighriseStructureForm` | —（卡片已存在） | `qx-zhang2006-bp-caseretrieval-highrisestructureform` |
 | `Zhao2023_ShearWall_GNN` | —（卡片已存在） | `qx-zhao2023-shearwall-gnn` |
+| `Zhou2023_SettlementPrediction_ANN` | `ex-zhou2023-settlementprediction-ann` | `qx-zhou2023-settlementprediction-ann` |
 
 ## 审计批次（批次级隔离：只能读本批输入、只能写本批输出）
 
