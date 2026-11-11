@@ -1,31 +1,36 @@
 # 自足轴判例集 C2（14 条，开卷裁定）
 
-> 由 `python tools/audit_prep.py cases` 生成；条目清单见 `CASES_SELF_C2_IDS.txt`（冻结，抽完不再重抽）。
-> **这是给人填的表**：不进 `BATCHES.json`、不生成 agent、`auditor-*` 的 read 白名单不含本文件。
-> 只判**自足轴**：论断脱离引文与上下文能不能独立读懂。可读卡片原文（开卷），但不要读 `out_*.md`、
-> `SAMPLE_S1_KEYS.md`、`GOLDEN.md`、`CASES_SELF_C2_KEYS.md`。
-> 填法：每行填 自足（`SELF` / `DEPENDENT`）、引文里的依据（≤15 字，必须是引文原词）、
-> 缺什么（`DEPENDENT` 必须写明缺的是哪个指代/专有名词；`SELF` 填 `—`）。
+> 由 `python tools/audit_prep.py cases` 生成；条目清单见 `CASES_SELF_C2_IDS.txt`（冻结，抽完不再重抽）。  
+> **这是给人填的表**：不进 `BATCHES.json`、不生成 agent、`auditor-*` 的 read 白名单不含本文件。  
+> 只判**自足轴**，判的对象是**引文这一句本身**（不是论断）：把它单贴出去，读者知不知道在说谁、说什么。  
+> 契约原话（§二 轴 2 + §五.1）：「引文自带主语与指代，单看这一句就知道在说谁、说什么」；「自足轴只管主语」——  
+> 只有『主语缺失』或『代词作主语』（`it/this/these/such` + 谓语）才判 `DEPENDENT`；句首的指代性状语不算（主谓齐全 → `SELF`）；  
+> 片段（名词短语/介词短语/分词，主谓落在引号外）→ `DEPENDENT`；`this paper`/`this section` + 谓语 = 篇章自指 → `SELF`。  
+> **别拿论断的可读性代替**：片段引文即使论断补得很顺，仍是 `DEPENDENT`；主谓齐全的引文即使论断里有没交代的指称（「前一步」「该系统」），仍是 `SELF`。  
+> 可读卡片原文（开卷），但不要读 `out_*.md`、  
+> `SAMPLE_S1_KEYS.md`、`GOLDEN.md`、`CASES_SELF_C2_KEYS.md`。  
+> 填法：每行填 自足（`SELF` / `DEPENDENT`）、引文里的依据（≤15 字，必须是引文原词）、  
+> 缺什么（`DEPENDENT` 必须写明缺的是哪个指代/专有名词；`SELF` 填 `—`）。  
 > 快照 sha1: 3c036c65ae
 
 ## 待填判定表（人填）
 
-| id | 自足 | 引文里的依据（≤15 字，必须是引文原词） | 缺什么 / 需补的一句 |
-|----|------|--------------------------------------|--------------------|
-| C01 |  |  |  |
-| C02 |  |  |  |
-| C03 |  |  |  |
-| C04 |  |  |  |
-| C05 |  |  |  |
-| C06 |  |  |  |
-| C07 |  |  |  |
-| C08 |  |  |  |
-| C09 |  |  |  |
-| C10 |  |  |  |
-| C11 |  |  |  |
-| C12 |  |  |  |
-| C13 |  |  |  |
-| C14 |  |  |  |
+| id  | 自足        | 引文里的依据（≤15 字，必须是引文原词）                                                    | 缺什么 / 需补的一句                |
+| --- | --------- | ------------------------------------------------------------------------ | -------------------------- |
+| C01 | SELF      | <span style="background-color:rgb(235, 235, 235)">Caspian</span>         |                            |
+| C02 | SELF      | <span style="background-color:rgb(235, 235, 235)">In this paper</span>   |                            |
+| C03 | SELF      | <span style="background-color:rgb(235, 235, 235)">GNN</span>             |                            |
+| C04 | SELF      | <span style="background-color:rgb(235, 235, 235)">same settings</span>   |                            |
+| C05 | SELF      | <span style="background-color:rgb(235, 235, 235)">implemented in</span>  |                            |
+| C06 | DEPENDENT | <span style="background-color:rgb(235, 235, 235)">previous stage</span>  | 缺“前一步”指哪个阶段/步骤，先行词在引文外     |
+| C07 | DEPENDENT | <span style="background-color:rgb(235, 235, 235)">goal tree</span>       | 缺“系统”指哪个系统，先行词在引文外         |
+| C08 | SELF      | <span style="background-color:rgb(235, 235, 235)">potential beams</span> |                            |
+| C09 | DEPENDENT | <span style="background-color:rgb(235, 235, 235)">domain</span>          | 缺“方法”指哪种方法，先行词在引文外         |
+| C10 | SELF      | <span style="background-color:rgb(235, 235, 235)">shear wall</span>      |                            |
+| C11 | SELF      | <span style="background-color:rgb(235, 235, 235)">using Framekit</span>  |                            |
+| C12 | SELF      | <span style="background-color:rgb(235, 235, 235)">restricted to</span>   |                            |
+| C13 | DEPENDENT | <span style="background-color:rgb(235, 235, 235)">M-RAM prototype</span> | 缺“原型/模型”指代：指 M-RAM，先行词在上下文 |
+| C14 | SELF      | <span style="background-color:rgb(235, 235, 235)">IoUpixel</span>        |                            |
 
 ## 条目详情（判定时可读卡片原文，开卷）
 
