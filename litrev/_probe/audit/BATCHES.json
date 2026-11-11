@@ -162,6 +162,12 @@
       "input": "litrev/_probe/audit/SAMPLE_S2.md",
       "output": "litrev/_probe/audit/out_S2.md",
       "note": "抽检补抽第二批 12 条（seed=71，排除 S1 已抽 10 条）：从 128 条 SUPPORTED 池抽 9.4%，测自洽/漂移；out_S2 不进 audit-count 默认口径（前缀 B,R）"
+    },
+    {
+      "id": "rest_b7",
+      "input": "litrev/_probe/audit/REST_B7.md",
+      "output": "litrev/_probe/audit/out_R7.md",
+      "note": "冷启动第二篇 Lin2022 七节审计（7 条，7 节无「未涉及」）；首篇中文文献，判定表 138→145；验证中文引文可被 verify 逐字核验、契约在中文语境下可执行"
     }
   ]
 }

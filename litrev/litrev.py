@@ -226,15 +226,35 @@ def page_layout_text(page):
     return "\n".join(_join_row(ws) for _, ws in _merge_rows(rows))
 
 
+CJK_WORD_EQUIV = 0.3   # 中文 1 字 ≈ 0.3 个英文词（英文平均约 6.2 字符/词）
+CJK_MIN = 15           # 引文长短门槛的汉字版：15 汉字 ≈ 20 英文字母的信息量
+
+
 def text_health(text):
-    """文字层健康度：词/行 与 短行占比。词/行 < 3 基本可判定逐词断行。"""
+    """文字层健康度：等价词/行 与 短行占比。词/行 < 3 基本可判定逐词断行。
+
+    中文没有空格分词：`len(l.split())` 对一行 40 字的正文也只算 1 个「词」，于是
+    正常的中文 PDF 会被标成「逐词断行，需 OCR」（round-33 实测 5 篇中文全中）。
+    文字层以中文为主时改用「字符/行」再按 CJK_WORD_EQUIV 换算成等价词/行，
+    判碎片阈值仍是 3，英文文献的读数逐字不变。
+    """
     lines = [l for l in text.splitlines() if l.strip()]
     if not lines:
-        return {"lines": 0, "words": 0, "wpl": 0.0, "short": 1.0}
+        return {"lines": 0, "words": 0, "wpl": 0.0, "short": 1.0, "unit": "word"}
+    body = "\n".join(lines)
+    n_cjk = len(re.findall(r"[\u4e00-\u9fa5]", body))
+    n_alpha = len(re.findall(r"[A-Za-z]", body))
+    if n_cjk > n_alpha:
+        units = [len(re.findall(r"[A-Za-z0-9]|[\u4e00-\u9fa5]", l)) for l in lines]
+        eq = [u * CJK_WORD_EQUIV for u in units]
+        return {"lines": len(lines), "words": round(sum(eq)),
+                "wpl": round(sum(eq) / len(lines), 2),
+                "short": round(sum(1 for x in eq if x <= 3) / len(lines), 3),
+                "unit": "char"}
     words = sum(len(l.split()) for l in lines)
     short = sum(1 for l in lines if len(l.split()) <= 3) / len(lines)
     return {"lines": len(lines), "words": words,
-            "wpl": round(words / len(lines), 2), "short": round(short, 3)}
+            "wpl": round(words / len(lines), 2), "short": round(short, 3), "unit": "word"}
 
 
 # ---------------------------------------------------------------- 文件名与作者
@@ -620,10 +640,17 @@ def parse_citations(md):
             continue
         n_letters = len(re.findall(r"[A-Za-z]", q))
         n_cjk = len(re.findall(r"[\u4e00-\u9fa5]", q))
+        # 引文长短门槛按语言分别计：20 个英文字母 ≈ 15 个汉字的信息量。
+        # 中英混排（中文文献里的「计算矢量相似度Similarity 的函数」这类句子）原来
+        # 两头都不满足——EN 要求汉字 ≤2、ZH 要求字母 ≤40——会在这里被静默丢掉，
+        # 不报错也不进 verify，等于这张卡少一条被审的证据（round-33 实测 §3 即如此）。
+        # MIX 只能是原文直引（库里没有中英混排的译文），所以不走 ZHQUOTE 的译引护栏。
         if n_letters >= 20 and n_cjk <= 2:
             kind = "EN"
-        elif n_cjk >= 25 and n_letters <= 40:
+        elif n_cjk >= CJK_MIN and n_letters < 20:
             kind = "ZH"
+        elif n_cjk >= CJK_MIN and n_letters >= 20:
+            kind = "MIX"
         else:
             continue
         tail = md[b + 1: b + 141]
@@ -683,6 +710,18 @@ def cmd_verify(args):
     body_end = md.find("## 参考文献")
     body = md[:body_end] if body_end > 0 else md
 
+    # 本卡片对应的源文献是不是中文的——决定 ZH 引文未逐字命中时该报哪个码。
+    # 中文源里的中文引文抄错了，要报 MISSING/PARAPHRASE（动作：去改引文）；
+    # 英文源里的中文段落只能是译引，才套 ZHQUOTE 的护栏（动作：补英文原文）。
+    # 只凭 kind 判断会让「中文引文打错一个字」被报成译引，改稿的人会去做错的事。
+    own = corpus.get(md_path.stem + ".pdf") or next(
+        (v for k, v in corpus.items() if Path(k).stem == md_path.stem), None)
+    src_cjk = False
+    if own:
+        full_key = "".join(p.get("k", "") for p in own.get("pages", []))
+        n_c = len(re.findall(r"[\u4e00-\u9fa5]", full_key))
+        src_cjk = n_c > max(200, 0.3 * len(full_key))
+
     items = parse_citations(body)
     if not items:
         print("[!] 未解析到引文，检查引号或文件编码")
@@ -691,17 +730,23 @@ def cmd_verify(args):
     rows = []
     for it in items:
         q = it["quote"]
-        if it["kind"] == "ZH":
+        found = find_quote(corpus, q, only)
+
+        # ZHQUOTE 是「译引冒充原文」的护栏：中文引号里的长段，可能作者把英文原文翻成
+        # 中文却当原文引用。但它原来是**无条件短路**，于是中文源文献的引文永远走不到
+        # 逐字比对，一篇中文文献最多让英文句 PASS、中文节必然红（round-33 实测）。
+        # 改成「逐字命中优先」：译文不可能在库里逐字命中，护栏原意不丢；中文文献的
+        # 原文句子命中后正常走页码/作者核对。MIX 不套护栏（见 parse_citations）。
+        if it["kind"] == "ZH" and not src_cjk and not (found and found.get("exact")):
             rows.append({
                 "line": it["line"], "quote": q, "cite_author": it["cite_author"] or "",
                 "cite_page": it["page"], "file": "", "page": None, "exact": "-",
                 "ratio": "-", "sentence": "",
                 "verdict": "ZHQUOTE",
-                "note": "中文引号内的长段：若为译引，须补原文英文句与页码；否则去掉引号改为转述",
+                "note": "中文引号内的长段且库里无逐字对应：若为译引，须补原文英文句与页码；否则去掉引号改为转述",
             })
             continue
 
-        found = find_quote(corpus, q, only)
         cite_author = it["cite_author"]
         if not cite_author:
             cite_author = guess_author(body[max(0, it["pos"] - 500): it["pos"]], corpus, aliases)
@@ -911,7 +956,9 @@ def cmd_sample(args):
     for p in paths:
         for e in parse_note_entries(p.read_text(encoding="utf-8")):
             q, src, page = quote_fields(e["quote"])
-            if len(re.findall(r"[A-Za-z]", q)) < 20:      # 与 verify 同门槛，太短的它也不判
+            if (len(re.findall(r"[A-Za-z]", q)) < 20
+                    and len(re.findall(r"[\u4e00-\u9fa5]", q)) < CJK_MIN):
+                # 与 verify 同门槛（按语言分别计）：太短的它也不判，抽进来只会占分母
                 continue
             pool.append({"doc": p.stem, "section": e["section"], "claim": e["claim"],
                          "quote": q, "src": src, "page": page})
@@ -1164,8 +1211,9 @@ def cmd_card_check(args):
                 ok, note = match_author(cm.group(1), f"{stem}.pdf", aliases)
                 if ok is False:
                     errs.append(f"「{name}」{note}（新文献须先在 litrev/aliases.json 登记姓氏）")
-            if len(re.sub(r"[^A-Za-z]", "", q)) < 20:
-                errs.append(f"「{name}」引文不足 20 个英文字母，会被核验静默跳过")
+            n_en, n_cjk = len(re.findall(r"[A-Za-z]", q)), len(re.findall(r"[\u4e00-\u9fa5]", q))
+            if n_en < 20 and n_cjk < CJK_MIN:
+                errs.append(f"「{name}」引文过短（英文字母 {n_en}、汉字 {n_cjk}），会被核验静默跳过")
 
             # 论断里的数值应在同节引文里出现（`0,694` 与 `0.694` 视为同一个数）。
             # 数值是最容易在「论断」里被顺手补上的成分：round-15 实测 §6 论断写

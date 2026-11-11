@@ -50,11 +50,20 @@ ROLE_RE = re.compile(r"^## ROLE: (\S+)\s*$(.*?)(?=^## ROLE: |\Z)", re.M | re.S)
 
 
 def txt_health(text):
-    """词/行 < 3 说明文字层坏到无法按行取句，不值得为它生成抽取工。"""
+    """等价词/行 < 3 说明文字层坏到无法按行取句，不值得为它生成抽取工。
+
+    中文没有空格分词：`len(l.split())` 对一行 40 字的中文正文也只算 1 个词，
+    正常的中文 PDF 会被判成「文字层不可用」（round-33 实测 5 篇全中）。文字层以
+    中文为主时改按「字符/行」换算，换算系数与 `litrev.text_health` 保持一致。
+    """
     lines = [l for l in text.splitlines() if l.strip() and not l.startswith("#")
              and not l.startswith("<<<PAGE")]
     if not lines:
         return 0.0
+    body = "\n".join(lines)
+    if len(re.findall(r"[\u4e00-\u9fa5]", body)) > len(re.findall(r"[A-Za-z]", body)):
+        units = [len(re.findall(r"[A-Za-z0-9]|[\u4e00-\u9fa5]", l)) for l in lines]
+        return round(sum(units) / len(lines) * 0.3, 2)
     return round(sum(len(l.split()) for l in lines) / len(lines), 2)
 
 
