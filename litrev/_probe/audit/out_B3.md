@@ -1,4 +1,5 @@
-> 快照 sha1: 18c979470b（由 litrev.py reseal 重封：2 条经 FIX_B4.md 定点重判，其余条目输入逐字未变；原判定提交 813d506）
+> 快照 sha1: e58bc1a19f（由 litrev.py reseal 重封：1 条经 FIX_B5.md 定点重判，其余条目输入逐字未变；原判定提交 e2afe25）
+
 
 
 
@@ -8,7 +9,7 @@
 | B3-01 | SUPPORTED | SELF | "seem to be" | — |
 | B3-02 | SUPPORTED | SELF | "only able to" | — |
 | B3-03 | SUPPORTED | SELF | "nine further" | — |
-| B3-04 | PARTIAL | SELF | "results support" | 缺"未给出数据集规模/指标数值"的缺席证据（需全库检索） |
+| B3-04 | SUPPORTED | SELF | "results support" | — |
 | B3-05 | SUPPORTED | SELF | "similarity" | — |
 | B3-06 | SUPPORTED | SELF | "area ratio" | — |
 | B3-07 | SUPPORTED | SELF | "four “cases”" | — |
@@ -21,5 +22,5 @@
 | B3-14 | SUPPORTED | SELF | "vectorized form" | — |
 | B3-15 | SUPPORTED | SELF | "for each model" | — |
 | B3-16 | SUPPORTED | SELF | "explicitly" | — |
-合计：16 条（SUPPORTED 15 / PARTIAL 1 / UNSUPPORTED 0；DEPENDENT 2）
+合计：16 条（SUPPORTED 16 / PARTIAL 0 / UNSUPPORTED 0；DEPENDENT 2）
 
