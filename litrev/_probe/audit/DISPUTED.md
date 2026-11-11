@@ -342,3 +342,76 @@
 - 不改卡片 §4、不改 `out_R6.md`：预先改掉就看不到抽取端规则 9 的真实效果，也让本次分歧失去证据价值。
 - 不改 `AUDIT_CONTRACT.md`：②④ 若要写进口径就是 v1.3，须与重新抽样重判同步，不能借单条争议夹带。
 - 不重抽三个参考集：`B3-04`（唯一残余 `PARTIAL`）与 `R6-04` 都不在冻结清单内，`--check` 已全绿。
+
+---
+
+## D-04 · B2-08 / S04
+
+- 状态：**OPEN**（2026-11-11 登记，待裁决）
+- 文献 / 节：`MaherGomez1996_CBR_StructuralDesign` · 案例或数据的表示形式 · p.6
+- 批次输入：`FRAG_B2.md` 的 `B2-08`（戳 `05632596fd`）；抽检输入：`SAMPLE_S2.md` 的 `S04`（戳 `8cf4be2cc9`）
+- 输入逐字比对：**论断与引文完全相同**（程序化比对，`True`/`True`），不存在「换了材料」的解释。
+- 性质：**支撑轴**差异（与 `v1.3` 的自足轴议题无关）。
+
+论断：
+
+```
+案例以属性-值对（attribute-value pair）来描述。
+```
+
+引文：
+
+```
+The differences between CaseCAD’s and CADsyn’s case representations lie in the attribute-value pairs and the decomposition into subcases. (Maher and Gomez, 1996, p.6)
+```
+
+| # | 来源 | 判定 | 支撑 | 自足 | 依据 |
+|---|---|---|---|---|---|
+| 1 | `out_B2.md`（`auditor-frag-b2`） | 机器·闭卷 | SUPPORTED | SELF | —— |
+| 2 | `out_S2.md`（`auditor-sample-s2`，round-31） | 机器·闭卷 | **UNSUPPORTED** | SELF | `"The differences"` |
+
+`verify-sample --name S2` 报：一致 11/12，差异 `S04: SUPPORTED→UNSUPPORTED`，方向「抽检更严（疑似原表偏松）」。
+
+### 实质分析：不是缺成分，是关系被改写
+
+引文说的是「CaseCAD 与 CADsyn 的**案例表示差异**在于属性-值对与子案例分解」——`lie in` 的主语是**差异**。
+论断说的是「案例**以**属性-值对**来描述**」——`以…描述` 的主语是**案例**。
+
+两句话的**谓词关系被换掉了**：从「两个系统的差异点是 X」变成「案例的表示方式是 X」。
+引文甚至反向暗示了论断的问题——属性-值对是二者**差别**所在，用它当「案例怎么描述」的通用说法，方向是拧的。
+
+这属于硬规则 9 第 ⑤ 类（术语替换与属性添加）的**关系变体**，比 `D-03` 的单词近义替换更彻底：
+`D-03` 换的是词（`query → 检索`），这里换的是**整个命题的关系结构**。按契约，`SUPPORTED` 要求「每个可检验成分都能在引文中找到对应」，
+「案例以 X 描述」这个命题在引文里**没有对应物**。抽检判 `UNSUPPORTED` 站得住；退一步至少也是 `PARTIAL`，`SUPPORTED` 不成立。
+
+### 补证据：同篇有直接句，是引文选错了（不是论断写错了）
+
+`python litrev/litrev.py locate` 实测：
+
+| 候选句 | 位置 | 可用性 |
+|---|---|---|
+| `The similarities are the use of attribute-value pairs for representing a case or subcase and the use of models to support CBR.` | PDF p.10（印张 p.51） | **逐字命中 1.00，完整句，以 `The` 起头** → 可用 |
+| `…and the primary object-based representation uses attribute-value pairs to describe a case.` | PDF p.6，但句子起于 p.5（`CADsyn decomposes cases into subcases,` 在 p.5） | 跨页、以 `and` 起头 → **不能从句子开头起抄**，弃用 |
+
+候选 1 说「**相似之处**是用属性-值对**表示**案例或子案例」，正是论断要表达的东西；同篇 p.6 的现引文讲的是「差异」，
+抽取时挑错了句。换引文后论断「案例以属性-值对来描述」**一字不用改**。
+
+预演戳（未落盘）：`FRAG_B2` `05632596fd → 1310e0ea75`；卡片内无重复引文（`grep -c` = 0）；页码须由 `p.6` 改 `p.10`。
+
+### 三个处置方案（待裁决，本文件不代决）
+
+| 方案 | 动作 | 成本 | 后果 |
+|---|---|---|---|
+| **α 换引文（补证据）** | 卡片 §3 引文换成 p.10 那句、页码改 `p.10`，论断不动 → `batch --only B2` → `FIX_B6` 定点重判 1 条 → `reseal` | 一轮完整流程（同 `B3-04`），需一次重启 | 新引文直接支撑论断，预期 `SUPPORTED`；`FRAG_B2` 整批戳变，16 条里只重判 1 条 |
+| **β 改论断（情态降级）** | 论断改成「CaseCAD 与 CADsyn 的案例表示差异在于属性-值对与子案例分解」，引文不动 | 同一轮流程 | 判定可过，但该节从「表示形式」降成「两者差异」，信息价值明显下降 |
+| **γ 接受偏松、登记不改** | 表不动，`B2-08` 留 `SUPPORTED` 在册 | 0 | 与 `B3-04` 的处理不一致（那条是真改了）；表里留一条支撑不实的条目，且它就在「案例表示形式」这种读者最会直接引用的节上 |
+
+**倾向 α**：证据干净（同篇直接句、逐字命中、完整句）、论断无需改动、只重判 1 条。但这要占用一次重启，
+且会把 `FRAG_B2` 的整批戳推走（`audit-stale` + 三个参考集一起红，`reseal` 后自愈）——要不要现在做由用户定。
+
+### 明确不做
+
+- **不改卡片、不改 `out_B2.md`、不改 `out_S2.md`**：裁决前改动会让这条差异失去证据价值。
+- **不改判定表**：`S138/P0/U0` 保持，`B2-08` 仍是 `SUPPORTED`，直到裁决。
+- **不重抽参考集**：`SAMPLE_S2.md` 的清单已冻结（`<!-- picks -->`），`B2-08` 不在其内。
+- **不把 S2 的 11/12 说成「抽检通过」**：`verify-sample` 退 1 就是因为存在这条差异；一致率是描述性的，不是合格证。
