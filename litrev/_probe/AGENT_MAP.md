@@ -19,12 +19,15 @@
 | `Liao1998_SimilarityMeasures_CBR` | —（卡片已存在） | `qx-liao1998-similaritymeasures-cbr` |
 | `Lin2022_BERT_DisasterTweet` | —（卡片已存在） | `qx-lin2022-bert-disastertweet` |
 | `Lin2024_Standards_Interpretation` | —（卡片已存在） | `qx-lin2024-standards-interpretation` |
+| `LinRonghui2020_economicanalysisfloor` | —（卡片已存在） | `qx-linronghui2020-economicanalysisfloor` |
 | `Lu2023_Settlement_Prediction_Reclamation` | —（卡片已存在） | `qx-lu2023-settlement-prediction-reclamation` |
 | `Lu2024_Clause_PrimitiveFunctions` | —（卡片已存在） | `qx-lu2024-clause-primitivefunctions` |
 | `Maher1987_ExpertSystems_StructuralDesign` | —（卡片已存在） | `qx-maher1987-expertsystems-structuraldesign` |
 | `MaherGomez1996_CBR_StructuralDesign` | —（卡片已存在） | `qx-mahergomez1996-cbr-structuraldesign` |
 | `MaherGomez1997_CBR_in_Design` | —（卡片已存在） | `qx-mahergomez1997-cbr-in-design` |
+| `matao2023_undergroundoptimize` | —（卡片已存在） | `qx-matao2023-undergroundoptimize` |
 | `Napps2021_BIM_VariantRetrieval_CBR` | —（卡片已存在） | `qx-napps2021-bim-variantretrieval-cbr` |
+| `Olga2020_ArrangementMultistoryUnderground` | —（卡片已存在） | `qx-olga2020-arrangementmultistoryunderground` |
 | `Park2025_InSAR_Subsidence_Reclamation` | —（卡片已存在） | `qx-park2025-insar-subsidence-reclamation` |
 | `Qu2011_CoastalTopography_SheyangEstuary` | —（卡片已存在） | `qx-qu2011-coastaltopography-sheyangestuary` |
 | `Rodrigues2017_Clustering_FloorPlans` | —（卡片已存在） | `qx-rodrigues2017-clustering-floorplans` |
@@ -36,9 +39,12 @@
 | `Survey2025_FloorPlanRetrieval_MDPI` | —（卡片已存在） | `qx-survey2025-floorplanretrieval-mdpi` |
 | `vanEngelenburg2023_SSIG_FloorPlan` | —（卡片已存在） | `qx-vanengelenburg2023-ssig-floorplan` |
 | `Xia2025_CoDesign_ShearWallBeam_GNN` | —（卡片已存在） | `qx-xia2025-codesign-shearwallbeam-gnn` |
+| `yechunhai2022_underground` | —（卡片已存在） | `qx-yechunhai2022-underground` |
 | `Zhang2006_BP_CaseRetrieval_HighriseStructureForm` | —（卡片已存在） | `qx-zhang2006-bp-caseretrieval-highrisestructureform` |
 | `Zhao2023_ShearWall_GNN` | —（卡片已存在） | `qx-zhao2023-shearwall-gnn` |
+| `zhengmei2025_undergroundparking` | —（卡片已存在） | `qx-zhengmei2025-undergroundparking` |
 | `Zhou2023_SettlementPrediction_ANN` | —（卡片已存在） | `qx-zhou2023-settlementprediction-ann` |
+| `zhouyulong2026_undergroundoptimize` | —（卡片已存在） | `qx-zhouyulong2026-undergroundoptimize` |
 | `Zhu2022_Hydrodynamics_Zhoushan_Reclamation` | —（卡片已存在） | `qx-zhu2022-hydrodynamics-zhoushan-reclamation` |
 
 ## 审计批次（批次级隔离：只能读本批输入、只能写本批输出）
@@ -76,6 +82,7 @@
 | `rest_b8` | `auditor-rest-b8` | `litrev/_probe/audit/REST_B8.md` | `litrev/_probe/audit/out_R8.md` | 冷启动第 3-5 篇（Jiang2024 / Lin2024 / Lu2024）七节审计，21 条，判定表 145→166；派发词已按 D-05 §四 修正「缺什么」列规格（非 SUPPORTED 或自足=DEPENDENT 都要填） |
 | `rest_b9` | `auditor-rest-b9` | `litrev/_probe/audit/REST_B9.md` | `litrev/_probe/audit/out_R9.md` | 生产批次 P1（首批陌生领域）：Cao2025 地震场地效应 / Gong2019 半封闭海湾水动力 / Zhou2023 围填海沉降预测，18 条（3 节原文未涉及），判定表 166→184 |
 | `rest_b10` | `auditor-rest-b10` | `litrev/_probe/audit/REST_B10.md` | `litrev/_probe/audit/out_R10.md` | 生产批次 P2（英文围填海，同领域跨语言对照）：Park2025 InSAR 沉降 / Elgaali2024 ANN 土性 / Zhu2022 舟山水动力 / Qu2011 射阳河口岸滩 / Lu2023 吹填沉降，30 条（5 节原文未涉及），判定表 184→214 |
+| `rest_b11` | `auditor-rest-b11` | `litrev/_probe/audit/REST_B11.md` | `litrev/_probe/audit/out_R11.md` | 生产批次 P3（DXS 库，地下车库 / 地下空间优化设计 6 篇，中文 4 + 英文 2）：LinRonghui2020 / Olga2020 / matao2023 / yechunhai2022 / zhengmei2025 / zhouyulong2026，23 条（19 节原文未涉及），判定表 214→237 |
 
 ## 固定角色
 

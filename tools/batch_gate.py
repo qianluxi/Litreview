@@ -10,7 +10,7 @@
   python tools/batch_gate.py --batch rest_b9 --date 2026-11-11
   python tools/batch_gate.py --batch rest_b9 --date 2026-11-11 --note "13 条可直接引用" --write
 
-退出码：0 全过 / 1 门禁红 / 2 抽检记录缺失或不足 / 3 触发熔断
+退出码：0 全过 / 1 门禁红 / 2 抽检记录缺失、不足或未填 / 3 触发熔断
 """
 
 from __future__ import annotations
@@ -194,6 +194,13 @@ def main() -> int:
         return 2
     if len(samples) < need:
         print(f"[✗] 抽检条数不足：记了 {len(samples)} 条，§四 要求 ≥{need} 条（池 {len(pool)}）")
+        return 2
+    # 只数「是」会把一张空表读成「偏松 0」→ 没开卷也能放行。
+    # 结论列空、或偏松列不是「是/否」，一律当作抽检未做。
+    blanks = [s["id"] for s in samples
+              if not s["verdict"].strip() or s["loose"].strip() not in ("是", "否")]
+    if blanks:
+        print(f"[✗] 抽检记录有未填项（开卷结论为空，或偏松列不是「是/否」）：{blanks}")
         return 2
     loose = [s["id"] for s in samples if s["loose"].strip() == "是"]
     if len(loose) >= 2:

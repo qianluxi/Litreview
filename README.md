@@ -1,286 +1,144 @@
 # Litreview · 新用户上手指南
 
-> **这套系统做什么**：把「文献里的一句话能不能支撑综述里的一个论断」变成一条**可机械复核的证据链**——谁抽的、抽自哪一页、裁判怎么核、谁判的、能不能引用。
->
-> **它不做什么**：不写综述正文，不判论文学术价值，不是「丢 PDF 进去自动出结果」的全自动流水线。产出是**卡片 + 判定表 + 批次报告**，供人决策。
->
-> 本文只讲**怎么用 OpenCode 子代理系统**。改仪器、补证据的完整规程在 `RUNBOOK.md`；生产期的放行门槛在 `PRODUCTION.md`；当前进度与口径在 `PROGRESS.md`。三者与本文冲突时，以它们为准，并回来修本文。
+**这套系统做什么**：把「文献里的一句话能不能支撑综述里的一个论断」变成一条可机械复核的证据链——谁抽的、抽自哪一页、裁判怎么核、谁判的、能不能引用。
+
+**它不做什么**：不写综述正文，不判论文学术价值，不是「丢 PDF 进去自动出结果」。产出是**卡片 + 判定表 + 批次报告**，供人决策。
+
+> 本文只讲最短上手路径。改仪器、补证据 → `RUNBOOK.md`；生产放行门槛 → `PRODUCTION.md`；口径与进度 → `PROGRESS.md`。三者与本文冲突时以它们为准。
 
 ---
 
-## 零、三句话建立心智模型
+## 一、你要做的 5 步
 
-1. **三层分工，不能合并**：**人**做派发、重启、开卷抽检、口径决策；**OpenCode 子代理**做抽取与判定；**`litrev.py`** 是裁判（子代理一律不可改）。主控（`orchestrator`）不亲自写卡片、不亲自改判定码。
-2. **子代理是「文件级隔离的工人」，不是聊天助手**。每篇文献一个 `ex-`/`qx-` agent，权限按**路径**写死：只能读自己那篇 `txt`、只能写自己那张卡片。派它去碰隔壁文件会被拒——**被拒是隔离生效，不是 bug**。
-3. **OpenCode 1.18.25 桌面客户端，无 CLI**。所有派发都在客户端对话里完成；**新增 agent 只在客户端启动时进注册表**，所以每次生成新 agent 后必须重启，否则报 `Unknown agent type`。
+| # | 你做什么 | 系统里发生什么 |
+|---|---|---|
+| **0** 准备（一次） | `git clone` → `pip install pymupdf` → **自备 PDF** | 版权语料不入库（`.gitignore` 排除 `参考文献原文/` 下所有 PDF、`texts/`、`corpus.json.gz`），clone 后这三样是空的 |
+| **1** 放文献 | 新 PDF 放进 **`参考文献原文/<库名>/`**（一个用户 / 一个批次一个库），命名 `AuthorYYYY_ShortTag.pdf`；定不了名的可写 `_names.txt` 清单（见下） | 现有 40 篇调试基线在 `0号文献库`。文件名就是引文标注：`Cao2025_X.pdf` → `(Cao, 2025, p.3)`；别名写 `litrev/aliases.json` |
+| **2** 一键准备 | **双击根目录 `准备文献库.bat`**，按提示回车/定名 → **人重启 OpenCode 客户端** | 向导自动跑完整个机器侧：全库预检 → 命名 → 文字层体检 → `index` 全库重建（已有条目零变化校验，异常自动回滚）→ `text --library` → 生成 `ex-` → `gen --check`；结束时直接打印本次可派的 `ex-` 名字 |
+| **3** 派抽取 | 在客户端**同一条消息里并列**派 `ex-<文献slug>` → 主控验卡、建批次 → **再重启一次** | 每篇产出一张 7 节卡片；生成 `REST_B*.md` 批次输入和 `auditor-<批次>` |
+| **4** 派判定 + 抽检 | 派 `auditor-<批次>` 出判定 → **人开卷抽检 ≥20%** 支撑轴并写 `SAMPLING_*.md` | 逐条给出支撑 / 自足两轴结论；抽检不能交给子代理 |
+| **5** 放行 | 跑 `batch_gate.py` 出批次报告 | `EXIT=0` 才可交付；`1` 门禁未过 / `2` 抽检记录不全 / `3` 熔断 |
 
----
+**向导会问什么**（全部合规时只需一次确认回车）：
 
-## 一、clone 之后第一件事：先看懂「缺了什么」
+- 选本次入库的库（只有一个新库时自动选）；
+- 逐篇给不合规 PDF 定名：`a` 采纳工具建议 / 直接输入 `Smith2024_ShearWall` / `s` 暂不入库（移到 `_parked/`）/ `q` 中止（此时未改任何文件）；
+- 其它库里还留着不合规的新 PDF 时，问是否**临时隔离**：目录名前加 `_`，不删文件、随时改回；
+- 重建索引前最后确认一次。`--plan` 参数可先做只读预检，不写盘、不改名。
+
+想把逐篇定名前置掉，就在该库放一份 `_names.txt`（`#` 开头是注释）：
+
+```text
+downloaded_v2.pdf=Smith2024_ShearWall
+某篇原名.pdf=Higgins2013_PalmJumeirah
+```
+
+清单只覆盖该库待定名的文件；格式不对、撞名、对不上原名的行会被忽略并提示。年份要开卷核实（期刊页/版权页），工具不替你猜。
+
+> **文字层只做了机械预检**（`wpl < 3`）。`PRODUCTION.md §二·二` 的人眼判据（先看字符可读性、再看句子连续性）仍然要人做，向导不替代。
 
 ```bash
-git clone https://github.com/qianluxi/Litreview.git
-cd Litreview
-pip install pymupdf          # index / text 必需
-# pip install openpyxl       # 只在用 litrev.py matrix 时需要
-python --version             # 开发/实测环境：Python 3.13.14
-```
+# 排障时才用：手工等价命令（正常走 bat）
+python tools/prepare_library.py --plan          # 只读预检
+python tools/rename_pdfs.py --library <库名>    # 只看不改的命名建议
+python litrev/litrev.py text --library <库名> --dry-run
+python litrev/litrev.py index                  # 始终全库清空重建，PDF 不全时别跑（见 §四）
+python litrev/litrev.py text --library <库名>
+python tools/gen_subagents.py && python tools/gen_subagents.py --check
 
-> **版权语料不入库**（`.gitignore` 明确排除）：`参考文献原文/*.pdf`、`litrev/_probe/texts/`、`litrev/_index/corpus.json.gz`。
-> 这是刻意的——它们是已发表论文正文的完整复制。**新用户必须自备 PDF**。
-
-我用一次全新 clone 实测过，落盘后是这样的：
-
-| 目录 | clone 后 | 说明 |
-|---|---|---|
-| `.opencode/agents/*.md` | **67 个已在** | 子代理定义入库，可直接看 |
-| `litrev/_probe/full/*.md` | **64 个已在** | 卡片（含引文短句）入库 |
-| `litrev/_probe/audit/*.md` | 91 个已在 | 批次输入、判定输出、三份参考集、抽检留痕 |
-| `参考文献原文/*.pdf` | **0** | 需自备 |
-| `litrev/_probe/texts/*.txt` | **0** | 需由 PDF 重建 |
-| `litrev/_index/corpus.json.gz` | **0** | 需由 PDF 重建 |
-
-此时 `python tools/check.py` 是 **10/13**（不是全绿）：
-
-| 红项 | 原因 | 要不要慌 |
-|---|---|---|
-| `verify 全库` | 没有 `corpus.json.gz`，32 张卡片的引文无处回查 | **不要**——这正是「缺语料」的正常表现 |
-| `gen_subagents --check` | 报「缺少正文目录」，生成器靠 `texts/` 发现文献 | 同上 |
-| `audit_prep sample S2 --check` | **已定案的永久红项**（`B2-08` 换过引文，冻结参考集复算不一致） | **永远不要修**；`batch_gate.py` 已把它列为豁免 |
-
-其余 10 项（含 `card-check 32/32`、`audit-count 214 条`、`audit-stale 214/214`、`batch --check`、金标准／判例集）**全绿**——说明判定表、卡片结构、卡片↔批次对账这些**不依赖 PDF 的部分是可直接读的**。
-
-### 按你的目的选一条路
-
-| 目的 | 要做什么 | 能不能跑门禁 |
-|---|---|---|
-| **A. 只想看懂系统** | 读 `AGENT_ROLES.md` → `AUDIT_CONTRACT.md` → 任意一张 `full/*.md` + 对应 `out_R*.md`；跑 `audit-count`、`card-check` | 只需上面那 10 项绿 |
-| **B. 想跑全库门禁** | 把**全部 40 篇**可用 PDF 放回 `参考文献原文/` → **先隔离拒收件**（§二 步骤 0）→ 重建 | 才能到 12/13 |
-| **C. 想跑自己的新批次** | 至少要放本批 PDF；但 `batch_gate.py` 依赖 `check.py` 非豁免项全绿，**语料不全时会 `EXIT=1`** | 见 §五的诚实说明 |
-
-> **一个容易踩的坑**：`python litrev/litrev.py index` 是**清空重建**，从 PDF 目录重新生成 `manifest.csv`。
-> 仓库里入库的 `manifest.csv` 记着全部 40 篇可用文献；只放几篇 PDF 就跑，它会缩到几篇，已有卡片的引文就查不到了。
-> 所以：**要么放齐，要么别跑全库门禁**，不要「先放几篇试试」。
-
----
-
-## 二、重建语料（只在走 B/C 时做）
-
-### 步骤 0 · 先把拒收件隔离出去（**漏了这步会停在 11/13**）
-
-`index` 只扫描 `参考文献原文/*.pdf`（顶层），`text` 也会为顶层**每一篇**生成 txt。所以文字层不可用的 PDF 必须移进子目录：
-
-```bash
-mkdir -p 参考文献原文/_rejected
-# 把符号串乱码、双栏交错、数字拆断的拒收件 move 进去，不要删（留作证据）
-```
-
-**为什么这是硬要求**：`tools/gen_subagents.py` 的 `slugify()` 只保留 `[a-z0-9]`。
-**纯中文文件名归一后是空串**，两篇以上同时留在顶层就会撞名，生成器直接 `sys.exit`：
-
-```
-[!] 文件名主干归一后撞名：某围填海项目护岸地基处理方案研究-沈学明 与
-    华南地区围填海项目高压旋喷桩地基处理工艺试验及研究-陆达仁，先改名
-```
-
-这也是「PDF 文件名必须是 `AuthorYYYY_ShortTag.pdf`（ASCII 开头）」的真实原因——不只是为了引文标注好看。
-
-> 本仓库已把 4 个拒收件移入 `_rejected/` 并在 `.gitignore` 排除；`manifest.csv` 从 44 行降到 **40 行**，
-> **已有 40 条零变化**，`gen --check` 仍 67/67。你自己新增文献时，拒收件也照此处理。
-
-### 步骤 1 · 抽取与建索引
-
-```bash
-# PDF 放进 参考文献原文/，文件名必须是 AuthorYYYY_ShortTag.pdf
-python litrev/litrev.py text --dry-run        # 文字层健康度，先看一眼
-python litrev/litrev.py text                 # 生成 texts/*.txt（默认 --layout 词级坐标重建）
-python litrev/litrev.py index                # 生成 corpus.json.gz + manifest.csv
-
-# 生成子代理定义并核对同步
-python tools/gen_subagents.py
-python tools/gen_subagents.py --check        # 期望「✓ 同步：N 个文件与 AGENT_ROLES.md 一致」
-
-# 验收
-python tools/check.py
-```
-
-**这条链是实测过的**（2026-11-12，用一份全新 clone）：
-
-| 阶段 | `check.py` | 红项 |
-|---|---|---|
-| 刚 clone | **10/13** | `verify`（无 corpus）、`gen --check`（无 texts）、`sample S2`（永久豁免） |
-| 放齐 44 篇（**含 4 个拒收件**）、跑完三步、**没做步骤 0** | **11/13** | `gen --check` 撞名 + `sample S2` |
-| 隔离 4 个拒收件、重跑 `index` | **12/13** | 只剩 `sample S2`（已定案豁免） |
-
-**12/13 就是这套系统的正常绿态**，不是「还差一项没修」。
-
-**PDF 文件名就是引文标注**：`Cao2025_SeismicSite_Reclamation.pdf` → `(Cao, 2025, p.3)`。同姓不同年靠年份区分；别名映射在 `litrev/aliases.json`。取不到作者/年份的文献，生成器会**跳过并打印原因**，不会静默出错。
-
-**入库验收判据**（进批次前的第一道筛子，详见 `PRODUCTION.md §二·二`）：
-
-1. **字符本身得是字**（前提）——若正文是 `!" #$%&'` 这类符号串，字体缺 `ToUnicode`，工具**没有 OCR 通道**，直接拒收；
-2. **能不能从正文抄出一句连续的话**（主判据）——双栏交错会把一句切成三截，这种 `verify` 会 PASS（每个字都真实）但句不是作者写的；
-3. **词/行不是判据**——实测拒收件的词/行 8.80 反而高于收下的三篇。
-
----
-
-## 三、系统是怎么搭起来的
-
-```
-litrev/_probe/AGENT_ROLES.md   ← 唯一来源（人写）
-          │  tools/gen_subagents.py 解析 ## ROLE: 段落，替换 {{占位符}}
-          ▼
-.opencode/agents/*.md          ← 生成物（67 个，带 AUTO-GENERATED 头，不要手改）
-          │  opencode.json 指定 default_agent: orchestrator, subagent_depth: 1
-          ▼
-    OpenCode 桌面客户端启动 → 注册 → 对话里用 task 派发
-```
-
-| 角色 | 名字形态 | 能读 | 能写 |
-|---|---|---|---|
-| 主控（primary） | `orchestrator` | 映射表、规约 | 不写卡片、不判断定 |
-| 首次抽取 | `ex-<文献slug>` | 自己那篇 `txt` + 契约 | **只创建**自己那张卡（`full/`） |
-| 返工扩句 | `qx-<文献slug>` | 同上 | **唯一**能改写已存在卡片 |
-| 批次审计 | `auditor-<批次>` | 契约 + 本批输入 | **只写**本批输出（闭卷） |
-| 引文核验 | `checker` | — | 唯一被授权跑 `litrev.py verify/matrix/locate` |
-
-> **clone 后查 `AGENT_MAP.md` 会发现 0 个 `ex-`、全是 `qx-`**，这是正常的：`ex-` 只在**卡片还不存在**时才生成（它只有创建权限，给已有卡片派它等于撞墙）。放新 PDF 之后才会出现对应的 `ex-`。
-
-**为什么必须按文件生成、不能手写几份通用 agent**：权限是按相对 worktree 路径生效的（`edit`/`task` 都是**最后命中规则生效**）。要让「一篇文献一个工人且只碰自己那一个文件」成立，提示词里的路径必须和权限里的路径逐字相同——手写 20 多份必然漂移，生成是唯一能保证的办法。
-
-**为什么有的工具「拿不到拒绝原文」**：`visibleTools` 用 `findLast`，若 `pattern==="*" && action==="deny"`，工具**根本不注册**。所以 `auditor` 的 `bash: "*": deny` 不是「调用被拦」，是「它没有 bash 这个工具」。只有部分 allow 时才会暴露工具、调用时抛 `PermissionDeniedError`。
-
-**改角色规则的唯一正确姿势**：改 `AGENT_ROLES.md` → 跑 `gen_subagents.py` → `--check` → **重启客户端**。手改生成物会被 `--check` 抓出，并在下次生成时覆盖。
-
----
-
-## 四、一次完整批次（照着做，共 3 次交互）
-
-> 下面用「P3 = 新放 N 篇 PDF」举例。命令里的批次名要按实际续号改（`R9`/`R10` 之后是 `R11`）。
-
-### 交互 1 · 人放 PDF → 主控验收入库
-
-主控做：按 §二 的判据逐篇验收（收/拒）→ 改名 `AuthorYYYY_ShortTag.pdf` → 登记 `aliases.json` → `text` / `index` / `gen_subagents.py` → **写一份 `HANDOFF-NN.md`**（内含逐篇陷阱、现成派发词、事前预测）。
-
-**然后人重启 OpenCode 客户端**（新 `ex-` agent 要注册）。
-
-### 交互 2 · 人派抽取 → 主控验收 + 建批次
-
-在**同一条消息里并列**发多个 `task`（不要串行）：
-
-```
-按 HANDOFF-27.md §五 的要求，用 ex-<文献slug> 抽取 <文献名> 这篇文献，产出 7 节卡片。
-```
-
-子代理回来后，主控**只认文件不认回话**（`completed` ≠ 成功，空 `task_result` 是已知现象）：
-
-```bash
+# 步骤 3 验卡 / 步骤 4 验收
 python litrev/litrev.py card-check --only <文献名>
 python litrev/litrev.py verify litrev/_probe/full/<文献名>.md
-```
+python litrev/litrev.py audit-stale --check
+python litrev/litrev.py audit-count          # 口径的唯一来源，不许手算、不许抄文档
 
-7 节固定：**一句话主张 / 问题域 / 案例或数据的表示形式 / 相似性或检索机制 / 系统形态 / 评价方式 / 明确写出的局限**（节名字、编号、顺序一字不改）。原文确实没写的节写 `- 论断：未涉及` 且**不留引文行**。
-
-然后建批次：生成 `REST_B11.md`（N 条）→ 在 `litrev/_probe/audit/BATCHES.json` 追加一条 → 跑 `python litrev/litrev.py batch --only B11` 写戳 → 跑 `gen_subagents.py` 生成 `auditor-rest-b11` → **人再重启一次**。
-
-> 此时 `check.py` 会红 6 项（`audit-stale` + 5 个参考集「只在输入」）。**这是备料态，不要修、不要补占位 `out_*.md`、不要重抽参考集**；判定回来且戳同源就自愈。
-
-### 交互 3 · 人派判定 → 主控验收 + 抽检 + 出报告
-
-```
-按 HANDOFF-27.md §六 做 N 条判定，用 auditor-rest-b11 这个子代理。
-```
-
-派发词里必须写死三件容易错的事：表头**逐字照抄本次输入文件**、依据列 ≤15 字且是引文内连续片段、**首行 `> 快照 sha1: …` 原样抄到输出头部**（戳抄错整批重来）。
-
-```bash
-python litrev/litrev.py audit-stale --check      # 依据与卡片一致
-python litrev/litrev.py audit-count              # 口径（唯一来源，不许手算）
-```
-
-然后**人开卷抽检**（这一步不能省、不能交给子代理）：支撑轴 `SUPPORTED` 池随机抽 ≥20%，回原文看前后段，写 `SAMPLING_R11.md`。最后一条命令出报告：
-
-```bash
+# 步骤 5
 python tools/batch_gate.py --batch rest_b11 --date 2026-11-12 \
-  --note "<第 4 行的人话处置结论>" --write --out reports/batch-2026-11-12-P3.md
+  --note "<人话处置结论>" --write --out reports/batch-2026-11-12-P3.md
 ```
 
-`EXIT=0` 才可交付；`1` 门禁未过 / `2` 抽检记录不全 / `3` 熔断。报告前三行由脚本生成，**一个字符都不许手写**。
+**一次完整批次 = 3 次人机交互**：人放 PDF → 派抽取 → 派判定，中间各重启一次客户端。批次名按实际续号改（`R9`/`R10` 之后是 `R11`），派发词照最新的 `HANDOFF-NN.md` 抄。
+
+> **重启是机制约束**：OpenCode 1.18.25 桌面版无 CLI，新 agent 只在客户端启动时进注册表，不重启就报 `Unknown agent type`。
+
+**派发词里必须写死三件事**：表头逐字照抄本次输入文件；依据 ≤15 字且为引文内连续片段；首行 `> 快照 sha1: …` 原样抄到输出头部（戳抄错整批重来）。
 
 ---
 
-## 五、人必须做的四件事（别想交给 agent）
+## 二、最后你会得到什么
 
-| 事 | 为什么不能交给 agent |
-|---|---|
-| **派发** | 主控 `orchestrator` 是 primary，**实测无权限层**（`opencode.json` 只 deny 了 `webfetch`/`websearch`）。靠自律不靠机制，所以派发必须人做。 |
-| **重启客户端** | 机制约束，不是流程设计。新 agent 只在启动时注册。 |
-| **开卷抽检** | 检的是「引文有没有被断章取义」，闭卷判不了；且金标准实测支撑轴漏判 ~13%、方向偏松，这是唯一会放行错误论断的轴。 |
-| **口径决策** | 契约留白、争议条目（`DISPUTED.md`）、改不改稿，都是人的裁决，不是机器的多数票。 |
-
-**一句实话**：金标准人开卷 vs 机器闭卷，支撑轴一致 13/15、自足轴 15/15。所以系统的形态是**机器 + 抽检**，不是全自动。抽检由「同一台仪器第二遍」执行时，独立性弱于真人开卷——交给别人用时，建议每批由他随手抽 2 条自己看。
-
----
-
-## 六、坑速查表
-
-| 现象 | 原因 | 动作 |
+| 产物 | 在哪 | 内容 / 用途 |
 |---|---|---|
-| `Unknown agent type` | 没重启客户端 | 重启，别改 agent 名 |
-| `task` 返回 `completed` 但 `task_result` 空 | OpenCode 已知现象（实测 8 次 3 次） | **看交付文件**；文件合规即通过，别重派（会产生第二份不一致结论） |
-| 工具「不存在」而不是「被拒绝」 | `visibleTools` 全量 deny → 工具根本不注册 | 设计使然，不是授权缺口 |
-| 备料态 6 项红 | `out_<批次>.md` 还没回来 | **不要修**、不要补占位文件 |
-| `audit-stale` 报依据不一致 | 卡片改过但判定没跟着改 | 走 `reseal` 三门槛，别手工改戳 |
-| `out_P6.md` 污染口径 | `audit-count` 正则 `^out_[A-Z]+\d+\.md$` 会命中 | 探针输出写 `out_P_6.md`；`out_FIX5.md` 同理 |
-| `gen_subagents.py` 报「文件名主干归一后撞名」 | 顶层同时留了两篇以上**纯中文名** PDF，`slugify` 后都是空串 | 移进 `参考文献原文/_rejected/`、删对应 txt、重跑 `index`（§二 步骤 0） |
-| 手改了 `.opencode/agents/*.md` | `--check` 会报「与模板不一致」 | 跑 `gen_subagents.py` 覆盖（改规则请改 `AGENT_ROLES.md`） |
-| 用关键词断言「原文没写」 | 正则漏词形变化（实测 `similarit` 漏 `similar`，错 2 篇） | 断言「没有」要覆盖词形变化——它不出现在任何输出里，没人会复核 |
-| `verify` 报 `MISSING` 但引文看着一样 | 归一化差异（`norm_text` 走 NFKC） | 全角数字照抄即可 PASS；**内容真不一致时不许改引文凑** |
+| **文献卡片** | `litrev/_probe/full/*.md` | 每篇 7 节（一句话主张 / 问题域 / 表示形式 / 相似性或检索机制 / 系统形态 / 评价方式 / 明确写出的局限）。每节一句论断 + 0 或 1 条**逐字引文带页码**；原文没写的节写 `- 论断：未涉及` 且不留引文行。节名、编号、顺序不可改 |
+| **批次输入 + 判定输出** | `litrev/_probe/audit/REST_B*.md`、`out_R*.md` | 每条论断两轴结论：支撑 `SUPPORTED / PARTIAL / UNSUPPORTED` × 自足 `SELF / DEPENDENT`，附依据片段。这就是「这句能不能这么写」的逐条裁决 |
+| **判定表总账** | `python litrev/litrev.py audit-count` | 全库条数与两轴分布，唯一口径来源。文档里的示例数字会过期，任何时候以当次输出为准 |
+| **批次报告** | `reports/batch-*.md` | 脚本生成的四行：门禁状态 / 抽检 / 偏松条数 / 人话处置结论。**前三行一个字符都不许手写** |
 
-**绝对不要动**：`litrev/litrev.py`（裁判）、契约判定条款、`litrev/_probe/full/` 里已封戳批次的卡片。改稿只有两种合法动作：情态降回原文强度、删掉引文里没有的成分；且要走 `FIX_B*` 定点重判 + `reseal`。
+**物理布局**：`manifest.csv` 的 `library` 列记着每篇 PDF 属于哪个库；`corpus` 仍以**文件名**为键，所以把 PDF 移到别的库不会改变引文标注（实测 40 条零变化）。跨库同名会被 `index` 直接拦下。
+
+**拿去怎么用**：`SUPPORTED + SELF` 且经抽检的条目，是可以直接写进综述的「论断 ↔ 引文 ↔ 页码」对，且随时能机械复核；`PARTIAL` 要改稿或不用（生产期不改稿，如实留表）；`DEPENDENT` 表示引文脱离上下文读不懂，引用时要补主语或补上下文。
+
+**不会得到**：一篇写好的综述、对论文质量的评价、100% 正确的自动判定。金标准实测人开卷 vs 机器闭卷支撑轴一致 **13/15**、自足轴 **15/15** —— 这是**机器判定 + 人开卷抽检**的系统，不是全自动。
+
+**正常绿态**：`check.py` **12/13**（唯一红项 `sample S2` 是已定案永久豁免，`B2-08` 换过引文；**变绿反而要查**），`gen --check` 67/67。刚 clone 只有 10/13 是缺语料的正常表现，不是故障。
 
 ---
 
-## 七、文档地图
+## 三、四件不能交给 agent 的事
+
+| 事 | 原因（一句） |
+|---|---|
+| **派发** | 主控 `orchestrator` 是 primary，实测无权限层，靠自律不靠机制 |
+| **重启客户端** | 机制约束，不是流程设计 |
+| **开卷抽检** | 检的是「引文有没有被断章取义」，闭卷判不了；支撑轴是唯一会放行错误论断的轴 |
+| **口径决策** | 契约留白、争议条目（`DISPUTED.md`）、改不改稿，都是人的裁决，不是机器的多数票 |
+
+---
+
+## 四、最容易踩的坑
+
+| 现象 | 动作 |
+|---|---|
+| `Unknown agent type` | 重启客户端，别改 agent 名 |
+| 子代理返回 `completed` 但回话为空 | **只看交付文件**；文件合规即通过，别重派（会产生第二份不一致结论） |
+| 建完批次 `check.py` 红 6 项 | **备料态，不要修**、不要补占位 `out_*.md`、不要重抽参考集；判定回来且戳同源就自愈 |
+| 工具「不存在」而不是「被拒绝」 | `visibleTools` 全量 deny 时工具根本不注册，设计使然 |
+| `gen_subagents.py` 报「文件名主干归一后撞名」 | 同一库里留了两篇以上纯中文名 PDF（`slugify` 后都是空串）→ 移进 `参考文献原文/_rejected/`、删对应 txt、重跑 `index` |
+| `index` 报「跨文献库同名 PDF」 | 两个库放了同名文件，corpus 会互相覆盖 → 先给其中一份改名 |
+| `rename_pdfs.py` 出 `REVIEW` | 抽不出 ASCII 作者/年份/题名（常见于中文文献），或元数据只是 Word 模板 / 出版社书名残留 → 别让它猜，照首页正文用 `--set "原名.pdf=AuthorYYYY_Tag"` 人工定名后再 `--apply` |
+| `index` 只放了几篇 PDF | 它是**清空重建** `manifest.csv`，已有卡片引文会查不到 → 要么放齐全部库，要么别跑全库门禁 |
+| 向导报「其它库还有不合规新文件」 | 选**临时隔离**（目录改名 `_<库名>`）；别跳过，否则坏名会被 `index` 写进 `manifest.csv`。要恢复就去掉前缀 |
+| `_parked/` 里出现 PDF | 是你在向导里选了「暂不入库」，不参与扫描、文件没删；`_rejected/` 才是文字层坏件的隔离区 |
+| 双击 bat 后窗口一闪而过 | 用命令行跑一次 `准备文献库.bat --plan` 看报错；无参数双击时窗口会 `pause` 停留 |
+| 向导报「统计列重算漂移」，或旧版报「index 动了已有条目」 | 多半是 bat 的解释器 PyMuPDF 版本与索引基准不同（实测 **1.28.2 vs 2.0**，词/行 4.26→4.35），**不是 PDF 被换**；现在由 `verify 全库` 裁决，全绿即放行。想完全对齐旧基准：`set LITREV_PYTHON=<基准 python.exe>` 后再双击 |
+| `index` 报「无文字层 / 逐词断行 / 内容重复」 | 那是 `0号文献库` 40 篇基线里的历史遗留，每次全库重建都会报；`gen_subagents.py` 会跳过它们、不给它们派 `ex-`，**不影响新库**。要清就把文件移进 `_rejected/` 再重跑向导 |
+
+**绝对不要动**：`litrev/litrev.py`（裁判）、契约判定条款、`full/` 里已封戳批次的卡片。改稿只有两种合法动作（情态降回原文强度、删掉引文里没有的成分），且必须走 `FIX_B*` 定点重判 + `reseal`；卡片改过但判定没跟上时用 `audit-stale` 查，**别手工改戳**。
+
+> 探针输出命名：`audit-count` 正则 `^out_[A-Z]+\d+\.md$` 会误收 `out_P6.md` / `out_FIX5.md` → 写成 `out_P_6.md` / `out_FIX_5.md`。
+
+---
+
+## 五、按需再读
 
 | 想找什么 | 读哪个 |
 |---|---|
-| 本文（怎么上手、怎么派活） | `README.md` |
-| 生产期：每批门禁、抽检比例、熔断、不许报的数字 | `PRODUCTION.md` |
-| 标定期：派发协议、验收五条、reseal、参考集、权限回归 | `RUNBOOK.md` |
-| 当前进度、口径、对外说法 | `PROGRESS.md` |
-| 子代理提示词的唯一来源 | `litrev/_probe/AGENT_ROLES.md` |
-| 论断判定的唯一标准（v1.2） | `litrev/_probe/AUDIT_CONTRACT.md` |
+| 生产期每批门禁、抽检比例、熔断 | `PRODUCTION.md` |
+| 一键准备向导的参数 / 只读预检 | `python tools/prepare_library.py --help`、`--plan` |
+| PDF 自动命名建议、改名留痕 | `tools/rename_pdfs.py`（默认 dry-run） |
+| 派发协议、验收五条、`reseal`、参考集、权限回归 | `RUNBOOK.md`（§八 按日期倒序记录变更） |
+| 子代理提示词唯一来源 / 判定唯一标准 | `litrev/_probe/AGENT_ROLES.md` / `AUDIT_CONTRACT.md` |
 | 文献 → agent 名映射（派活前必查） | `litrev/_probe/AGENT_MAP.md` |
-| 有哪些批次、输入输出在哪 | `litrev/_probe/audit/BATCHES.json` |
-| 未决争议（按 `D-0x` 编号） | `litrev/_probe/audit/DISPUTED.md` |
 | 本批派发词、逐篇陷阱、事前预测 | 最新的 `HANDOFF-NN.md` |
-| 历次变更事实（按日期倒序追加） | `RUNBOOK.md §八` |
-| 已交付批次报告（四行模板） | `reports/batch-*.md` |
+| 未决争议 | `litrev/_probe/audit/DISPUTED.md` |
 
-> **数字会过期**：本文与规程里的示例数字（`S166`、`n=21`、`166/166` 等）多是写规程当时的读数。
-> **任何时候报口径，以 `python litrev/litrev.py audit-count` 的当次输出为准**，不要从文档里抄。
+改角色规则的唯一姿势：改 `AGENT_ROLES.md` → `gen_subagents.py` → `--check` → **重启客户端**。手改 `.opencode/agents/*.md` 会被 `--check` 抓出。
 
 ---
 
-## 八、自检：下面几条答不上来，先别派活
+**状态快照（2026-11-12）**：判定表读数以 `python litrev/litrev.py audit-count` 为准（唯一可信来源）；下面两行只用来判断读到的是不是当前版本，**不是指标**。
 
-1. 新放了 3 篇 PDF，也跑了 `gen_subagents.py`，能直接派 `ex-` 吗？→ **不能，先重启客户端**。
-2. 建完批次看到 `check.py` 红 6 项，要修吗？→ **不要，那是备料态**。
-3. 子代理返回 `completed` 但回话是空的，算成功吗？→ **看文件**；文件合规才算，且不要重派。
-4. `card-check` 全绿、`verify` 全绿，就能说这一批没问题吗？→ **不能**。`verify` 只查引文逐字存在，`card-check` 只查结构；「论断有没有超过引文」靠审计支撑轴，「这节答的是不是这节问的事」只能人读卡片。
-5. `verify 214/214` 能证明仪器在陌生文本上能抓错吗？→ **不能**，卡片是照着引文改到对上的。灵敏度看金标准（支撑 13/15）。
-6. 全新 clone、放齐 PDF、`text`/`index`/`gen` 都跑了，门禁就全绿了吗？→ **不，是 11/13**；还要把拒收件隔离进 `_rejected/` 才是 12/13。而且 **12/13 本身就是正常绿态**（`sample S2` 永久豁免）。
-
----
-
-## 附：本文对应的状态快照
-
-- 日期：**2026-11-12**，commit `ec08ce7`（已推 `main`）
-- 判定表：**214 条 · `S208/P6/U0` · `SELF181/DEP33`**
-- `check.py`：**12/13**（唯一红项 `sample S2` 为已定案豁免）
-- 语料：顶层可用 PDF **40 篇**，`_rejected/` 拒收 **4 篇**（不入库）
-- 已交付批次：**P1**（中文围填海 18 条）、**P2**（英文围填海 30 条）
-- 子代理：**67** 个（`gen --check` 67/67）
-
-这些数字只用于让你判断「读到的是不是当前版本」，不是指标。最新值永远以 `audit-count` 为准。
+| 版本 | 判定表 | 门禁 | 文献库 | 子代理 | 已交付批次 |
+|---|---|---|---|---|---|
+| 上次推送基线 `de80dfe` | 214 条 · `S208/P6/U0` · `SELF181/DEP33` | `check.py` 12/13 | `0号文献库` 40 篇 + `_rejected/` 4 篇（均不入库） | 67 | P1（18 条）、P2（30 条） |
+| 本次提交（P3 收口） | **237 条 · `S231/P6/U0` · `SELF203/DEP34`** | `check.py` 12/13 | 上述 + `DXS/` 6 篇 | 74 | P1、P2、P3（23 条） |

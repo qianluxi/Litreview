@@ -53,6 +53,53 @@ IDX_DIR = BASE / "_index"
 IDX_FILE = IDX_DIR / "corpus.json.gz"
 ALIAS_FILE = BASE / "aliases.json"
 
+# ---------------------------------------------------------------- 文献库布局
+# 参考文献原文/ 下每个普通子目录 = 一个文献库（不同用户 / 不同批次各放一个）。
+# 下划线或点开头的目录是隔离区/内部目录（_rejected/ 等），不参与扫描。
+# corpus 与 manifest.csv 仍以「PDF 文件名」为键，多库只是物理存放位置，
+# 不改变引文标注、卡片落点和判定表 —— 已有文献跨库移动必须零变化。
+SPECIAL_DIR_PREFIXES = ("_", ".")
+
+
+def iter_library_pdfs(pdf_dir, library=None):
+    """收集文献库根下所有可用 PDF，返回 [(Path, 库名)]，按文件名排序。
+
+    兼容两种布局：直接放在根目录下（旧布局，库名 ""）与 根/<库名>/*.pdf。
+    跨库同名会让 corpus 键互相覆盖，必须在这里显式停机，不能静默挑一个。
+    """
+    pdf_dir = Path(pdf_dir).resolve()
+    found = [(p, "") for p in sorted(pdf_dir.glob("*.pdf"))]
+    subs = sorted(pdf_dir.iterdir()) if pdf_dir.is_dir() else []
+    for sub in subs:
+        if not sub.is_dir() or sub.name.startswith(SPECIAL_DIR_PREFIXES):
+            continue
+        if library and sub.name != library:
+            continue
+        found.extend((p, sub.name) for p in sorted(sub.glob("*.pdf")))
+    if library:
+        found = [t for t in found if t[1] == library]
+
+    seen = {}
+    for p, lib in found:
+        if p.name in seen:
+            sys.exit(f"[!] 跨文献库同名 PDF：{seen[p.name] or '(根目录)'} 与 {lib} 都有 {p.name}；"
+                     "corpus 以文件名为键，同名会互相覆盖。先给其中一份改名再建索引。")
+        seen[p.name] = lib
+    return sorted(found, key=lambda t: t[0].name)
+
+
+def find_pdf(fname):
+    """按文件名在所有文献库里找回物理 PDF（best_sentence_in_page 用）。"""
+    top = PDF_DIR / fname
+    if top.exists():
+        return top
+    hits = [p for p in PDF_DIR.glob(f"*/{fname}")
+            if not p.relative_to(PDF_DIR).parts[0].startswith(SPECIAL_DIR_PREFIXES)]
+    if len(hits) == 1:
+        return hits[0]
+    print(f"[!] {'多个文献库含同名 PDF' if hits else '找不到 PDF'}：{fname}")
+    return None
+
 LIGATURES = {
     "\ufb00": "ff", "\ufb01": "fi", "\ufb02": "fl",
     "\ufb03": "ffi", "\ufb04": "ffl", "\u00ad": "",
@@ -309,18 +356,19 @@ def cmd_text(args):
     pdf_dir = Path(args.dir).resolve()
     out_dir = Path(args.out).resolve() if args.out else (BASE / "_probe" / "texts")
     only = {s.strip() for s in args.only.split(",")} if args.only else None
-    files = sorted(pdf_dir.glob("*.pdf"))
+    files = iter_library_pdfs(pdf_dir, args.library)
     if only:
-        files = [f for f in files if f.stem in only]
+        files = [t for t in files if t[0].stem in only]
     if not files:
-        print(f"[!] {pdf_dir} 下没有匹配的 PDF")
+        hint = f"（文献库 {args.library}）" if args.library else ""
+        print(f"[!] {pdf_dir} 下没有匹配的 PDF{hint}")
         return 1
 
     rows = []
     if not args.dry_run:
         out_dir.mkdir(parents=True, exist_ok=True)
 
-    for f in files:
+    for f, lib in files:
         doc = pymupdf.open(f)
         pages, raw_all = [], []
         for i, pg in enumerate(doc):
@@ -338,6 +386,7 @@ def cmd_text(args):
 
         if not args.dry_run:
             header = (f"# SOURCE: {f.name}\n"
+                      f"# LIBRARY: {lib or '(根目录)'}\n"
                       f"# PDF 物理页数: {n}\n\n")
             (out_dir / (f.stem + ".txt")).write_text(header + body, encoding="utf-8")
 
@@ -387,7 +436,11 @@ def cmd_index(args):
     import pymupdf
 
     pdf_dir = Path(args.dir).resolve()
-    files = sorted(pdf_dir.glob("*.pdf"))
+    # index 始终是「全库清空重建」：corpus 必须含所有已入库文献，否则已有卡片的
+    # 引文会查不到。只导出某一批 txt 请用 text --library，不要给 index 加过滤。
+    entries = iter_library_pdfs(pdf_dir)
+    files = [p for p, _ in entries]
+    libs = {p.name: lib for p, lib in entries}
     if not files:
         print(f"[!] {pdf_dir} 下没有 PDF")
         return 1
@@ -426,6 +479,7 @@ def cmd_index(args):
         sigs[f.name] = sig
         manifest.append({
             "file": f.name,
+            "library": libs.get(f.name, ""),
             "pages": len(pages),
             "chars": total_chars,
             "empty_pages": empty,
@@ -542,7 +596,10 @@ def search_fuzzy(corpus, quote, only=None, topk=3):
 def best_sentence_in_page(fname, pno, quote):
     """回到 PDF 取该页原文，找出与 quote 最相似的句子。"""
     import pymupdf
-    doc = pymupdf.open(PDF_DIR / fname)
+    path = find_pdf(fname)
+    if path is None:
+        return None, 0.0
+    doc = pymupdf.open(path)
     try:
         if pno < 1 or pno > len(doc):
             return None, 0.0
@@ -1975,6 +2032,8 @@ def main():
 
     p = sub.add_parser("text", help="把 PDF 逐页导出为带页标记的 txt（版面重建）")
     p.add_argument("--dir", default=str(PDF_DIR))
+    p.add_argument("--library", default=None,
+                   help="只导出该文献库子目录里的 PDF（默认全部库；index 不接受此参数）")
     p.add_argument("--out", default=None, help="输出目录（默认 litrev/_probe/texts）")
     p.add_argument("--only", default=None, help="仅处理这些文件名主干，逗号分隔")
     p.add_argument("--layout", action="store_true", default=True,

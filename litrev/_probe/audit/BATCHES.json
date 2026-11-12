@@ -186,6 +186,12 @@
       "input": "litrev/_probe/audit/REST_B10.md",
       "output": "litrev/_probe/audit/out_R10.md",
       "note": "生产批次 P2（英文围填海，同领域跨语言对照）：Park2025 InSAR 沉降 / Elgaali2024 ANN 土性 / Zhu2022 舟山水动力 / Qu2011 射阳河口岸滩 / Lu2023 吹填沉降，30 条（5 节原文未涉及），判定表 184→214"
+    },
+    {
+      "id": "rest_b11",
+      "input": "litrev/_probe/audit/REST_B11.md",
+      "output": "litrev/_probe/audit/out_R11.md",
+      "note": "生产批次 P3（DXS 库，地下车库 / 地下空间优化设计 6 篇，中文 4 + 英文 2）：LinRonghui2020 / Olga2020 / matao2023 / yechunhai2022 / zhengmei2025 / zhouyulong2026，23 条（19 节原文未涉及），判定表 214→237"
     }
   ]
 }
