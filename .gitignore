@@ -7,6 +7,10 @@
 # 重建：放回 参考文献原文/ 后执行 `python litrev/litrev.py index`（需 pymupdf）
 参考文献原文/*.pdf
 
+# 拒收件（文字层不可用的 PDF）隔离区：index 只 glob 顶层 *.pdf，放子目录就不会被抽 txt。
+# 纯中文文件名 slug 归一后为空串，两篇以上同时留在顶层会让 gen_subagents.py 撞名停机。
+参考文献原文/_rejected/
+
 # 由 PDF 逐页抽出的整篇正文（页间带 <<<PAGE n>>> 标记）
 # 重建：python litrev/litrev.py text（词级坐标版面重建；--raw 退回逐页 get_text()）
 litrev/_probe/texts/
